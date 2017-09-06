@@ -10,6 +10,5 @@ def test_makedb():
     b.makedb()
     print(b)
     b.run()
-
-    import re
-    r = b.results
+    x = b.parse_results()
+    print(x)
