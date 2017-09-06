@@ -1,8 +1,6 @@
 # Stand alone file reader
-
 from Bio import SeqIO
 import os
-import glob
 import re
 import json
 

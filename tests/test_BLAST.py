@@ -1,9 +1,7 @@
-from BLAST import BLAST
+import sys
+from core import BLAST
 
 def test_makedb():
-    print()
-    print("******************************************")
-
     b = BLAST('db',
               'tests/data/test_data/templates',
               'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb',
@@ -11,7 +9,7 @@ def test_makedb():
               'tests/data/blast_results/results.out')
     b.makedb()
     print(b)
-    # b.run()
-    #
-    # import re
-    # r = b.results
+    b.run()
+
+    import re
+    r = b.results

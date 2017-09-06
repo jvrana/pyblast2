@@ -1,9 +1,8 @@
 # More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
 # BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
-from utils import *
-from seqio import *
 import tempfile
-
+from .seqio import *
+from .utils import *
 # custom output format: https://www.ncbi.nlm.nih.gov/books/NBK279682/
 class BLAST(object):
     blast_config = {

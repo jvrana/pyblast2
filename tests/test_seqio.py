@@ -1,7 +1,6 @@
-from seqio import *
 import pytest
-
-
+import os
+from core import *
 
 def test_circular():
     directory = os.path.abspath("tests/data/test_data/seqio_plasmids")
@@ -19,7 +18,7 @@ def test_sanitize_filename():
     sanitize_filenames(directory)
     for f in os.listdir(directory):
         assert not ' ' in f
-    sanitize_filenames(directory, replacements=[('_', ' ')])
+        sanitize_filenames(directory, replacements=[('_', ' ')])
     for f in os.listdir(directory):
         assert not '_' in f
 
