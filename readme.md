@@ -1,10 +1,12 @@
-This is a wrapper for initiating blast searches...
-
-
 # Blast Setup
-https://www.ncbi.nlm.nih.gov/books/NBK52640/
+This is a wrapper for initiating blast searches. This is in beta.
+Information on BLAST: https://www.ncbi.nlm.nih.gov/books/NBK52640/
 
 Run "install_blash.sh" to install blash
+
+## Status
+
+20170908 - This repo is currently in beta...
 
 ## Usage
 
@@ -32,8 +34,3 @@ b.parse_results()
 
 # send your JSON to your other apps
 ```
-
-
-## Status
-
-20170908 - This repo is currently in beta...
