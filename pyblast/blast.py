@@ -23,7 +23,8 @@ class Blast(object):
         "outfmt": "\"{0}\"".format(' '.join(outfmt))
     }
 
-    def __init__(self, dn_name, subj_in_dir, query_path, db_output_directory, results_out_path, **config):
+    def __init__(self, dn_name, subj_in_dir, query_path, db_output_directory, results_out_path,
+                 output_formatter=None, **config):
         """
         A Blast initializer for running blast searches.
         :param dn_name: Name for database file structure. This name will be appended to all db files that blast creates.
@@ -37,7 +38,9 @@ class Blast(object):
         self.name = dn_name
         self.path_to_input_dir = os.path.abspath(subj_in_dir)
         self.path_to_query = os.path.abspath(query_path)
-        self.config = Blast.blast_config
+        if output_formatter is None:
+            self.outfmt = Blast.outfmt
+        self.config = {"outfmt": "\"{0}\"".format(' '.join(self.outfmt))}
         if config is not None:
             self.config.update(config)
         self.path_to_output_dir = os.path.abspath(db_output_directory)
