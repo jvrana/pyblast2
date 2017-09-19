@@ -1,4 +1,5 @@
-# Stand alone file reader
+# Temporary sequence parser
+# would prefer all JSON formats for DNAs
 from Bio import SeqIO
 import os
 import re
@@ -69,15 +70,31 @@ def determine_format(path, format=None):
 
 
 def dna_at_path_is_circular(path):
+    """
+    Whether a genbank file at "path" is circular.
+
+    :param path:
+    :type path:
+    :return:
+    :rtype:
+    """
     with open(path) as f:
-        first_line = f.read().split()
-        for word in first_line:
-            if word == 'circular':
-                return True
-    return False
+        first_line = f.readlines()[0]
+        m = re.search("circular", first_line, re.IGNORECASE)
+        return m is not None
 
 
 def sanitize_filename(filename, replacements=None):
+    """
+    Santitized filename according to replacements list.
+
+    :param filename:
+    :type filename:
+    :param replacements:
+    :type replacements:
+    :return:
+    :rtype:
+    """
     if replacements is None:
         replacements = [(' ', '_')]
     new_filename = ""
@@ -87,22 +104,39 @@ def sanitize_filename(filename, replacements=None):
 
 
 def sanitize_filenames(dir, replacements=None, odir=None):
-    print(replacements)
+    """
+    Sanitizes all filenames according to replacements list
+
+    :param dir: input directory
+    :type dir: str
+    :param replacements: list of tuples indicating replacements
+    :type replacements: list
+    :param odir: output directory to save new files (optional)
+    :type odir: str
+    :return: None
+    :rtype: None
+    """
     if odir is None:
         odir = dir
     for filename in os.listdir(dir):
         if os.path.isfile(os.path.join(dir, filename)):
             newfilename = sanitize_filename(filename, replacements=replacements)
-            print("Renaming")
             os.rename(os.path.join(dir, filename), os.path.join(odir, newfilename))
 
 
 def concat_seqs(idir, out, savemeta=False):
     """
     Concatenates a directory of sequences into a single fasta file
-    :param idir: input directory path
+
+    :param idir: input directory
+    :type idir: str
     :param out: output path
-    :return: full output path
+    :type out: str
+    :param savemeta: save metadata associated with each file in separate meta json file? (e.g {filename: ...,
+    circular: ...})
+    :type savemeta: bool
+    :return: ( output path (str), sequences (list of SeqIO), metadata (dict) )
+    :rtype: tuple
     """
     sequences = []
     metadata = {}

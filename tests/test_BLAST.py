@@ -1,5 +1,5 @@
 import sys
-from core import Blast, Aligner
+from pyblast import Blast, Aligner
 import pytest
 
 def pytest_namespace():
@@ -12,26 +12,28 @@ def pytest_namespace():
             }
 
 @pytest.fixture
-def create_blast():
-    return  Blast('db',
+def b():
+    return Blast('db',
                       'tests/data/test_data/templates',
                       'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb',
                       'tests/data/blast_results',
                       'tests/data/blast_results/results.out')
 
-def test_makedb():
-    b = create_blast()
+def test_makedb(b):
     b.makedb()
     b.blastn()
     b.parse_results()
 
-def test_quick_blastn():
-    b = create_blast()
+def test_quick_blastn(b):
     b.quick_blastn()
     b.raw_results
 
-def test_aligner():
-    b = create_blast()
+def test_aligner(b):
     a = Aligner(b.name, b.path_to_input_dir, b.path_to_query)
     a.quick_blastn()
     print(a.raw_results)
+
+def test_example():
+    a = Aligner.use_test_data()
+    a.quick_blastn()
+    print(a.results)

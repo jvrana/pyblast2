@@ -1,6 +1,6 @@
 import pytest
 import os
-from core import *
+from pyblast import *
 
 def test_circular():
     directory = os.path.abspath("tests/data/test_data/seqio_plasmids")

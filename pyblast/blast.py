@@ -6,18 +6,21 @@ from .seqio import *
 from .utils import *
 
 
-# custom output format: https://www.ncbi.nlm.nih.gov/books/NBK279682/
-
-
 class Blast(object):
     """
     A Blast initializer for running blast searches against subjects contained in a directory.
     """
 
+    outfmt = [
+        "7", "qacc", "sacc",
+        "score", "evalue", "bitscore", "length", "nident",
+        "gapopen", "gaps", "qlen", "qstart", "qend",
+        "slen", "sstart", "send", "sstrand",
+        "qseq", "sseq"
+    ]
+
     blast_config = {
-        "outfmt": "\"7 qacc sacc score evalue bitscore" +
-                  "length nident gapopen gaps qlen qstart qend" +
-                  "slen sstart send sstrand qseq sseq\""
+        "outfmt": "\"{0}\"".format(' '.join(outfmt))
     }
 
     def __init__(self, dn_name, subj_in_dir, query_path, db_output_directory, results_out_path, **config):
@@ -41,7 +44,7 @@ class Blast(object):
         self.db = os.path.join(db_output_directory, dn_name)
         self.path_to_input_seq_file = None
         self.db_input_metadata = None
-        self.results = None #
+        self.results = None  #
         self.raw_results = None
         self.input_sequences = []
         self.results_out_path = os.path.abspath(results_out_path)
@@ -67,8 +70,8 @@ class Blast(object):
 
     def create_config(self):
         d = {
-            "db": self.db,
-            "out": self.results_out_path,
+            "db"   : self.db,
+            "out"  : self.results_out_path,
             "query": self.path_to_query,
         }
         d.update(self.config)
@@ -89,7 +92,7 @@ class Blast(object):
         run_cmd(cmd, **kwargs)
 
     def concat_templates(self):
-        out = self.db + '.fsa'
+        out = self.db+'.fsa'
         fasta, seqs, metadata = concat_seqs(self.path_to_input_dir, out, savemeta=True)
         self.db_input_metadata = metadata
         self.input_sequences = seqs
@@ -106,35 +109,43 @@ class Blast(object):
 
     def parse_results(self, save_as_json=True, delim=','):
         """
-        Parses the raw blast txt output as a json
-        :param save_as_json: If True, save output to results.json located in same directory as results_out_path
-        :param delim: Deliminter for parsing blast output (default: ',')
-        :return: The result as a dictionary or list
+        Parses the raw blast result to a JSON
+
+        :param save_as_json: whether to save the JSON. Results will be saved in same directory and name as
+        results_out_path but with a .json extension.
+        :type save_as_json: bool
+        :param delim: delimiter to parse
+        :type delim: str
+        :return:
+        :rtype:
         """
+
         def cleanup_fields(match_fields, replacements=None):
+            ''' Cleanup field names using replacements '''
             if replacements is None:
                 replacements = {
                     ('.', ''),
                     (' ', '_'),
-                    ('%', 'perc')
+                    ('%', 'perc'),
                 }
+            match_fields = [x.strip() for x in match_fields]
             for i, f in enumerate(match_fields):
                 for r in replacements:
-                    match_fields[i] = f.replace(r[0], r[1])
+                    match_fields[i] = match_fields[i].replace(r[0], r[1])
             return match_fields
 
         def extract_metadata(r, delim=','):
             g = re.search(
-                '#\s*(?P<blast_ver>.+)\n' +
-                '# Query:\s*(?P<query>.*)\n' +
-                '# Database:\s*(?P<database>.+)\n' +
-                '# Fields:\s*(?P<fields>.+)',
-                r)
+                    '#\s*(?P<blast_ver>.+)\n'+
+                    '# Query:\s*(?P<query>.*)\n'+
+                    '# Database:\s*(?P<database>.+)\n'+
+                    '# Fields:\s*(?P<fields>.+)',
+                    r)
             metadata = g.groupdict()
             # clean up fields
             metadata['fields'] = re.split('\s*{}\s*'.format(delim), metadata['fields'])
             metadata['fields'] = cleanup_fields(metadata['fields'])
-            return g.groupdict()
+            return metadata
 
         def extract_raw_matches(r):
             return re.findall('\n([^#].*)', r)
@@ -157,9 +168,10 @@ class Blast(object):
 
         if save_as_json:
             dir, filename, basename, ext = split_path(self.results_out_path)
-            with open(os.path.join(dir, basename + ".json"), 'w') as handle:
+            with open(os.path.join(dir, basename+".json"), 'w') as handle:
                 json.dump(match_dicts, handle)
-        return match_dicts
+        self.results = match_dicts
+        return self.results
 
     def __str__(self):
         return "{}".format(self.create_config())
@@ -170,6 +182,7 @@ class Aligner(Blast):
     A Blast object that stores the database files in a hidden temporary directory. Use entry points
     "quick_blastn" for returning results as a python object.
     """
+
     def __init__(self, dn_name, subj_in_dir, query_path, **config):
         """
         Aligner: A Blast object that stores the database files in a hidden temporary directory.
@@ -182,3 +195,11 @@ class Aligner(Blast):
         db_output_directory = tempfile.mkdtemp()
         out = tempfile.mktemp(dir=db_output_directory)
         super(Aligner, self).__init__(dn_name, subj_in_dir, query_path, db_output_directory, out, **config)
+
+    @classmethod
+    def use_test_data(cls):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        return cls('db',
+                   os.path.join(dir_path, '..', 'tests/data/test_data/templates'),
+                   os.path.join(dir_path, '..', 'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'))

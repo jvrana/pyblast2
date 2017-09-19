@@ -70,11 +70,18 @@ def sanitize_filenames(dir):
 
 # TODO: locus_ID gets truncated, fix this...
 @format_decorator
-def open_sequence(filename, format=None, **fmt):
-    g = re.search('^(.+)\.(\w+)$', filename)
+def open_sequence(filepath, format=None, **fmt):
+    """
+    Open sequences from path as Bio.Seq formats
+    :param filepath:
+    :param format:
+    :param fmt:
+    :return:
+    """
+    g = re.search('^(.+)\.(\w+)$', filepath)
     prefix, suffix = g.group(1), g.group(2)
     seqs = []
-    with open(filename, 'rU') as handle:
+    with open(filepath, 'rU') as handle:
         s = list(SeqIO.parse(handle, format))
         # if len(s) == 1:
         #     s[0].id = prefix

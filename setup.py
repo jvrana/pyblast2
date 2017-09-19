@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='core',
+    name='pyblast',
     version='0.0.1',
-    packages=['core'],
+    packages=['pyblast'],
     url='',
     license='',
     author='Justin D. Vrana',
