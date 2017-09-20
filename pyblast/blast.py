@@ -52,6 +52,7 @@ class Blast(object):
         self.input_sequences = []
         self.results_out_path = os.path.abspath(results_out_path)
         self.validate_files()
+        self.sequence_metadata = None
 
     def validate_files(self):
         def _is_file(f):
@@ -100,6 +101,12 @@ class Blast(object):
         self.db_input_metadata = metadata
         self.input_sequences = seqs
         return out, seqs, metadata
+
+    def get_is_circular(self, seqid):
+        return self.db_input_metadata[seqid]['circular']
+
+    def get_filename(self, seqid):
+        return self.db_input_metadata[seqid]['filename']
 
     def makedb(self):
         out, seqs, metadata = self.concat_templates()
@@ -171,10 +178,14 @@ class Blast(object):
 
         if save_as_json:
             dir, filename, basename, ext = split_path(self.results_out_path)
-            with open(os.path.join(dir, basename+".json"), 'w') as handle:
-                json.dump(match_dicts, handle)
+            f = os.path.join(dir, basename+".json")
+            self.dump_to_json(f)
         self.results = match_dicts
         return self.results
+
+    def dump_to_json(self, path):
+        with open(path, 'w') as out:
+            json.dump(self.results, out)
 
     def __str__(self):
         return "{}".format(self.create_config())

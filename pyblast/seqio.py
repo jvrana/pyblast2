@@ -4,7 +4,7 @@ from Bio import SeqIO
 import os
 import re
 import json
-
+import uuid
 
 # import csv
 # from Bio.Alphabet.IUPAC import ambiguous_dna
@@ -141,18 +141,18 @@ def concat_seqs(idir, out, savemeta=False):
     sequences = []
     metadata = {}
     for filename in os.listdir(idir):
-        seqs = open_sequence(os.path.join(idir, filename))
+        seq_path = os.path.join(idir, filename)
+        seqs = open_sequence(seq_path)
         sequences += seqs
 
         # TODO: this is really hacky, recode this
         # TODO: this requires Coral, do we want another dependency?
+
         for s in seqs:
-            metadata[s.id] = {
-                'filename': filename,
-                'circular': False
-            }
-        if len(seqs) == 1:
-            metadata[seqs[0].id]['circular'] = dna_at_path_is_circular(os.path.join(idir, filename))
+            s.id = str(uuid.uuid4())
+            s.filename = filename
+            s.circular = dna_at_path_is_circular(seq_path)
+            metadata[s.id] = {'circular': s.circular, 'filename': s.filename}
 
     with open(out, "w") as handle:
         SeqIO.write(sequences, handle, "fasta")

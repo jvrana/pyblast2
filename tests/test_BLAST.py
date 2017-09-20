@@ -37,3 +37,13 @@ def test_example():
     a = Aligner.use_test_data()
     a.quick_blastn()
     print(a.results)
+
+def test_example():
+    a = Aligner.use_test_data()
+    a.quick_blastn()
+
+def test_get_metadata():
+    a = Aligner.use_test_data()
+    a.quick_blastn()
+    a.get_filename(a.input_sequences[0].id)
+    a.get_is_circular(a.input_sequences[0].id)
