@@ -11,7 +11,7 @@ Run "install_blash.sh" to install blash
 ## Usage
 
 To be used as a dropin for BioPython blast command lines, which I found
-confusing to use..
+annoying to use...
 
 ```python
 # files and directories
