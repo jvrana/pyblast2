@@ -8,5 +8,6 @@ setup(
     license='',
     author='Justin D. Vrana',
     author_email='justin.vrana@gmail.com',
-    description='Python wrapper for running BLAST locally'
+    description='Python wrapper for running BLAST locally',
+    install_requires=['biopython'],
 )
