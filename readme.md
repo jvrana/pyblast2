@@ -2,7 +2,7 @@
 This is a wrapper for initiating blast searches. This is in beta.
 Information on BLAST: https://www.ncbi.nlm.nih.gov/books/NBK52640/
 
-Run "install_blash.sh" to install blash
+Run "bash install_blash.sh" to install blash
 
 ## Status
 
