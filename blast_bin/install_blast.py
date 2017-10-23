@@ -39,7 +39,7 @@ class PathManager(object):
         for path in self.paths():
             os.environ['PATH'] += ':'+path
 
-def install_blast(user_email):
+def install_blast(user_email, force=False):
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     def get_blast_format(platform):
@@ -67,7 +67,7 @@ def install_blast(user_email):
     config['fmt'] = get_blast_format(config['platform'])
     # detect blast executable
     path = shutil.which('makeblastdb')
-    if path is None:
+    if path is None or force:
         print(" ********** Installing BLAST ********** ")
         install_blast_using_ftp(config)
     else:
@@ -108,19 +108,24 @@ def install_blast_using_ftp(config):
                 print("downloading {0}".format(config['filename']))
                 ftp.retrbinary('RETR {}'.format(config['filename']), handle.write)
                 ftp.quit()
-    print("download complete")
+            print("download complete")
+
     # unzip and remove tarball
     if os.path.isfile(config['in']):
         subprocess.call(['tar', 'zxvpf', config['in'], '-C', config['dir']])
         os.remove(config['in'])
 
     # add to path
-    pm = PathManager("blast_bin/_paths.txt")
+    pm = PathManager(os.path.abspath("_paths.txt"))
     pm.append_path(os.path.join(config['blastver']))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Install BLAST from ncbi")
     parser.add_argument("user_email", type=str, help="A user email is required for BLAST download from ncbi.")
+    parser.add_argument("--f", help="Forces install")
     args = parser.parse_args()
-    install_blast(args.user_email)
+    force = False
+    if args.f:
+        force = True
+    install_blast(args.user_email, force=force)

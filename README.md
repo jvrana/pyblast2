@@ -1,3 +1,17 @@
+
+[![travis build](https://img.shields.io/travis/jvrana/pyblast.svg)](https://travis-ci.org/jvrana/pyblast)
+[![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master)
+[![PyPI version](https://badge.fury.io/py/REPO.svg)](https://badge.fury.io/py/REPO)
+
+![module_icon](images/module_icon.png?raw=true)
+
+#### Build/Coverage Status
+Branch | Build | Coverage
+:---: | :---: | :---:
+**master** | [![travis build](https://img.shields.io/travis/jvrana/pyblast/master.svg)](https://travis-ci.org/jvrana/pyblast/master) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master)
+**development** | [![travis build](https://img.shields.io/travis/jvrana/pyblast/development.svg)](https://travis-ci.org/jvrana/pyblast/development) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=development)](https://coveralls.io/github/jvrana/pyblast?branch=development)
+
+
 # Blast Setup
 This is a wrapper for initiating blast searches. This is in beta.
 Information on BLAST: https://www.ncbi.nlm.nih.gov/books/NBK52640/
