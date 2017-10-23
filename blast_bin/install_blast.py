@@ -115,7 +115,7 @@ def install_blast_using_ftp(config):
         os.remove(config['in'])
 
     # add to path
-    pm = PathManager("_paths.txt")
+    pm = PathManager("blast_bin/_paths.txt")
     pm.append_path(os.path.join(config['blastver']))
 
 
