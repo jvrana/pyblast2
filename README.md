@@ -20,6 +20,10 @@ You can install BLAST to the pyblast directory using the following command:
 python blast_bin/install_blast your_email
 ```
 
+This will install it to pyblast/blast_bin. If you want BLAST installed somewhere else, move the *ncbi-blast-X.X.X+* folder
+to your desired location and add path to *path/to/ncbi-blast-X.X.X+/bin*. **PyBlast** will prefer to use the blast stored
+in your executable path. If it cannot find a blast executable there, it looks for it in that paths in the pyblast/blast_bin/_paths.txt
+file.
 
 
 ## Status
