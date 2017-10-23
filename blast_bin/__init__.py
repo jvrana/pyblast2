@@ -1,0 +1,1 @@
+from .install_blast import PathManager

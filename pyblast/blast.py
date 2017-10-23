@@ -1,7 +1,9 @@
 # More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
 # BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
+import shutil
 import tempfile
-import json
+
+from blast_bin.install_blast import PathManager
 from .seqio import *
 from .utils import *
 
@@ -35,6 +37,11 @@ class Blast(object):
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
+
+        Blast.add_to_sys_paths()
+        self.executable_path = Blast.get_executable()
+        print("BLAST executable: {}".format(self.executable_path))
+
         self.name = dn_name
         self.path_to_input_dir = os.path.abspath(subj_in_dir)
         self.path_to_query = os.path.abspath(query_path)
@@ -53,6 +60,24 @@ class Blast(object):
         self.results_out_path = os.path.abspath(results_out_path)
         self.validate_files()
         self.sequence_metadata = None
+
+    @staticmethod
+    def add_to_sys_paths():
+        if not Blast.has_executable():
+            pm = PathManager("blast_bin/_paths.txt")
+            pm.append_paths_to_env()
+        if not Blast.has_executable():
+            raise Exception("BLAST executables not found in path. Be sure BLAST is correctly installed.")
+
+    @staticmethod
+    def has_executable():
+        b = which('makeblastdb')
+        print(b)
+        return b is not None
+
+    @staticmethod
+    def get_executable():
+        return os.path.dirname(shutil.which("makeblastdb"))
 
     def validate_files(self):
         def _is_file(f):
