@@ -68,7 +68,10 @@ def install_blast(user_email):
     # detect blast executable
     path = shutil.which('makeblastdb')
     if path is None:
+        print(" ********** Installing BLAST ********** ")
         install_blast_using_ftp(config)
+    else:
+        print("BLAST installed at " + path)
 
 
 def install_blast_using_ftp(config):
