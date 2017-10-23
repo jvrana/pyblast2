@@ -2,9 +2,11 @@
 # BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
 import shutil
 import tempfile
+
+from pyblast import PathManager
 from .seqio import *
 from .utils import *
-from pyblast import PathManager
+
 
 class Blast(object):
     """

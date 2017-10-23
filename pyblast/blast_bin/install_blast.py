@@ -1,16 +1,15 @@
-import ftplib
-import re
-import pprint
-import subprocess
-import os
-import shutil
 import argparse
-
+import ftplib
+import os
+import pprint
+import re
+import shutil
+import subprocess
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-class PathManager(object):
 
+class PathManager(object):
     def __init__(self, path):
         self.pathfile = os.path.abspath(path)
         self.pathdir = os.path.dirname(self.pathfile)
@@ -41,8 +40,8 @@ class PathManager(object):
         for path in self.paths():
             os.environ['PATH'] += ':'+path
 
-def install_blast(user_email, force=False):
 
+def install_blast(user_email, force=False):
     def get_blast_format(platform):
         global tarball_formats
         version_pattern = "\d+\.\d+\.\d+\+"
@@ -72,7 +71,7 @@ def install_blast(user_email, force=False):
         print(" ********** Installing BLAST ********** ")
         install_blast_using_ftp(config)
     else:
-        print("BLAST installed at " + path)
+        print("BLAST installed at "+path)
 
 
 def install_blast_using_ftp(config):
