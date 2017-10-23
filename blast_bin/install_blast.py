@@ -33,12 +33,12 @@ class PathManager(object):
 
     def paths(self):
         lines = self.lines()
-        paths = [os.path.abspath(line) for line in lines]
+        paths = [os.path.join(self.pathdir, line) for line in lines]
         return list(set(paths))
 
     def append_paths_to_env(self):
         for path in self.paths():
-            os.environ['PATH'] += ':'+path
+            os.environ['PATH'] += ':'+os.path.join(path, 'bin')
 
 
 def install_blast(user_email, force=False):

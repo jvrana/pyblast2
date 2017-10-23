@@ -66,12 +66,15 @@ class Blast(object):
         if not Blast.has_executable():
             pm = PathManager("blast_bin/_paths.txt")
             pm.append_paths_to_env()
+        from marshmallow import pprint
+        pprint(os.environ['PATH'])
         if not Blast.has_executable():
             raise Exception("BLAST executables not found in path. Be sure BLAST is correctly installed.")
 
     @staticmethod
     def has_executable():
-        b = shutil.which('makeblastdb')
+        b = which('makeblastdb')
+        print(b)
         return b is not None
 
     @staticmethod
