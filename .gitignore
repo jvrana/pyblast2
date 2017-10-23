@@ -211,3 +211,11 @@ venv.bak/
 /blast_bin/ncbi-blast*
 *.tar.gz
 /tests/.cache/
+tests/data/blast_results/db.json
+tests/data/blast_results/db.fsa
+tests/data/blast_results/db.json
+tests/data/blast_results/db.nhr
+tests/data/blast_results/db.nin
+tests/data/blast_results/results.out
+tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
+tests/data/test_data/seqio_plasmids/concatenated/concat.json
