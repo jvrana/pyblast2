@@ -1,11 +1,11 @@
 # More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
 # BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
+import shutil
 import tempfile
-import json
+
+from pyblast.blast_bin.install_blast import PathManager
 from .seqio import *
 from .utils import *
-import shutil
-from blast_bin.install_blast import PathManager
 
 
 class Blast(object):

@@ -13,10 +13,14 @@ Branch | Build | Coverage
 
 
 # Blast Setup
-This is a wrapper for initiating blast searches. This is in beta.
-Information on BLAST: https://www.ncbi.nlm.nih.gov/books/NBK52640/
 
-Run "bash install_blash.sh" to install blash
+You can install BLAST to the pyblast directory using the following command:
+
+```
+python blast_bin/install_blast your_email
+```
+
+
 
 ## Status
 
