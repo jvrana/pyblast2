@@ -7,6 +7,8 @@ import shutil
 import argparse
 
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 class PathManager(object):
 
     def __init__(self, path):
@@ -40,7 +42,6 @@ class PathManager(object):
             os.environ['PATH'] += ':'+path
 
 def install_blast(user_email, force=False):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
 
     def get_blast_format(platform):
         global tarball_formats
@@ -116,7 +117,7 @@ def install_blast_using_ftp(config):
         os.remove(config['in'])
 
     # add to path
-    pm = PathManager(os.path.abspath("_paths.txt"))
+    pm = PathManager(os.path.abspath(os.path.join(dir_path, "_paths.txt")))
     pm.append_path(os.path.join(config['blastver']))
 
 
