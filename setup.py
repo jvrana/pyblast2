@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='pyblast',
     version='0.0.1',
-    packages=['pyblast'],
+    packages=['pyblast', 'blast_bin'],
     url='',
     license='',
     author='Justin D. Vrana',
