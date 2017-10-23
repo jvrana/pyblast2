@@ -9,6 +9,7 @@ def run_cmd_str(cmd_str):
     output.wait()
     return output
 
+
 def run_cmd(cmd, **kwargs):
     run_cmd_str(dict_to_cmd(cmd, **kwargs))
 

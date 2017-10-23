@@ -208,5 +208,5 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-/blast_installer/ncbi-blast*
+/blast_bin/ncbi-blast*
 *.tar.gz
