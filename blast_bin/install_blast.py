@@ -68,8 +68,10 @@ def install_blast(user_email):
     # detect blast executable
     path = shutil.which('makeblastdb')
     if path is None:
-        raise Exception("Blast is not installed.")
+        install_blast_using_ftp(config)
 
+
+def install_blast_using_ftp(config):
     # print config
     print("ftp config:")
     pp = pprint.PrettyPrinter(indent=4)
@@ -112,6 +114,7 @@ def install_blast(user_email):
     # add to path
     pm = PathManager("_paths.txt")
     pm.append_path(os.path.join(config['blastver']))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Install BLAST from ncbi")
