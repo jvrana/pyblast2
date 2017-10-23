@@ -20,7 +20,7 @@ This is a wrapper for other applications to run blast searches.
 You can install BLAST to the pyblast directory using the following command:
 
 ```
-python blast_bin/install_blast.py your_email
+python blast_bin/install_blast.py your_email your_platform
 ```
 
 This will install it to pyblast/blast_bin. If you want BLAST installed somewhere else, move the *ncbi-blast-X.X.X+* folder
