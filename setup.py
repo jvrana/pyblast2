@@ -5,7 +5,7 @@ setup(
     version='0.0.1',
     packages=['pyblast', 'blast_bin', 'tests'],
     url='',
-    license='',
+    license='MIT',
     author='Justin D. Vrana',
     author_email='justin.vrana@gmail.com',
     description='Python wrapper for running BLAST locally',
