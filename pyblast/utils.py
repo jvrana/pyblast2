@@ -2,6 +2,8 @@ import shlex
 import subprocess
 import os
 
+# TODO: bin/sh is broken in Travis-CI linux >>>  E OSError: [Errno 8] Exec format error: 'makeblastdb'
+
 def which(program):
     import os
     def is_exe(fpath):
@@ -22,7 +24,7 @@ def which(program):
 def run_cmd_str(cmd_str):
     print("CMD: "+cmd_str)
     args = shlex.split(cmd_str)
-    output = subprocess.Popen(args)
+    output = subprocess.Popen(args, shell=False)
     output.wait()
     return output
 

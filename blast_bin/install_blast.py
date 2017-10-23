@@ -41,30 +41,35 @@ class PathManager(object):
             os.environ['PATH'] += ':'+os.path.join(path, 'bin')
 
 
-def install_blast(user_email, force=False):
-    def get_blast_format(platform):
-        global tarball_formats
-        version_pattern = "\d+\.\d+\.\d+\+"
-        blast_pattern = '(ncbi-blast-{ver})-{platform}{ext}'
-        tarball_ext = '\.tar\.gz'
-        tarball_formats = {
-            "mac"            : blast_pattern.format(ver=version_pattern, platform='.*?macosx.*?', ext=tarball_ext),
-            "linux(pentium)" : blast_pattern.format(ver=version_pattern, platform='ia32-linux', ext=tarball_ext),
-            "linux(X64 chip)": blast_pattern.format(ver=version_pattern, platform='x64-linux', ext=tarball_ext)
-        }
-        return tarball_formats[platform]
+def get_formats():
+    version_pattern = "\d+\.\d+\.\d+\+"
+    blast_pattern = '(ncbi-blast-{ver})-{platform}{ext}'
+    tarball_ext = '\.tar\.gz'
+    tarball_formats = {
+        "mac"            : blast_pattern.format(ver=version_pattern, platform='.*?macosx.*?', ext=tarball_ext),
+        "linux(pentium)" : blast_pattern.format(ver=version_pattern, platform='ia32-linux', ext=tarball_ext),
+        "linux(X64 chip)": blast_pattern.format(ver=version_pattern, platform='x64-linux', ext=tarball_ext)
+    }
+    return tarball_formats
 
+
+def get_blast_formats(platform):
+    tarball_formats = get_formats()
+    return tarball_formats[platform]
+
+
+def install_blast(user_email, platform, force=False):
     # setup config
     config = dict(
             cwd='blast/executables/blast+/LATEST',
             domain="ftp.ncbi.nlm.nih.gov",
             user="anonymous",
             email=user_email,
-            platform="mac",
+            platform=platform,
             filename=None,
             dir=dir_path,
     )
-    config['fmt'] = get_blast_format(config['platform'])
+    config['fmt'] = get_blast_formats(config['platform'])
     # detect blast executable
     path = shutil.which('makeblastdb')
     if path is None or force:
@@ -123,9 +128,10 @@ def install_blast_using_ftp(config):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Install BLAST from ncbi")
     parser.add_argument("user_email", type=str, help="A user email is required for BLAST download from ncbi.")
+    parser.add_argument("platform", type=str, help="Choose your platform. Choose from {}".format(get_formats().keys()))
     parser.add_argument("--f", help="Forces install")
     args = parser.parse_args()
     force = False
     if args.f:
         force = True
-    install_blast(args.user_email, force=force)
+    install_blast(args.user_email, args.platform, force=force)
