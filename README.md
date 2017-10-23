@@ -28,7 +28,7 @@ file. _paths.txt is automatically updated when you run install_blast.py so there
 
 ## Status
 
-20170908 - This repo is currently in beta...
+In alpha, but let me know if you are interested in this repo!
 
 ## Usage
 
