@@ -1,4 +1,4 @@
-from pyblast.blast_bin import *
 from .blast import *
 from .seqio import *
 from .utils import *
+from blast_bin.install_blast import PathManager

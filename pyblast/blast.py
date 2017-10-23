@@ -3,7 +3,7 @@
 import shutil
 import tempfile
 
-from pyblast import PathManager
+from blast_bin.install_blast import PathManager
 from .seqio import *
 from .utils import *
 

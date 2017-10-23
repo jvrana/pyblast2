@@ -208,7 +208,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-/pyblast/blast_bin/ncbi-blast*
+/blast_bin/ncbi-blast*
 *.tar.gz
 /tests/.cache/
 tests/data/blast_results/db.json
