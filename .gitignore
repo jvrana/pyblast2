@@ -219,3 +219,4 @@ tests/data/blast_results/db.nin
 tests/data/blast_results/results.out
 tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
 tests/data/test_data/seqio_plasmids/concatenated/concat.json
+.cache/v/cache/lastfailed
