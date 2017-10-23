@@ -210,3 +210,4 @@ venv.bak/
 
 /blast_bin/ncbi-blast*
 *.tar.gz
+/tests/.cache/
