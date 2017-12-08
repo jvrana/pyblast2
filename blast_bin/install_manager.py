@@ -29,8 +29,7 @@ def remove_bin_installations():
 def open_install_paths():
     """Open paths located in _paths.txt"""
     if not os.path.isfile(INSTALL_PATHS):
-        with open(INSTALL_PATHS, 'w') as out_file:
-            json.dump([], out_file)
+        initialize_files()
     with open(INSTALL_PATHS, 'r') as in_file:
         return json.load(in_file)
 
@@ -44,7 +43,7 @@ def initialize_files():
         except json.decoder.JSONDecodeError as e:
             os.remove(PATHS)
     else:
-        with open(PATHS, 'w') as paths:
+        with open(INSTALL_PATHS, 'w') as paths:
             json.dump([], paths)
 
 
@@ -101,8 +100,9 @@ def get_blast_formats(platform):
     return tarball_formats[platform]
 
 
-def install_blast(user_email, platform, force=False):
+def install(user_email, platform, force=False):
     # setup config
+    initialize_files()
     config = dict(
             cwd='blast/executables/blast+/LATEST',
             domain="ftp.ncbi.nlm.nih.gov",

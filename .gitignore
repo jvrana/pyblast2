@@ -224,3 +224,4 @@ tests/data/test_data/seqio_plasmids/concatenated/concat.json
 **/__pycache__
 *.pyc
 /blast_bin/_paths.json
+/blast_bin/bin/
