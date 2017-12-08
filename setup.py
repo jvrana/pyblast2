@@ -12,7 +12,7 @@ setup(
     install_requires=['biopython'],
     entry_points={
         'console_scripts': [
-            'install_pyblast = blast_bin.install_blast:main'
+            'install_pyblast = blast_bin.install_blast:main',
         ]
     }
 )

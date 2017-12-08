@@ -4,7 +4,7 @@ Script for installing BLAST
 
 import argparse
 
-from blast_bin.install_manager import get_formats, install_blast, initialize_files
+from .install_manager import get_formats, install_blast, initialize_files
 
 
 def main():
