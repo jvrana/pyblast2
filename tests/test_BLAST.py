@@ -1,4 +1,3 @@
-import sys
 from pyblast import Blast, Aligner
 import pytest
 import os

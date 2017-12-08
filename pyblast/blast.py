@@ -1,11 +1,19 @@
-# More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
-# BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
+"""
+blast.py
+
+More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
+BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
+"""
+
+import json
+import os
+import re
 import shutil
 import tempfile
 
-from blast_bin.install_blast import PathManager
-from .seqio import *
-from .utils import *
+from .seqio import split_path, concat_seqs
+from .utils import which, run_cmd, str_to_f_to_i
+from blast_bin import install_manager
 
 
 class Blast(object):
@@ -29,7 +37,8 @@ class Blast(object):
                  output_formatter=None, **config):
         """
         A Blast initializer for running blast searches.
-        :param dn_name: Name for database file structure. This name will be appended to all db files that blast creates.
+        :param dn_name: Name for database file structure. This name will be appended to all db
+        files that blast creates.
         :param subj_in_dir: Input directory containing a list of subjects to align against the query
         :param query_path: Location of the fasta or genbank file containing the query
         :param db_output_directory: Location to store database related files
@@ -63,64 +72,85 @@ class Blast(object):
 
     @staticmethod
     def add_to_sys_paths():
+        """Add the path located in blast_bin/_paths.txt to the environment in an attempt to run blast"""
         if not Blast.has_executable():
-            pm = PathManager()
-            pm.append_paths_to_env()
+            install_manager.add_paths_to_environment()
         if not Blast.has_executable():
-            raise Exception("BLAST executables not found in path. Be sure BLAST is correctly installed.")
+            error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
+            help_message = "Please run 'install_pyblast <youremail> <yourplatform>' in your terminal." \
+                           "Run 'install_pyblast -h' for help."
+            raise Exception(error_message + "\n" + "*"*50 + "\n" + help_message)
 
     @staticmethod
     def has_executable():
+        """Whether blast is installed and executable"""
         b = which('makeblastdb')
         print(b)
         return b is not None
 
     @staticmethod
     def get_executable():
+        """Find the executable path for 'makeblastdb'"""
         return os.path.dirname(shutil.which("makeblastdb"))
 
     def validate_files(self):
-        def _is_file(f):
-            return os.path.isfile(os.path.abspath(f))
+        """
+        Validate the directories and query files
 
-        def _is_dir(d):
-            return os.path.isdir(os.path.abspath(d))
+        :return: None
+        :rtype: None
+        """
+        def _is_file(myfile):
+            return os.path.isfile(os.path.abspath(myfile))
+
+        def _is_dir(mydir):
+            return os.path.isdir(os.path.abspath(mydir))
 
         outdir = split_path(self.results_out_path)[0]
         errors = []
-        for f in [self.path_to_query]:
-            if not _is_file(f):
-                errors.append("File not found: {}".format(f))
-        for d in [outdir, self.path_to_output_dir, self.path_to_input_dir]:
-            if not _is_dir(d):
-                errors.append("Directory not found {}".format(d))
+        for file_ in [self.path_to_query]:
+            if not _is_file(file_):
+                errors.append("File not found: {}".format(file_))
+        for dir_ in [outdir, self.path_to_output_dir, self.path_to_input_dir]:
+            if not _is_dir(dir_):
+                errors.append("Directory not found {}".format(dir_))
         if len(errors) > 0:
             raise ValueError("\n".join(errors))
 
     def create_config(self):
-        d = {
+        """Create a configuration dictionary"""
+        config_dict = {
             "db"   : self.db,
             "out"  : self.results_out_path,
             "query": self.path_to_query,
         }
-        d.update(self.config)
-        return d
+        config_dict.update(self.config)
+        return config_dict
 
     def quick_blastn(self):
+        """Make a db, run blastn, parse results"""
         self.makedb()
         self.blastn()
         self.parse_results()
 
     def blastn(self):
+        """Run the blastn using the current configuration"""
         self.run_cmd("blastn", **self.create_config())
         with open(self.results_out_path, 'rU') as handle:
             self.raw_results = handle.read()
 
     # Wrapper for the util.run_cmd
     def run_cmd(self, cmd, **kwargs):
+        """Wrapper for utils.run_cmd"""
         run_cmd(cmd, **kwargs)
 
     def concat_templates(self):
+        """
+        Gathers all of the sequences in the input dir and concatenates them into a single fasta file
+
+        :return: [concatenated fasta file, sequences used to make fassta file, metadata for the sequences
+        :rtype: list
+        """
         out = self.db+'.fsa'
         fasta, seqs, metadata = concat_seqs(self.path_to_input_dir, out, savemeta=True)
         self.db_input_metadata = metadata
@@ -128,16 +158,20 @@ class Blast(object):
         return out, seqs, metadata
 
     def get_is_circular(self, seqid):
+        """Whether the sequence given the sequence id has circular topology"""
         return self.db_input_metadata[seqid]['circular']
 
     def get_filename(self, seqid):
+        """Get the filename from the sequence id"""
         return self.db_input_metadata[seqid]['filename']
 
     def makedb(self):
+        """Creates a blastdb from sequences grabbed from the input directory"""
         out, seqs, metadata = self.concat_templates()
         return self.fasta_to_db(out)
 
     def fasta_to_db(self, fasta):
+        """Create a blastdb from a concatenated fasta file"""
         self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": fasta})
         self.path_to_input_seq_file = fasta
         return self.db
@@ -237,6 +271,7 @@ class Aligner(Blast):
 
     @classmethod
     def use_test_data(cls):
+        """Create a Blast instance using predefined data located in tests"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         return cls('db',

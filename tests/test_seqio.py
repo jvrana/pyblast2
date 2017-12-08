@@ -1,6 +1,8 @@
-import pytest
 import os
-from pyblast import *
+
+import pytest
+
+from pyblast.seqio import open_sequence, sanitize_filenames, concat_seqs
 
 
 @pytest.fixture(scope="module")
