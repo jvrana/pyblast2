@@ -1,23 +1,26 @@
 import sys
 from pyblast import Blast, Aligner
 import pytest
+import os
 
-def pytest_namespace():
+def pytest_namespace(here):
     return {'b':
                 Blast('db',
-                      'tests/data/test_data/templates',
-                      'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb',
-                      'tests/data/blast_results',
-                      'tests/data/blast_results/results.out')
+                      os.path.join(here, 'data/test_data/templates'),
+                      os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
+                      os.path.join(here, 'data/blast_results'),
+                      os.path.join(here, 'data/blast_results/results.out')
+                      )
             }
 
 @pytest.fixture
-def b():
+def b(here):
     return Blast('db',
-                      'tests/data/test_data/templates',
-                      'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb',
-                      'tests/data/blast_results',
-                      'tests/data/blast_results/results.out')
+                      os.path.join(here, 'data/test_data/templates'),
+                      os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
+                      os.path.join(here, 'data/blast_results'),
+                      os.path.join(here, 'data/blast_results/results.out')
+                 )
 
 def test_makedb(b):
     b.makedb()

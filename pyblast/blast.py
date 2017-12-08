@@ -64,7 +64,7 @@ class Blast(object):
     @staticmethod
     def add_to_sys_paths():
         if not Blast.has_executable():
-            pm = PathManager("blast_bin/_paths.txt")
+            pm = PathManager()
             pm.append_paths_to_env()
         if not Blast.has_executable():
             raise Exception("BLAST executables not found in path. Be sure BLAST is correctly installed.")

@@ -10,7 +10,8 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 class PathManager(object):
-    def __init__(self, path):
+    def __init__(self):
+        path = os.path.abspath(os.path.join(dir_path, "_paths.txt"))
         self.pathfile = os.path.abspath(path)
         self.pathdir = os.path.dirname(self.pathfile)
 
@@ -121,7 +122,7 @@ def install_blast_using_ftp(config):
         os.remove(config['in'])
 
     # add to path
-    pm = PathManager(os.path.abspath(os.path.join(dir_path, "_paths.txt")))
+    pm = PathManager()
     pm.append_path(os.path.join(config['blastver']))
 
 
