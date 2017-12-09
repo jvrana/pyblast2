@@ -11,9 +11,10 @@ import re
 import shutil
 import tempfile
 
+import blast_bin.install_blast
 from .seqio import split_path, concat_seqs
 from .utils import which, run_cmd, str_to_f_to_i
-from blast_bin import install_manager
+from blast_bin import install_blast
 
 
 class Blast(object):
@@ -74,7 +75,7 @@ class Blast(object):
     def add_to_sys_paths():
         """Add the path located in blast_bin/_paths.txt to the environment in an attempt to run blast"""
         if not Blast.has_executable():
-            install_manager.add_paths_to_environment()
+            install_blast.add_paths_to_environment()
         if not Blast.has_executable():
             error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
             help_message = "Please run 'install_pyblast <youremail> <yourplatform>' in your terminal." \
