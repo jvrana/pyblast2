@@ -11,7 +11,6 @@ import re
 import shutil
 import subprocess
 
-
 PATHS = "_paths.json"
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 BIN_DIR = os.path.join(DIR_PATH, 'bin')
@@ -96,8 +95,8 @@ def check_installation():
     if not has_executable():
         error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
         help_message = "Please run 'install_pyblast <youremail> <yourplatform' in your terminal." \
-                           "Run 'install_pyblast -h' for help."
-        raise Exception(error_message + "\n" + "*"*50 + "\n" + help_message)
+                       "Run 'install_pyblast -h' for help."
+        raise Exception(error_message + "\n" + "*" * 50 + "\n" + help_message)
 
 
 def get_formats():
@@ -106,8 +105,8 @@ def get_formats():
     blast_pattern = '(ncbi-blast-{ver})-{platform}{ext}'
     tarball_ext = '\.tar\.gz'
     tarball_formats = {
-        "mac"            : blast_pattern.format(ver=version_pattern, platform='.*?macosx.*?', ext=tarball_ext),
-        "linux(pentium)" : blast_pattern.format(ver=version_pattern, platform='ia32-linux', ext=tarball_ext),
+        "mac": blast_pattern.format(ver=version_pattern, platform='.*?macosx.*?', ext=tarball_ext),
+        "linux(pentium)": blast_pattern.format(ver=version_pattern, platform='ia32-linux', ext=tarball_ext),
         "linux(X64 chip)": blast_pattern.format(ver=version_pattern, platform='x64-linux', ext=tarball_ext)
     }
     return tarball_formats
@@ -123,13 +122,13 @@ def install(user_email, platform, force=False):
     # setup config
     initialize_files()
     config = dict(
-            cwd='blast/executables/blast+/LATEST',
-            domain="ftp.ncbi.nlm.nih.gov",
-            user="anonymous",
-            email=user_email,
-            platform=platform,
-            filename=None,
-            dir=BIN_DIR
+        cwd='blast/executables/blast+/LATEST',
+        domain="ftp.ncbi.nlm.nih.gov",
+        user="anonymous",
+        email=user_email,
+        platform=platform,
+        filename=None,
+        dir=BIN_DIR
     )
     if not os.path.isdir(config['dir']):
         os.mkdir(config['dir'])
@@ -140,7 +139,7 @@ def install(user_email, platform, force=False):
         print(" ********** Installing BLAST ********** ")
         install_blast_using_ftp(config)
     else:
-        print("BLAST installed at "+path)
+        print("BLAST installed at " + path)
 
 
 def install_blast_using_ftp(config):
@@ -186,7 +185,6 @@ def install_blast_using_ftp(config):
 
     # add to path
     append_to_install_paths(config['out'])
-
 
 
 def main():

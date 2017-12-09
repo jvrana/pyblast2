@@ -1,6 +1,5 @@
 """Sequence parser"""
 
-
 import json
 import os
 import re
@@ -27,7 +26,7 @@ def file_format(ext, **kwargs):
     """Return format from an extension"""
     extension_options = {
         "genbank": ['.gb', '.ape'],
-        "fasta"  : ['.fasta', '.fa', '.fsa', '.seq']
+        "fasta": ['.fasta', '.fa', '.fsa', '.seq']
     }
     extension_options.update(kwargs)
     for format, exts in extension_options.items():
@@ -188,7 +187,7 @@ def concat_seqs(idir, out, savemeta=False):
         SeqIO.write(sequences, handle, "fasta")
 
     if savemeta:
-        with open(out.split('.')[0]+'.json', 'w') as handle:
+        with open(out.split('.')[0] + '.json', 'w') as handle:
             json.dump(metadata, handle)
 
     return out, sequences, metadata

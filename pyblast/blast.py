@@ -11,10 +11,9 @@ import re
 import shutil
 import tempfile
 
-import blast_bin.install_blast
-from .seqio import split_path, concat_seqs
-from .utils import which, run_cmd, str_to_f_to_i
 from blast_bin import install_blast
+from .seqio import split_path, concat_seqs
+from .utils import run_cmd, str_to_f_to_i
 
 
 class Blast(object):
@@ -80,7 +79,7 @@ class Blast(object):
             error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
             help_message = "Please run 'install_pyblast <youremail> <yourplatform>' in your terminal." \
                            "Run 'install_pyblast -h' for help."
-            raise Exception(error_message + "\n" + "*"*50 + "\n" + help_message)
+            raise Exception(error_message + "\n" + "*" * 50 + "\n" + help_message)
 
     @staticmethod
     def has_executable():
@@ -99,6 +98,7 @@ class Blast(object):
         :return: None
         :rtype: None
         """
+
         def _is_file(myfile):
             return os.path.isfile(os.path.abspath(myfile))
 
@@ -119,8 +119,8 @@ class Blast(object):
     def create_config(self):
         """Create a configuration dictionary"""
         config_dict = {
-            "db"   : self.db,
-            "out"  : self.results_out_path,
+            "db": self.db,
+            "out": self.results_out_path,
             "query": self.path_to_query,
         }
         config_dict.update(self.config)
@@ -150,7 +150,7 @@ class Blast(object):
         :return: [concatenated fasta file, sequences used to make fassta file, metadata for the sequences
         :rtype: list
         """
-        out = self.db+'.fsa'
+        out = self.db + '.fsa'
         fasta, seqs, metadata = concat_seqs(self.path_to_input_dir, out, savemeta=True)
         self.db_input_metadata = metadata
         self.input_sequences = seqs
@@ -204,11 +204,11 @@ class Blast(object):
 
         def extract_metadata(r, delim=','):
             g = re.search(
-                    '#\s*(?P<blast_ver>.+)\n'+
-                    '# Query:\s*(?P<query>.*)\n'+
-                    '# Database:\s*(?P<database>.+)\n'+
-                    '# Fields:\s*(?P<fields>.+)',
-                    r)
+                '#\s*(?P<blast_ver>.+)\n' +
+                '# Query:\s*(?P<query>.*)\n' +
+                '# Database:\s*(?P<database>.+)\n' +
+                '# Fields:\s*(?P<fields>.+)',
+                r)
             metadata = g.groupdict()
             # clean up fields
             metadata['fields'] = re.split('\s*{}\s*'.format(delim), metadata['fields'])
@@ -236,7 +236,7 @@ class Blast(object):
 
         if save_as_json:
             dir, filename, basename, ext = split_path(self.results_out_path)
-            f = os.path.join(dir, basename+".json")
+            f = os.path.join(dir, basename + ".json")
             self.dump_to_json(f)
         self.results = match_dicts
         return self.results
