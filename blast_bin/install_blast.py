@@ -11,13 +11,30 @@ import re
 import shutil
 import subprocess
 
-from pyblast.utils import which
-
 
 PATHS = "_paths.json"
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 BIN_DIR = os.path.join(DIR_PATH, 'bin')
 INSTALL_PATHS = os.path.abspath(os.path.join(DIR_PATH, PATHS))
+
+
+def which(program):
+    """Return path of executable"""
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 
 
 def remove_bin_installations():

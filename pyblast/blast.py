@@ -85,9 +85,7 @@ class Blast(object):
     @staticmethod
     def has_executable():
         """Whether blast is installed and executable"""
-        b = which('makeblastdb')
-        print(b)
-        return b is not None
+        return install_blast.has_executable()
 
     @staticmethod
     def get_executable():
