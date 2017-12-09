@@ -14,7 +14,7 @@ import subprocess
 PATHS = "_paths.json"
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 BIN_DIR = os.path.join(DIR_PATH, 'bin')
-INSTALL_PATHS = os.path.abspath(os.path.join(DIR_PATH, PATHS))
+INSTALL_PATHS = os.path.abspath(os.path.join(BIN_DIR, PATHS))
 
 
 def which(program):
