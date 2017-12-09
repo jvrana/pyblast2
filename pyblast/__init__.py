@@ -1,3 +1,4 @@
-from .blast import *
-from .seqio import *
-from .utils import *
+"""PyBlast"""
+
+from .blast import Blast, Aligner
+

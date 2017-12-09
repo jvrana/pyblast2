@@ -1,5 +1,6 @@
-# Temporary sequence parser
-# would prefer all JSON formats for DNAs
+"""Sequence parser"""
+
+
 import json
 import os
 import re
@@ -16,12 +17,14 @@ from Bio import SeqIO
 # from Bio.SeqFeature import CompoundLocation
 
 def split_path(path):
+    """Split filename into dir, filename, basename, and ext"""
     dir, filename = os.path.split(path)
     basename, ext = os.path.splitext(filename)
     return [dir, filename, basename, ext]
 
 
 def file_format(ext, **kwargs):
+    """Return format from an extension"""
     extension_options = {
         "genbank": ['.gb', '.ape'],
         "fasta"  : ['.fasta', '.fa', '.fsa', '.seq']
@@ -42,7 +45,7 @@ def format_decorator(f):
 
     def wrapped(*args, **kwargs):
         args = list(args)
-        dir, filename, basename, ext = split_path(args[0])
+        ext = split_path(args[0])[-1]
         kwargs['format'] = file_format(ext, **kwargs)
         return f(*args, **kwargs)
 
@@ -52,6 +55,7 @@ def format_decorator(f):
 # TODO: locus_ID gets truncated, fix this...
 @format_decorator
 def open_sequence(path, format=None, **fmt):
+    """Open a sequence from a path"""
     seqs = []
     with open(path, 'rU') as handle:
         s = list(SeqIO.parse(handle, format))
@@ -61,6 +65,20 @@ def open_sequence(path, format=None, **fmt):
 
 @format_decorator
 def save_sequence(path, sequences, format=None, **fmt):
+    """
+    Save a sequence
+
+    :param path:
+    :type path:
+    :param sequences:
+    :type sequences:
+    :param format:
+    :type format:
+    :param fmt:
+    :type fmt:
+    :return:
+    :rtype:
+    """
     with open(path, 'w') as handle:
         SeqIO.write(sequences, handle, format)
     return path
@@ -68,6 +86,16 @@ def save_sequence(path, sequences, format=None, **fmt):
 
 @format_decorator
 def determine_format(path, format=None):
+    """
+    Determine the format of a sequence at a path
+
+    :param path:
+    :type path:
+    :param format:
+    :type format:
+    :return:
+    :rtype:
+    """
     return format
 
 
@@ -80,10 +108,10 @@ def dna_at_path_is_circular(path):
     :return:
     :rtype:
     """
-    with open(path) as f:
-        first_line = f.readlines()[0]
-        m = re.search("circular", first_line, re.IGNORECASE)
-        return m is not None
+    with open(path) as myfile:
+        first_line = myfile.readlines()[0]
+        match = re.search("circular", first_line, re.IGNORECASE)
+        return match is not None
 
 
 def sanitize_filename(filename, replacements=None):
@@ -100,8 +128,8 @@ def sanitize_filename(filename, replacements=None):
     if replacements is None:
         replacements = [(' ', '_')]
     new_filename = ""
-    for r in replacements:
-        new_filename = re.sub(r[0], r[1], filename)
+    for repl in replacements:
+        new_filename = re.sub(repl[0], repl[1], filename)
     return new_filename
 
 
@@ -150,11 +178,11 @@ def concat_seqs(idir, out, savemeta=False):
         # TODO: this is really hacky, recode this
         # TODO: this requires Coral, do we want another dependency?
 
-        for s in seqs:
-            s.id = str(uuid.uuid4())
-            s.filename = filename
-            s.circular = dna_at_path_is_circular(seq_path)
-            metadata[s.id] = {'circular': s.circular, 'filename': s.filename}
+        for seq in seqs:
+            seq.id = str(uuid.uuid4())
+            seq.filename = filename
+            seq.circular = dna_at_path_is_circular(seq_path)
+            metadata[seq.id] = {'circular': seq.circular, 'filename': seq.filename}
 
     with open(out, "w") as handle:
         SeqIO.write(sequences, handle, "fasta")

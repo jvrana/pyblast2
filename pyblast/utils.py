@@ -1,10 +1,13 @@
+"""PyBlast utilities"""
+
 import shlex
-import subprocess
-import os
+from subprocess import check_output
+
 
 # TODO: bin/sh is broken in Travis-CI linux >>>  E OSError: [Errno 8] Exec format error: 'makeblastdb'
 
 def which(program):
+    """Return path of executable"""
     import os
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -22,27 +25,31 @@ def which(program):
     return None
 
 def run_cmd_str(cmd_str):
+    """Runs a command from a string"""
     print("CMD: "+cmd_str)
     args = shlex.split(cmd_str)
-    output = subprocess.Popen(args, shell=False)
-    output.wait()
-    return output
+    output = check_output(args)
+    # output = subprocess.Popen(args, shell=False)
+    # output.wait()
+    return output.decode()
 
 def run_cmd(cmd, **kwargs):
+    """Run a command using parameters kwargs"""
     run_cmd_str(dict_to_cmd(cmd, **kwargs))
 
 
 def dict_to_cmd(cmd, **kwargs):
+    """Create a command string for cmd and parameters 'kwargs'"""
     return cmd+" "+' '.join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
 
 
 def str_to_f_to_i(v):
     try:
         v = float(v)
-    except ValueError as e:
+    except ValueError:
         pass
     try:
         v = int(v)
-    except ValueError as e:
+    except ValueError:
         pass
     return v

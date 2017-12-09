@@ -1,47 +1,107 @@
+"""
+Script for installing BLAST
+"""
+
 import argparse
 import ftplib
+import json
 import os
 import pprint
 import re
 import shutil
 import subprocess
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+
+PATHS = "_paths.json"
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+BIN_DIR = os.path.join(DIR_PATH, 'bin')
+INSTALL_PATHS = os.path.abspath(os.path.join(DIR_PATH, PATHS))
 
 
-class PathManager(object):
-    def __init__(self, path):
-        self.pathfile = os.path.abspath(path)
-        self.pathdir = os.path.dirname(self.pathfile)
+def which(program):
+    """Return path of executable"""
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
-    def append_path(self, path):
-        paths = self.lines()
-        paths.append(path)
-        paths = list(set(paths))
-        with open(self.pathfile, 'w') as f:
-            f.writelines(paths)
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 
-    def lines(self):
-        lines = []
-        with open(self.pathfile, 'r') as f:
-            lines = f.readlines()
-        lines = [line.strip() for line in lines]
-        lines = list(set(lines))
-        if '' in lines:
-            lines.remove('')
-        return lines
 
-    def paths(self):
-        lines = self.lines()
-        paths = [os.path.join(self.pathdir, line) for line in lines]
-        return list(set(paths))
+def remove_bin_installations():
+    """Remove the _paths.json and any installations in the bin folder"""
+    if os.path.isdir(BIN_DIR):
+        shutil.rmtree(BIN_DIR)
+    if os.path.isfile(PATHS):
+        os.remove(PATHS)
 
-    def append_paths_to_env(self):
-        for path in self.paths():
-            os.environ['PATH'] += ':'+os.path.join(path, 'bin')
+
+def open_install_paths():
+    """Open paths located in _paths.txt"""
+    if not os.path.isfile(INSTALL_PATHS):
+        initialize_files()
+    with open(INSTALL_PATHS, 'r') as in_file:
+        return json.load(in_file)
+
+
+def initialize_files():
+    if not os.path.isdir(BIN_DIR):
+        os.mkdir(BIN_DIR)
+    if os.path.isfile(PATHS):
+        try:
+            open_install_paths()
+        except json.decoder.JSONDecodeError as e:
+            os.remove(PATHS)
+    else:
+        with open(INSTALL_PATHS, 'w') as paths:
+            json.dump([], paths)
+
+
+def append_to_install_paths(new_path):
+    """Append a new bin path to the list of paths"""
+    paths = open_install_paths()
+    if new_path not in paths:
+        paths.append(new_path)
+    with open(INSTALL_PATHS, 'w') as out_file:
+        json.dump(paths, out_file)
+
+
+def add_paths_to_environment():
+    """Add the blast installations located in 'bin' to the environment temporarily"""
+    for path in open_install_paths():
+        real_path = os.path.abspath(os.path.join(path, 'bin'))
+        os.environ['PATH'] += ':' + real_path
+
+
+def has_executable():
+    """Whether blast is installed and executable"""
+    b = which('makeblastdb')
+    print(b)
+    return b is not None
+
+
+def check_installation():
+    """Add the path located in blast_bin/_paths.txt to the environment in an attempt to run blast"""
+    if not has_executable():
+        add_paths_to_environment()
+    if not has_executable():
+        error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
+        help_message = "Please run 'install_pyblast <youremail> <yourplatform' in your terminal." \
+                           "Run 'install_pyblast -h' for help."
+        raise Exception(error_message + "\n" + "*"*50 + "\n" + help_message)
 
 
 def get_formats():
+    """Return blast installation platform to installation filename patterns"""
     version_pattern = "\d+\.\d+\.\d+\+"
     blast_pattern = '(ncbi-blast-{ver})-{platform}{ext}'
     tarball_ext = '\.tar\.gz'
@@ -54,12 +114,14 @@ def get_formats():
 
 
 def get_blast_formats(platform):
+    """Return installation filename from a platform name"""
     tarball_formats = get_formats()
     return tarball_formats[platform]
 
 
-def install_blast(user_email, platform, force=False):
+def install(user_email, platform, force=False):
     # setup config
+    initialize_files()
     config = dict(
             cwd='blast/executables/blast+/LATEST',
             domain="ftp.ncbi.nlm.nih.gov",
@@ -67,8 +129,10 @@ def install_blast(user_email, platform, force=False):
             email=user_email,
             platform=platform,
             filename=None,
-            dir=dir_path,
+            dir=BIN_DIR
     )
+    if not os.path.isdir(config['dir']):
+        os.mkdir(config['dir'])
     config['fmt'] = get_blast_formats(config['platform'])
     # detect blast executable
     path = shutil.which('makeblastdb')
@@ -121,11 +185,11 @@ def install_blast_using_ftp(config):
         os.remove(config['in'])
 
     # add to path
-    pm = PathManager(os.path.abspath(os.path.join(dir_path, "_paths.txt")))
-    pm.append_path(os.path.join(config['blastver']))
+    append_to_install_paths(config['out'])
 
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser(description="Install BLAST from ncbi")
     parser.add_argument("user_email", type=str, help="A user email is required for BLAST download from ncbi.")
     parser.add_argument("platform", type=str, help="Choose your platform. Choose from {}".format(get_formats().keys()))
@@ -134,4 +198,8 @@ if __name__ == "__main__":
     force = False
     if args.f:
         force = True
-    install_blast(args.user_email, args.platform, force=force)
+    install(args.user_email, args.platform, force=force)
+
+
+if __name__ == "__main__":
+    main()
