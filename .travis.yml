@@ -4,8 +4,9 @@ python:
 install:
 - make
 before_install:
-- make blast EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
+-
 after_install:
+- make blast EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 - pandoc --from=markdown --to=rst --output=README README.md
 script:
 - make testwithcoverage
