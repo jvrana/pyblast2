@@ -19,7 +19,7 @@ ci:
 
 
 testwithcoverage:
-	pipenv py.test --cov pyblast --cov-report term-missing
+	pipenv run py.test --cov pyblast --cov-report term-missing
 
 
 pylint:
