@@ -148,13 +148,16 @@ def install_blast_using_ftp(config):
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(config)
     print()
+
     # login
     ftp = ftplib.FTP(config['domain'])
     ftp.login(config['user'], config['email'])
+
     # get files
     data = []
     ftp.cwd(config['cwd'])
     ftp.dir(data.append)
+
     # find filename with format
     for l in data:
         f = config['fmt']
@@ -169,6 +172,7 @@ def install_blast_using_ftp(config):
     if config['filename'] is None:
         raise Exception("Unable to find blast binary. Data retrieved:\n{}".format(data))
     print("filename: {}".format(config['filename']))
+
     # download tarball
     if not os.path.isfile(config['in']):
         if not os.path.isdir(config['blastver']):

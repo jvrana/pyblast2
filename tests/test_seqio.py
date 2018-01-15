@@ -3,7 +3,7 @@ import os
 import pytest
 
 from pyblast.seqio import open_sequence, sanitize_filenames, concat_seqs
-
+from Bio.SeqRecord import SeqRecord
 
 @pytest.fixture(scope="module")
 def get_path(here):
@@ -20,8 +20,9 @@ def test_circular():
 def test_open_sequence(get_path):
     with pytest.raises(ValueError):
         open_sequence(get_path("alsdkjfaldsf"))
-    print(open_sequence(get_path("linear_test_dna.gb")))
-
+    seqs = open_sequence(get_path("linear_test_dna.gb"))
+    assert len(seqs) == 1
+    assert isinstance(seqs[0], SeqRecord)
 
 def test_sanitize_filename(here):
     directory = os.path.join(here, 'data/test_data/seqio_plasmids/to_be_sanitized')

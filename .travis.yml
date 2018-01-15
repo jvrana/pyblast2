@@ -2,16 +2,14 @@ language: python
 python:
 - '3.6'
 install:
-- pip install .
+- make
+- make blast EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
-- pip install pyandoc
-- pip install pytest pytest-cov
-- pip install coveralls
-- python blast_bin/install_blast.py "justin.vrana@gmail.com" "linux(X64 chip)"
+-
 after_install:
 - pandoc --from=markdown --to=rst --output=README README.md
 script:
-- py.test --cov pyblast --cov-report term-missing
+- make testwithcoverage
 after_success:
 - coveralls
 deploy:
@@ -22,3 +20,6 @@ deploy:
   on:
     tags: true
     branch: master
+env:
+  matrix:
+    secure: KDfIDvbkaulgofS/LpdxRFZ4yEsH3fOfbbcwO4F1Eu6RSXoUUlnSvspeYOikxBLJeTzvrSL3go2pmJFqjBt2DLs51ZBtmcE5e3S0svrLQHnMbVE7VdBtHdhhGbvJvH07caspmqaf6W9TnRjz8KFVvjmYNvFomioGmkndQpmZHkW0OA86CO29IbIyaiebVT0v3zFIvxODbfvBicbUmppnbN5W7nJAmtD9oh/aW1tL55cvU2zaeGEp1dPDPSHzoyc1c05bJdJkqwZwx6eXcZDfdn9rTH81lZYUwsg9OF8idsJJyawfW7W8oLToa/nyQ7HnPpPrH/p2+KPnRtk8eazsgzzZamq6VHgTh9X8yGMrgMY/wnBC0MvoWN/wRA1N7tbxgXVotTJzrT4w4Yc9XJ/ICUf9yqpxeN+CpgEf74CnC/IBFr0hX67kGOw0jO/oc6I9VV4H/dJwyl6Y2sZFya0QJwG09nZJSaYSdpVKOsfGLgpx2bXRRRean3YWpUfEwtiSsY5NByipngjqR2EHKVfenpRHqI6l5cE7C5jzGgHiJ5s3pWIhsY7heRrBrp55uyWpGLOdA4aFPBE+hnQ4rt0dq4N2e1fGars1q8EA3uRDiPrL1ZrrhFxTItMBNYkBqW3DSt+bd7Oj23n8ozZjTdHWtn3U8s67G9DD+knye9C1tEI=

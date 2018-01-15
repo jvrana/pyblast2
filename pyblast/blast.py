@@ -33,11 +33,12 @@ class Blast(object):
         "outfmt": "\"{0}\"".format(' '.join(outfmt))
     }
 
-    def __init__(self, dn_name, subj_in_dir, query_path, db_output_directory, results_out_path,
+    def __init__(self, db_name, subj_in_dir, query_path, db_output_directory, results_out_path,
                  output_formatter=None, **config):
         """
         A Blast initializer for running blast searches.
-        :param dn_name: Name for database file structure. This name will be appended to all db
+
+        :param db_name: Name for database file structure. This name will be appended to all db
         files that blast creates.
         :param subj_in_dir: Input directory containing a list of subjects to align against the query
         :param query_path: Location of the fasta or genbank file containing the query
@@ -47,28 +48,55 @@ class Blast(object):
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
 
+        # add executable to the system path
         Blast.add_to_sys_paths()
         self.executable_path = Blast.get_executable()
         print("BLAST executable: {}".format(self.executable_path))
 
-        self.name = dn_name
+        # name of the database
+        self.name = db_name
+
+        # path to the input directory to build the blast database
         self.path_to_input_dir = os.path.abspath(subj_in_dir)
+
+        # path to the query sequence
         self.path_to_query = os.path.abspath(query_path)
+
+        # build the configuration
         if output_formatter is None:
             self.outfmt = Blast.outfmt
         self.config = {"outfmt": "\"{0}\"".format(' '.join(self.outfmt))}
         if config is not None:
             self.config.update(config)
+
+        # path to the directory holding the blast database
         self.path_to_output_dir = os.path.abspath(db_output_directory)
-        self.db = os.path.join(db_output_directory, dn_name)
+
+        # path to the blast database
+        self.db = os.path.join(db_output_directory, db_name)
+
+        # path to the concatenated sequence file
         self.path_to_input_seq_file = None
+
+        # dictionary of metadata collected from the blast database
+        # this includes original filename and topology
         self.db_input_metadata = None
-        self.results = None  #
+
+        # the raw results from running blast from the command line
         self.raw_results = None
+
+        # the parsed results as a dictionary
+        self.results = None  #
+
+        # list of input sequences that made the blast database
         self.input_sequences = []
+
+        # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
+
+        # validate the files to make sure they exist
         self.validate_files()
-        self.sequence_metadata = None
+
 
     @staticmethod
     def add_to_sys_paths():
@@ -255,10 +283,10 @@ class Aligner(Blast):
     "quick_blastn" for returning results as a python object.
     """
 
-    def __init__(self, dn_name, subj_in_dir, query_path, **config):
+    def __init__(self, db_name, subj_in_dir, query_path, **config):
         """
         Aligner: A Blast object that stores the database files in a hidden temporary directory.
-        :param dn_name: Name for database file structure. This name will be appended to all db files that blast creates.
+        :param db_name: Name for database file structure. This name will be appended to all db files that blast creates.
         :param subj_in_dir: Input directory containing a list of subjects to align against the query
         :param query_path: Location of the fasta or genbank file containing the query
         :param config: Additional configurations to run for the blast search (see
@@ -266,7 +294,7 @@ class Aligner(Blast):
         """
         db_output_directory = tempfile.mkdtemp()
         out = tempfile.mktemp(dir=db_output_directory)
-        super(Aligner, self).__init__(dn_name, subj_in_dir, query_path, db_output_directory, out, **config)
+        super(Aligner, self).__init__(db_name, subj_in_dir, query_path, db_output_directory, out, **config)
 
     @classmethod
     def use_test_data(cls):
