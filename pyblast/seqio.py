@@ -174,9 +174,6 @@ def concat_seqs(idir, out, savemeta=False):
         seqs = open_sequence(seq_path)
         sequences += seqs
 
-        # TODO: this is really hacky, recode this
-        # TODO: this requires Coral, do we want another dependency?
-
         for seq in seqs:
             seq.id = str(uuid.uuid4())
             seq.filename = filename

@@ -2,16 +2,13 @@ language: python
 python:
 - '3.6'
 install:
-- pip install .
+- make
 before_install:
-- pip install pyandoc
-- pip install pytest pytest-cov
-- pip install coveralls
-- python blast_bin/install_blast.py "justin.vrana@gmail.com" "linux(X64 chip)"
+-
 after_install:
 - pandoc --from=markdown --to=rst --output=README README.md
 script:
-- py.test --cov pyblast --cov-report term-missing
+- make testwithcoverage
 after_success:
 - coveralls
 deploy:

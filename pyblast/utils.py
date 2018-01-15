@@ -2,13 +2,13 @@
 
 import shlex
 from subprocess import check_output
-
+import os
 
 # TODO: bin/sh is broken in Travis-CI linux >>>  E OSError: [Errno 8] Exec format error: 'makeblastdb'
 
 def which(program):
     """Return path of executable"""
-    import os
+
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
