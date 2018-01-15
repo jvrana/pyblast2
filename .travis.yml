@@ -3,10 +3,10 @@ python:
 - '3.6'
 install:
 - make
+- make blast EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
 -
 after_install:
-- make blast EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 - pandoc --from=markdown --to=rst --output=README README.md
 script:
 - make testwithcoverage
