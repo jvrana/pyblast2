@@ -53,7 +53,7 @@ def format_decorator(f):
 
 # TODO: locus_ID gets truncated, fix this...
 @format_decorator
-def open_sequence(path, format=None, **fmt):
+def open_sequence(path, format=None):
     """Open a sequence from a path"""
     seqs = []
     with open(path, 'rU') as handle:
@@ -63,7 +63,7 @@ def open_sequence(path, format=None, **fmt):
 
 
 @format_decorator
-def save_sequence(path, sequences, format=None, **fmt):
+def save_sequence(path, sequences, format=None):
     """
     Save a sequence
 
