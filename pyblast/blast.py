@@ -12,7 +12,7 @@ import shutil
 import tempfile
 
 from blast_bin import install_blast
-from .seqio import split_path, concat_seqs
+from .pysequence import PySequence
 from .utils import run_cmd, str_to_f_to_i
 
 
@@ -133,7 +133,7 @@ class Blast(object):
         def _is_dir(mydir):
             return os.path.isdir(os.path.abspath(mydir))
 
-        outdir = split_path(self.results_out_path)[0]
+        outdir = os.path.dirname(self.results_out_path)
         errors = []
         for file_ in [self.path_to_query]:
             if not _is_file(file_):
@@ -179,11 +179,11 @@ class Blast(object):
         :rtype: list
         """
         out = self.db + '.fsa'
-        fasta, seqs, metadata = concat_seqs(self.path_to_input_dir, out, savemeta=True)
-        self.db_input_metadata = metadata
+        seqs = PySequence.concat_seqs(self.path_to_input_dir, out)
+        self.db_input_metadata = {}
 
         self.input_sequences = seqs
-        return out, seqs, metadata
+        return out, seqs
 
     def get_is_circular(self, seqid):
         """Whether the sequence given the sequence id has circular topology"""
@@ -195,7 +195,7 @@ class Blast(object):
 
     def makedb(self):
         """Creates a blastdb from sequences grabbed from the input directory"""
-        out, seqs, metadata = self.concat_templates()
+        out, seqs = self.concat_templates()
         return self.fasta_to_db(out)
 
     def fasta_to_db(self, fasta):
@@ -264,8 +264,7 @@ class Blast(object):
         match_dicts = validate_matches(raw_matches, fields)
 
         if save_as_json:
-            dir, filename, basename, ext = split_path(self.results_out_path)
-            f = os.path.join(dir, basename + ".json")
+            f = os.path.join(self.results_out_path + ".json")
             self.dump_to_json(f)
         self.results = match_dicts
         return self.results

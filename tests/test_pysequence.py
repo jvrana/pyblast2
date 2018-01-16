@@ -51,11 +51,11 @@ def test_sanitize_filename(here):
     directory = os.path.join(here, 'data/test_data/seqio_plasmids/to_be_sanitized')
     PySequence.sanitize_filenames(directory)
     for f in os.listdir(directory):
-        assert not ' ' in f
+        assert ' ' not in f
 
     PySequence.sanitize_filenames(directory, replacements=[('_', ' ')])
     for f in os.listdir(directory):
-        assert not '_' in f
+        assert '_' not in f
 
 
 def test_concat_seqs(here):
