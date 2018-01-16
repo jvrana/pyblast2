@@ -15,6 +15,7 @@ from Bio import SeqIO
 # from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 # from Bio.SeqFeature import CompoundLocation
 
+
 def split_path(path):
     """Split filename into dir, filename, basename, and ext"""
     dir, filename = os.path.split(path)
@@ -50,6 +51,20 @@ def format_decorator(f):
 
     return wrapped
 
+def dna_at_path_is_circular(path):
+    """
+    Whether a genbank file at "path" is circular.
+
+    :param path:
+    :type path:
+    :return:
+    :rtype:
+    """
+    with open(path) as myfile:
+        first_line = myfile.readlines()[0]
+        match = re.search("circular", first_line, re.IGNORECASE)
+        return match is not None
+
 
 # TODO: locus_ID gets truncated, fix this...
 @format_decorator
@@ -57,8 +72,17 @@ def open_sequence(path, format=None):
     """Open a sequence from a path"""
     seqs = []
     with open(path, 'rU') as handle:
-        s = list(SeqIO.parse(handle, format))
-        seqs += s
+        seqs = list(SeqIO.parse(handle, format))
+
+    for seq in seqs:
+        seq.filename = path
+
+    if len(seqs) == 1:
+        if dna_at_path_is_circular(path):
+            seqs[0].circular = True
+    else:
+        for s in seqs:
+            s.circular = False
     return seqs
 
 
@@ -96,22 +120,6 @@ def determine_format(path, format=None):
     :rtype:
     """
     return format
-
-
-def dna_at_path_is_circular(path):
-    """
-    Whether a genbank file at "path" is circular.
-
-    :param path:
-    :type path:
-    :return:
-    :rtype:
-    """
-    with open(path) as myfile:
-        first_line = myfile.readlines()[0]
-        match = re.search("circular", first_line, re.IGNORECASE)
-        return match is not None
-
 
 def sanitize_filename(filename, replacements=None):
     """
@@ -151,47 +159,3 @@ def sanitize_filenames(dir, replacements=None, odir=None):
         if os.path.isfile(os.path.join(dir, filename)):
             newfilename = sanitize_filename(filename, replacements=replacements)
             os.rename(os.path.join(dir, filename), os.path.join(odir, newfilename))
-
-
-def concat_seqs(idir, out, savemeta=False):
-    """
-    Concatenates a directory of sequences into a single fasta file
-
-    :param idir: input directory
-    :type idir: str
-    :param out: output path
-    :type out: str
-    :param savemeta: save metadata associated with each file in separate meta json file? (e.g {filename: ...,
-    circular: ...})
-    :type savemeta: bool
-    :return: ( output path (str), sequences (list of SeqIO), metadata (dict) )
-    :rtype: tuple
-    """
-    sequences = []
-    metadata = {}
-    for filename in os.listdir(idir):
-        seq_path = os.path.join(idir, filename)
-        seqs = open_sequence(seq_path)
-        sequences += seqs
-
-        for seq in seqs:
-            seq.id = str(uuid.uuid4())
-            seq.filename = filename
-            seq.circular = dna_at_path_is_circular(seq_path)
-            metadata[seq.id] = {'circular': seq.circular, 'filename': seq.filename}
-
-    with open(out, "w") as handle:
-        SeqIO.write(sequences, handle, "fasta")
-
-    if savemeta:
-        with open(out.split('.')[0] + '.json', 'w') as handle:
-            json.dump(metadata, handle)
-
-    return out, sequences, metadata
-
-    # for filename in glob(os.path.join(dir, '*')):
-    #     if os.path.isfile(filename):
-    #         print(filename)
-    #         for r in replacements:
-    #             new_filename = re.sub(r[0], r[1], filename)
-    #             os.rename(filename, new_filename)

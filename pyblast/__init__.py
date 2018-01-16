@@ -1,4 +1,4 @@
 """PyBlast"""
 
-from .blast import Blast, Aligner
+# from .blast import Blast, Aligner
 

@@ -181,6 +181,7 @@ class Blast(object):
         out = self.db + '.fsa'
         fasta, seqs, metadata = concat_seqs(self.path_to_input_dir, out, savemeta=True)
         self.db_input_metadata = metadata
+
         self.input_sequences = seqs
         return out, seqs, metadata
 
