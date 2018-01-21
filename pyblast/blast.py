@@ -72,6 +72,8 @@ class Blast(object):
         # path to the blast database
         self.db = os.path.join(db_output_directory, db_name)
 
+        #list of expected fields in the result
+        self.fields = ()
 
         # the raw results from running blast from the command line
         self.raw_results = None
@@ -232,14 +234,16 @@ class Blast(object):
         if results.strip() == '':
             return {}
         meta = extract_metadata(results, delim)
-        fields = meta['fields']
+        self.fields = tuple(meta['fields'])
         raw_matches = extract_raw_matches(results)
-        match_dicts = validate_matches(raw_matches, fields)
+        match_dicts = validate_matches(raw_matches, self.fields)
+
+        self.results = match_dicts
 
         if save_as_json:
             f = os.path.join(self.results_out_path + ".json")
             self.dump_to_json(f)
-        self.results = match_dicts
+
         return self.results
 
     def dump_to_json(self, path):
@@ -274,8 +278,14 @@ class Aligner(Blast):
         subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
         seq_db.concatenate_and_save(subject_path)
         self.seq_db = seq_db
-
         super(Aligner, self).__init__(db_name, subject_path, query_path, db_output_directory, out, **config)
+        self.fields = self.fields + (
+            'subject_name',
+            'subject_filename',
+            'subject_circular',
+            'query_name',
+            'query_filename',
+            'query_circular')
 
     @classmethod
     def use_test_data(cls):
