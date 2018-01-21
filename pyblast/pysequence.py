@@ -6,6 +6,40 @@ import os
 from pyblast import utils
 
 
+class PySeqDB(object):
+    """A dictionary like class for storing sequences and prepping them for BLAST"""
+
+    def __init__(self):
+        self.db = {}
+
+    @property
+    def sequences(self):
+        return self.db.values()
+
+    @property
+    def ids(self):
+        return self.db.keys()
+
+    def open(self, path):
+        pyseqs = PySequence.parse(path)
+        for seq in pyseqs:
+            seq.id = str(uuid4())
+            self.db[seq.id] = seq
+        return pyseqs
+
+    def open_from_directory(self, path):
+        sequences = []
+        for filename in os.listdir(path):
+            seq_path = os.path.join(path, filename)
+            self.open(seq_path)
+        return sequences
+
+    def concatenate_and_save(self, out, fmt="fasta"):
+        """Concatenate sequences and save as a single file"""
+        with open(out, 'w') as handle:
+            SeqIO.write(self.sequences, handle, fmt)
+        return out
+
 
 class PySequence(SeqRecord):
     """Extension of the :class:`SeqRecord` model. Has additional features such as:
@@ -16,9 +50,8 @@ class PySequence(SeqRecord):
 
     def __init__(self, seq, id, name, description, dbxrefs, features, annotations, letter_annotations, filename=None, circular=None):
         super(PySequence, self).__init__(seq, id, name, description, dbxrefs, features, annotations, letter_annotations)
-
-        self.uid = str(uuid4())
         self.filename = filename
+        self.alias = id
         if circular is None:
             circular = False
         self.circular = circular
@@ -128,17 +161,3 @@ class PySequence(SeqRecord):
 
     def save(self, path):
         return PySequence.save_sequences(path, [self])
-
-
-    @classmethod
-    def concat_seqs(cls, idir, outpath):
-        sequences = []
-        for filename in os.listdir(idir):
-            seq_path = os.path.join(idir, filename)
-            seqs = PySequence.parse(seq_path)
-            sequences += seqs
-
-        with open(outpath, 'w') as handle:
-            SeqIO.write(sequences, handle, "fasta")
-
-        return sequences

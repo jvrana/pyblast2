@@ -56,9 +56,3 @@ def test_sanitize_filename(here):
     PySequence.sanitize_filenames(directory, replacements=[('_', ' ')])
     for f in os.listdir(directory):
         assert '_' not in f
-
-
-def test_concat_seqs(here):
-    directory = os.path.join(here, "data/test_data/templates")
-    out = os.path.join(here, "data/test_data/seqio_plasmids/concatenated/concat.fasta")
-    PySequence.concat_seqs(directory, out)

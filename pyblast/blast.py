@@ -12,7 +12,7 @@ import shutil
 import tempfile
 
 from blast_bin import install_blast
-from .pysequence import PySequence
+from .pysequence import PySequence, PySeqDB
 from .utils import run_cmd, str_to_f_to_i
 
 
@@ -33,14 +33,14 @@ class Blast(object):
         "outfmt": "\"{0}\"".format(' '.join(outfmt))
     }
 
-    def __init__(self, db_name, subj_in_dir, query_path, db_output_directory, results_out_path,
+    def __init__(self, db_name, subject_path, query_path, db_output_directory, results_out_path,
                  output_formatter=None, **config):
         """
         A Blast initializer for running blast searches.
 
         :param db_name: Name for database file structure. This name will be appended to all db
         files that blast creates.
-        :param subj_in_dir: Input directory containing a list of subjects to align against the query
+        :param subject_path: single fsa file containing the subject sequences
         :param query_path: Location of the fasta or genbank file containing the query
         :param db_output_directory: Location to store database related files
         :param results_out_path: Path to store the results.out file. Path can be absolute or relative.
@@ -56,11 +56,8 @@ class Blast(object):
         # name of the database
         self.name = db_name
 
-        # path to the input directory to build the blast database
-        self.path_to_input_dir = os.path.abspath(subj_in_dir)
-
-        # path to the query sequence
-        self.path_to_query = os.path.abspath(query_path)
+        self.query_path = query_path
+        self.subject_path = subject_path
 
         # build the configuration
         if output_formatter is None:
@@ -70,26 +67,17 @@ class Blast(object):
             self.config.update(config)
 
         # path to the directory holding the blast database
-        self.path_to_output_dir = os.path.abspath(db_output_directory)
+        self.db_output_directory = os.path.abspath(db_output_directory)
 
         # path to the blast database
         self.db = os.path.join(db_output_directory, db_name)
 
-        # path to the concatenated sequence file
-        self.path_to_input_seq_file = None
-
-        # dictionary of metadata collected from the blast database
-        # this includes original filename and topology
-        self.db_input_metadata = None
 
         # the raw results from running blast from the command line
         self.raw_results = None
 
         # the parsed results as a dictionary
         self.results = None  #
-
-        # list of input sequences that made the blast database
-        self.input_sequences = []
 
         # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
@@ -135,10 +123,10 @@ class Blast(object):
 
         outdir = os.path.dirname(self.results_out_path)
         errors = []
-        for file_ in [self.path_to_query]:
+        for file_ in [self.query_path, self.subject_path]:
             if not _is_file(file_):
                 errors.append("File not found: {}".format(file_))
-        for dir_ in [outdir, self.path_to_output_dir, self.path_to_input_dir]:
+        for dir_ in [outdir, self.db_output_directory]:
             if not _is_dir(dir_):
                 errors.append("Directory not found {}".format(dir_))
         if len(errors) > 0:
@@ -149,7 +137,7 @@ class Blast(object):
         config_dict = {
             "db": self.db,
             "out": self.results_out_path,
-            "query": self.path_to_query,
+            "query": self.query_path,
         }
         config_dict.update(self.config)
         return config_dict
@@ -180,28 +168,13 @@ class Blast(object):
         """
         out = self.db + '.fsa'
         seqs = PySequence.concat_seqs(self.path_to_input_dir, out)
-        self.db_input_metadata = {}
 
         self.input_sequences = seqs
         return out, seqs
 
-    def get_is_circular(self, seqid):
-        """Whether the sequence given the sequence id has circular topology"""
-        return self.db_input_metadata[seqid]['circular']
-
-    def get_filename(self, seqid):
-        """Get the filename from the sequence id"""
-        return self.db_input_metadata[seqid]['filename']
-
     def makedb(self):
         """Creates a blastdb from sequences grabbed from the input directory"""
-        out, seqs = self.concat_templates()
-        return self.fasta_to_db(out)
-
-    def fasta_to_db(self, fasta):
-        """Create a blastdb from a concatenated fasta file"""
-        self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": fasta})
-        self.path_to_input_seq_file = fasta
+        self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
         return self.db
 
     def parse_results(self, save_as_json=True, delim=','):
@@ -294,7 +267,15 @@ class Aligner(Blast):
         """
         db_output_directory = tempfile.mkdtemp()
         out = tempfile.mktemp(dir=db_output_directory)
-        super(Aligner, self).__init__(db_name, subj_in_dir, query_path, db_output_directory, out, **config)
+
+        # seq_db
+        seq_db = PySeqDB()
+        seq_db.open_from_directory(subj_in_dir)
+        subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
+        seq_db.concatenate_and_save(subject_path)
+        self.seq_db = seq_db
+
+        super(Aligner, self).__init__(db_name, subject_path, query_path, db_output_directory, out, **config)
 
     @classmethod
     def use_test_data(cls):
@@ -304,3 +285,26 @@ class Aligner(Blast):
         return cls('db',
                    os.path.join(dir_path, '..', 'tests/data/test_data/templates'),
                    os.path.join(dir_path, '..', 'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'))
+
+    # TODO: allow multiple queries
+    def parse_results(self):
+        results = super().parse_results(save_as_json=True)
+
+        query = self.seq_db.open(self.query_path)[0]
+
+        # additional data from self.seq_db
+        for result in results:
+            subject_acc = result['subject_acc']
+
+            subject = self.seq_db.db[subject_acc]
+            result['subject_name'] = subject.name
+            result['subject_filename'] = subject.filename
+            result['subject_circular'] = subject.circular
+
+            result['query_acc'] = query.id
+            result['query_name'] = query.name
+            result['query_filename'] = query.filename
+            result['query_circular'] = query.circular
+
+        return results
+

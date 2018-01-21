@@ -7,7 +7,7 @@ from pyblast import Blast, Aligner
 def pytest_namespace(here):
     return {'b':
                 Blast('db',
-                      os.path.join(here, 'data/test_data/templates'),
+                      os.path.join(here, 'data/test_data/db.fsa'),
                       os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
                       os.path.join(here, 'data/blast_results'),
                       os.path.join(here, 'data/blast_results/results.out')
@@ -18,7 +18,7 @@ def pytest_namespace(here):
 @pytest.fixture
 def b(here):
     return Blast('db',
-                 os.path.join(here, 'data/test_data/templates'),
+                 os.path.join(here, 'data/test_data/db.fsa'),
                  os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
                  os.path.join(here, 'data/blast_results'),
                  os.path.join(here, 'data/blast_results/results.out')
@@ -36,10 +36,26 @@ def test_quick_blastn(b):
     b.raw_results
 
 
-def test_aligner(b):
-    a = Aligner(b.name, b.path_to_input_dir, b.path_to_query)
+def test_aligner(here):
+    template_dictionary = os.path.join(here, 'data/test_data/templates')
+    query_path = os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
+    db_name = 'db'
+
+    a = Aligner(db_name, template_dictionary, query_path)
     a.quick_blastn()
-    print(a.raw_results)
+
+    results = a.results
+
+    for res in results:
+        assert res['query_filename'] is not None
+        assert res['subject_filename'] is not None
+        assert res['query_circular'] is not None
+        assert res['subject_circular'] is not None
+        assert res['query_name'] is not None
+        assert res['subject_name'] is not None
+
+
+
 
 
 def test_example():
