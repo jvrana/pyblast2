@@ -14,11 +14,11 @@ class PySeqDB(object):
 
     @property
     def sequences(self):
-        return self.db.values()
+        return list(self.db.values())
 
     @property
     def ids(self):
-        return self.db.keys()
+        return list(self.db.keys())
 
     def open(self, path):
         pyseqs = PySequence.parse(path)

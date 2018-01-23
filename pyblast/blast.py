@@ -272,6 +272,8 @@ class Aligner(Blast):
         db_output_directory = tempfile.mkdtemp()
         out = tempfile.mktemp(dir=db_output_directory)
 
+        self.input_dir = subj_in_dir
+
         # seq_db
         seq_db = PySeqDB()
         seq_db.open_from_directory(subj_in_dir)
