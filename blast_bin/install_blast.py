@@ -159,9 +159,9 @@ def install_blast_using_ftp(config):
     ftp.dir(data.append)
 
     # find filename with format
-    for l in data:
-        f = config['fmt']
-        m = re.search(f, l)
+    for line in data:
+        fmt = config['fmt']
+        m = re.search(fmt, line)
         if m:
             config['filename'] = m.group()
             config['blastver'] = m.group(1)

@@ -10,7 +10,11 @@ class PySeqDB(object):
     """A dictionary like class for storing sequences and prepping them for BLAST"""
 
     def __init__(self):
-        self.db = {}
+        self._db = {}
+
+    @property
+    def db(self):
+        return dict(self._db)
 
     @property
     def sequences(self):
@@ -24,7 +28,7 @@ class PySeqDB(object):
         pyseqs = PySequence.parse(path)
         for seq in pyseqs:
             seq.id = str(uuid4())
-            self.db[seq.id] = seq
+            self._db[seq.id] = seq
         return pyseqs
 
     def open_from_directory(self, path):
@@ -58,6 +62,7 @@ class PySequence(SeqRecord):
 
     @classmethod
     def from_seqrecord(cls, seq):
+        """Create a PySequence from a SeqRecord object"""
         filename = None
         if hasattr(seq, 'filename'):
             filename = seq.filename
@@ -71,6 +76,7 @@ class PySequence(SeqRecord):
 
     @staticmethod
     def which_format(path):
+        """Determine which format to parse the sequence from the path"""
         extension_options = {
             'genbank': ['.gb', 'ape'],
             'fasta': ['.fasta', '.fa', '.fsa', '.seq']
@@ -98,7 +104,12 @@ class PySequence(SeqRecord):
             return match is not None
 
     @classmethod
+    def open(cls, path):
+        return cls.parse(path)
+
+    @classmethod
     def parse(cls, path):
+        """Parse a sequence file to a PySequence"""
         with open(path, 'rU') as handle:
             seqs = list(SeqIO.parse(handle, cls.which_format(path)))
 
@@ -115,6 +126,16 @@ class PySequence(SeqRecord):
 
     @staticmethod
     def save_sequences(path, sequences):
+        """
+        Save a list of sequences to a file.
+
+        :param path: output path
+        :type path: basestring
+        :param sequences: list of sequences
+        :type sequences: list
+        :return:
+        :rtype:
+        """
         with open(path, 'w') as handle:
             SeqIO.write(sequences, handle, PySequence.which_format(path))
         return path
@@ -160,4 +181,12 @@ class PySequence(SeqRecord):
                 os.rename(os.path.join(dir, filename), os.path.join(odir, newfilename))
 
     def save(self, path):
+        """
+        Save PySequence to a file
+
+        :param path: output path
+        :type path: basestring
+        :return:
+        :rtype:
+        """
         return PySequence.save_sequences(path, [self])

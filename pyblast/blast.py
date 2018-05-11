@@ -13,7 +13,13 @@ import tempfile
 
 from blast_bin import install_blast
 from .pysequence import PySequence, PySeqDB
-from .utils import run_cmd, str_to_f_to_i
+from .utils import run_cmd
+from .parser import parse_results
+
+from pyblast.models import QuerySchema, SubjectSchema, AlignmentMetaSchema, AlignmentSchema
+
+class PyBlastException(Exception):
+    """A generic exception for pyBlast"""
 
 
 class Blast(object):
@@ -97,7 +103,7 @@ class Blast(object):
             error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
             help_message = "Please run 'install_pyblast <youremail> <yourplatform>' in your terminal." \
                            "Run 'install_pyblast -h' for help."
-            raise Exception(error_message + "\n" + "*" * 50 + "\n" + help_message)
+            raise PyBlastException(error_message + "\n" + "*" * 50 + "\n" + help_message)
 
     @staticmethod
     def has_executable():
@@ -115,6 +121,7 @@ class Blast(object):
 
         :return: None
         :rtype: None
+        :raises: PyBlastException if filepaths are invalid or if query sequence has more than one sequence
         """
 
         def _is_file(myfile):
@@ -132,7 +139,13 @@ class Blast(object):
             if not _is_dir(dir_):
                 errors.append("Directory not found {}".format(dir_))
         if len(errors) > 0:
-            raise ValueError("\n".join(errors))
+            raise PyBlastException("\n".join(errors))
+
+        seq = PySequence.open(self.query_path)
+        if len(seq) == 0:
+            raise PyBlastException("Query path \"{}\" has no sequences".format(self.query_path))
+        elif len(seq) > 1:
+            raise PyBlastException("Query path \"{}\" has more than one sequence.".format(self.query_path))
 
     def create_config(self):
         """Create a configuration dictionary"""
@@ -161,18 +174,18 @@ class Blast(object):
         """Wrapper for utils.run_cmd"""
         run_cmd(cmd, **kwargs)
 
-    def concat_templates(self):
-        """
-        Gathers all of the sequences in the input dir and concatenates them into a single fasta file
-
-        :return: [concatenated fasta file, sequences used to make fassta file, metadata for the sequences
-        :rtype: list
-        """
-        out = self.db + '.fsa'
-        seqs = PySequence.concat_seqs(self.path_to_input_dir, out)
-
-        self.input_sequences = seqs
-        return out, seqs
+    # def concat_templates(self):
+    #     """
+    #     Gathers all of the sequences in the input dir and concatenates them into a single fasta file
+    #
+    #     :return: [concatenated fasta file, sequences used to make fassta file, metadata for the sequences
+    #     :rtype: list
+    #     """
+    #     out = self.db + '.fsa'
+    #     seqs = PySequence.concat_seqs(self.path_to_input_dir, out)
+    #
+    #     self.input_sequences = seqs
+    #     return out, seqs
 
     def makedb(self):
         """Creates a blastdb from sequences grabbed from the input directory"""
@@ -192,58 +205,10 @@ class Blast(object):
         :rtype:
         """
 
-        def cleanup_fields(match_fields, replacements=None):
-            ''' Cleanup field names using replacements '''
-            if replacements is None:
-                replacements = {
-                    ('.', ''),
-                    (' ', '_'),
-                    ('%', 'perc'),
-                }
-            match_fields = [x.strip() for x in match_fields]
-            for i, f in enumerate(match_fields):
-                for r in replacements:
-                    match_fields[i] = match_fields[i].replace(r[0], r[1])
-            return match_fields
-
-        def extract_metadata(r, delim=','):
-            g = re.search(
-                '#\s*(?P<blast_ver>.+)\n' +
-                '# Query:\s*(?P<query>.*)\n' +
-                '# Database:\s*(?P<database>.+)\n' +
-                '# Fields:\s*(?P<fields>.+)',
-                r)
-            metadata = g.groupdict()
-            # clean up fields
-            metadata['fields'] = re.split('\s*{}\s*'.format(delim), metadata['fields'])
-            metadata['fields'] = cleanup_fields(metadata['fields'])
-            return metadata
-
-        def extract_raw_matches(r):
-            return re.findall('\n([^#].*)', r)
-
-        def validate_matches(raw_matches, fields):
-            match_dicts = []
-            for m in raw_matches:
-                values = [str_to_f_to_i(v) for v in m.split('\t')]
-                match_dicts.append(dict(list(zip(fields, values))))
-            return match_dicts
-
-        # print(self.results)
-        results = self.raw_results
-        if results.strip() == '':
-            return {}
-        meta = extract_metadata(results, delim)
-        self.fields = tuple(meta['fields'])
-        raw_matches = extract_raw_matches(results)
-        match_dicts = validate_matches(raw_matches, self.fields)
-
-        self.results = match_dicts
-
+        self.results = parse_results(self.raw_results, delim=delim)
         if save_as_json:
-            f = os.path.join(self.results_out_path + ".json")
-            self.dump_to_json(f)
-
+            path = os.path.join(self.results_out_path + ".json")
+            self.dump_to_json(path)
         return self.results
 
     def dump_to_json(self, path):
@@ -260,11 +225,11 @@ class Aligner(Blast):
     "quick_blastn" for returning results as a python object.
     """
 
-    def __init__(self, db_name, subj_in_dir, query_path, **config):
+    def __init__(self, db_name, subject_path, query_path, **config):
         """
         Aligner: A Blast object that stores the database files in a hidden temporary directory.
         :param db_name: Name for database file structure. This name will be appended to all db files that blast creates.
-        :param subj_in_dir: Input directory containing a list of subjects to align against the query
+        :param subject_path: Input directory or file containing a list of subjects to align against the query
         :param query_path: Location of the fasta or genbank file containing the query
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
@@ -272,11 +237,9 @@ class Aligner(Blast):
         db_output_directory = tempfile.mkdtemp()
         out = tempfile.mktemp(dir=db_output_directory)
 
-        self.input_dir = subj_in_dir
-
         # seq_db
         seq_db = PySeqDB()
-        seq_db.open_from_directory(subj_in_dir)
+        seq_db.open_from_directory(subject_path)
         subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
         seq_db.concatenate_and_save(subject_path)
         self.seq_db = seq_db
@@ -289,6 +252,25 @@ class Aligner(Blast):
             'query_filename',
             'query_circular')
 
+    def find_perfect_matches(self):
+        """Finding perfect matches using python (i.e. not BLAST)"""
+
+        # get the query sequence as a string
+        query = PySequence.open(self.query_path)[0]
+        for subj in self.seq_db.sequences:
+            subj_seq = str(subj.seq).upper()
+            q_seq = str(query.seq).upper()
+            q_rc_seq = str(query.reverse_complement().seq).upper()
+
+            for match in re.finditer(subj_seq, q_seq):
+                print(match)
+            for rc_match in re.finditer(subj_seq, q_rc_seq):
+                print(rc_match)
+
+
+
+
+
     @classmethod
     def use_test_data(cls):
         """Create a Blast instance using predefined data located in tests"""
@@ -298,25 +280,22 @@ class Aligner(Blast):
                    os.path.join(dir_path, '..', 'tests/data/test_data/templates'),
                    os.path.join(dir_path, '..', 'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'))
 
-    # TODO: allow multiple queries
-    def parse_results(self):
-        results = super().parse_results(save_as_json=True)
+    def parse_results(self, save_as_json=True, delim=','):
+        """
+        Parses the raw blast result to a JSON
 
-        query = self.seq_db.open(self.query_path)[0]
+        :param save_as_json: whether to save the JSON. Results will be saved in same directory and name as
+        results_out_path but with a .json extension.
+        :type save_as_json: bool
+        :param delim: delimiter to parse
+        :type delim: str
+        :return:
+        :rtype:
+        """
 
-        # additional data from self.seq_db
-        for result in results:
-            subject_acc = result['subject_acc']
-
-            subject = self.seq_db.db[subject_acc]
-            result['subject_name'] = subject.name
-            result['subject_filename'] = subject.filename
-            result['subject_circular'] = subject.circular
-
-            result['query_acc'] = query.id
-            result['query_name'] = query.name
-            result['query_filename'] = query.filename
-            result['query_circular'] = query.circular
-
-        return results
+        self.results = parse_results(self.raw_results, delim, context={"db": self.seq_db.db})
+        if save_as_json:
+            path = os.path.join(self.results_out_path + ".json")
+            self.dump_to_json(path)
+        return self.results
 

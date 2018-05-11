@@ -28,3 +28,15 @@ def test_concat(here, tmpdir):
     assert len(seqs) == len(db.db)
     assert len(db.db) == exp_num_seqs
 
+
+def test_ensure_db_returns_copy(here):
+    directory = os.path.join(here, "data/test_data/templates")
+    db = PySeqDB()
+    db.open_from_directory(directory)
+
+    assert len(db.db) > 0
+
+    d = db.db
+    d['foo'] = 'bar'
+    assert d['foo'] == 'bar'
+    assert 'foo' not in db.db

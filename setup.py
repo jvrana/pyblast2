@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='pyblast',
-    version='0.1.0a',
+    version='0.2.0a',
     packages=['pyblast', 'blast_bin', 'tests'],
     url='',
     license='MIT',

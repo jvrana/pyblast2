@@ -43,15 +43,3 @@ def run_cmd(cmd, **kwargs):
 def dict_to_cmd(cmd, **kwargs):
     """Create a command string for cmd and parameters 'kwargs'"""
     return cmd + " " + ' '.join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
-
-
-def str_to_f_to_i(v):
-    try:
-        v = float(v)
-    except ValueError:
-        pass
-    try:
-        v = int(v)
-    except ValueError:
-        pass
-    return v
