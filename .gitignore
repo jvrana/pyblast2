@@ -229,3 +229,7 @@ venv.bak/
 *.iml
 _paths.json
 *.pyc
+tests/data/blast_results/results.out.json
+tests/data/blast_results/results.out.json
+tests/data/blast_results/db.nin
+*.nin
