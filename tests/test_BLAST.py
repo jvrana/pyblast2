@@ -64,20 +64,6 @@ def test_makedb(b):
     assert 'gaps_open' in meta
     assert 'gaps' in meta
     assert 'alignment_length' in meta
-    assert 'alignment' in meta
-    #
-    #
-    # assert 'query_acc' in results[0]
-    # assert 'subject_acc' in results[0]
-    # assert 'score' in results[0]
-    # assert 'evalue' in results[0]
-    # assert 'bit_score' in results[0]
-    # assert 'alignment_length' in results[0]
-    # assert 'query_seq' in results[0]
-    # assert 'subject_seq' in results[0]
-    #
-    # for r in results:
-    #     assert r['subject_strand'] in ['plus', 'minus']
 
 
 def test_quick_blastn(b):
@@ -85,34 +71,41 @@ def test_quick_blastn(b):
     results = b.raw_results
 
 
-def test_aligner(here):
-    template_dictionary = os.path.join(here, 'data/test_data/templates')
-    query_path = os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
-    db_name = 'db'
+class TestAligner:
 
-    a = Aligner(db_name, template_dictionary, query_path)
-    a.quick_blastn()
+    @pytest.fixture
+    def aligner(self, here):
+        template_dictionary = os.path.join(here, 'data/test_data/templates')
+        query_path = os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
+        db_name = 'db'
 
-    results = a.results
+        a = Aligner(db_name, template_dictionary, query_path)
+        a.quick_blastn()
+        return a
 
-    for res in results:
-        assert res['query_filename'] is not None
-        assert res['subject_filename'] is not None
-        assert res['query_circular'] is not None
-        assert res['subject_circular'] is not None
-        assert res['query_name'] is not None
-        assert res['subject_name'] is not None
+    def test_query(self, aligner):
+        results = aligner.results
 
+        for res in results:
+            assert res['query']['filename'] is not None
+            assert res['query']['circular'] is not None
+            assert res['query']['name'] is not None
 
-def test_example():
-    a = Aligner.use_test_data()
-    a.quick_blastn()
+    def test_subject(self, aligner):
+        results = aligner.results
+        for res in results:
+            assert res['subject']['filename'] is not None
+            assert res['subject']['circular'] is not None
+            assert res['subject']['name'] is not None
+            assert res['subject']['strand'] in ['plus', 'minus']
 
+    def test_example(self):
+        a = Aligner.use_test_data()
+        a.quick_blastn()
 
-
-def test_perfect_matches():
-    a = Aligner.use_test_data()
-    a.find_perfect_matches()
+    def test_perfect_matches(self):
+        a = Aligner.use_test_data()
+        a.find_perfect_matches()
     # def test_get_metadata():
     #     a = Aligner.use_test_data()
     #     a.quick_blastn()

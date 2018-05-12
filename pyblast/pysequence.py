@@ -24,18 +24,18 @@ class PySeqDB(object):
     def ids(self):
         return list(self.db.keys())
 
-    def open(self, path):
+    def add(self, path):
         pyseqs = PySequence.parse(path)
         for seq in pyseqs:
             seq.id = str(uuid4())
             self._db[seq.id] = seq
         return pyseqs
 
-    def open_from_directory(self, path):
+    def add_from_directory(self, path):
         sequences = []
         for filename in os.listdir(path):
             seq_path = os.path.join(path, filename)
-            self.open(seq_path)
+            self.add(seq_path)
         return sequences
 
     def concatenate_and_save(self, out, fmt="fasta"):

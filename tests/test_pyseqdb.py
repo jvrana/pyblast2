@@ -6,7 +6,7 @@ from Bio import SeqIO
 def test_init(here):
     directory = os.path.join(here, "data/test_data/templates")
     db = PySeqDB()
-    db.open_from_directory(directory)
+    db.add_from_directory(directory)
     assert len(db.db) > 0
 
 
@@ -17,7 +17,7 @@ def test_concat(here, tmpdir):
 
     out = os.path.join(tmpdir.mkdir('concat'), 'concat.fasta')
     db = PySeqDB()
-    db.open_from_directory(directory)
+    db.add_from_directory(directory)
     db.concatenate_and_save(out)
 
     seqs = []
@@ -32,7 +32,7 @@ def test_concat(here, tmpdir):
 def test_ensure_db_returns_copy(here):
     directory = os.path.join(here, "data/test_data/templates")
     db = PySeqDB()
-    db.open_from_directory(directory)
+    db.add_from_directory(directory)
 
     assert len(db.db) > 0
 

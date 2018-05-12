@@ -239,11 +239,16 @@ class Aligner(Blast):
 
         # seq_db
         seq_db = PySeqDB()
-        seq_db.open_from_directory(subject_path)
+        seq_db.add_from_directory(subject_path)
         subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
         seq_db.concatenate_and_save(subject_path)
+
+
         self.seq_db = seq_db
         super(Aligner, self).__init__(db_name, subject_path, query_path, db_output_directory, out, **config)
+        # add query_path
+        self._query = self.seq_db.add(query_path)[0]
+
         self.fields = self.fields + (
             'subject_name',
             'subject_filename',
@@ -268,9 +273,6 @@ class Aligner(Blast):
                 print(rc_match)
 
 
-
-
-
     @classmethod
     def use_test_data(cls):
         """Create a Blast instance using predefined data located in tests"""
@@ -293,7 +295,9 @@ class Aligner(Blast):
         :rtype:
         """
 
-        self.results = parse_results(self.raw_results, delim, context={"db": self.seq_db.db})
+        # TODO: is replacing the raw text the right thing to do?
+        raw = re.sub('Query_1', self._query.id, self.raw_results)
+        self.results = parse_results(raw, delim, context={"db": self.seq_db.db})
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
             self.dump_to_json(path)

@@ -2,6 +2,7 @@ import pytest
 from marshmallow import Schema, fields, ValidationError
 
 from pyblast.models import QuerySchema, SubjectSchema, AlignmentMetaSchema
+from pyblast.pysequence import PySequence
 
 
 def test_marshmallow_is_functional():
@@ -102,6 +103,48 @@ class TestSchema:
                         'gaps': 0
                         }
             assert loaded == expected
+
+    class TestDump:
+
+        @pytest.fixture
+        def unmarshalled_data(self):
+            return {"acc": 'Query_1',
+                    'start': 1374,
+                    'end': 5592,
+                    'length': 10781
+                    }
+
+        @pytest.fixture
+        def seq(self):
+            return PySequence('', '', 'myseq', '', None, [], {}, {},
+                              filename='myfilename',
+                              circular=True)
+
+        def test_with_context(self, unmarshalled_data, seq):
+            context = {'db': {'Query_1': seq}}
+            schema_with_context = QuerySchema()
+            schema_with_context.context = context
+            dumped_with_context = schema_with_context.dump(unmarshalled_data)
+            assert dumped_with_context['filename'] == 'myfilename'
+            assert dumped_with_context['name'] == 'myseq'
+            assert dumped_with_context['circular']
+
+        def test_with_no_context(self, unmarshalled_data):
+            # no context
+            schema_no_context = QuerySchema()
+            dumped_no_context = schema_no_context.dump(unmarshalled_data)
+            assert dumped_no_context['filename'] is None
+            assert dumped_no_context['name'] is None
+            assert dumped_no_context['circular'] is None
+
+        def test_seq_missing_from_db(self, unmarshalled_data, seq):
+            context = {'db': {'Query_2': seq}}
+            schema_with_context = QuerySchema()
+            schema_with_context.context = context
+            dumped_with_context = schema_with_context.dump(unmarshalled_data)
+            assert dumped_with_context['filename'] is None
+            assert dumped_with_context['name'] is None
+            assert dumped_with_context['circular'] is None
 
     class TestLoadValidationErrors:
 
