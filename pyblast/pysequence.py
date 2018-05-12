@@ -98,7 +98,7 @@ class PySequence(SeqRecord):
         :return:
         :rtype:
         """
-        with open(path, 'r') as myfile:
+        with open(path, 'rU') as myfile:
             first_line = myfile.readlines()[0]
             match = re.search("circular", first_line, re.IGNORECASE)
             return match is not None
