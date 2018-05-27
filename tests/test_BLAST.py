@@ -1,8 +1,8 @@
 import os
-
+import json
 import pytest
 
-from pyblast import Blast, Aligner
+from pyblast import Blast, Aligner, JSONBlast
 
 
 def pytest_namespace(here):
@@ -20,7 +20,7 @@ def pytest_namespace(here):
 def b(here):
     return Blast('db',
                  os.path.join(here, 'data/test_data/db.fsa'),
-                 os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
+                 os.path.join(here, 'data/test_data/query.fsa'),
                  os.path.join(here, 'data/blast_results'),
                  os.path.join(here, 'data/blast_results/results.out')
                  )
@@ -111,3 +111,18 @@ class TestAligner:
     #     a.quick_blastn()
     #     a.get_filename(a.input_sequences[0].id)
     #     a.get_is_circular(a.input_sequences[0].id)
+
+class TestJSONBlast:
+
+    @pytest.fixture
+    def aligner(self, here):
+        query = json.load(here, "data/test_data/query.json")
+        subjects = json.load(here, "data/test_data/templates.json")
+        j = JSONBlast(query, subjects)
+        j.quick_blastn()
+        return j
+
+    def test_example(self):
+        j = JSONBlast.use_test_data()
+        j.quick_blastn()
+        pass

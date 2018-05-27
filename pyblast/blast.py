@@ -10,9 +10,9 @@ import os
 import re
 import shutil
 import tempfile
-
+from uuid import uuid4
 from blast_bin import install_blast
-from .pysequence import PySequence, PySeqDB
+# from .pysequence import PySequence, PySeqDB
 from .utils import run_cmd
 from .parser import parse_results
 
@@ -141,11 +141,11 @@ class Blast(object):
         if len(errors) > 0:
             raise PyBlastException("\n".join(errors))
 
-        seq = PySequence.open(self.query_path)
-        if len(seq) == 0:
-            raise PyBlastException("Query path \"{}\" has no sequences".format(self.query_path))
-        elif len(seq) > 1:
-            raise PyBlastException("Query path \"{}\" has more than one sequence.".format(self.query_path))
+        # seq = PySequence.open(self.query_path)
+        # if len(seq) == 0:
+        #     raise PyBlastException("Query path \"{}\" has no sequences".format(self.query_path))
+        # elif len(seq) > 1:
+        #     raise PyBlastException("Query path \"{}\" has more than one sequence.".format(self.query_path))
 
     def create_config(self):
         """Create a configuration dictionary"""
@@ -221,7 +221,7 @@ class Blast(object):
 
 class Aligner(Blast):
     """
-    A Blast object that stores the database files in a hidden temporary directory. Use entry points
+    A Blast object that stores the database files in a hidden temporary directory. Use
     "quick_blastn" for returning results as a python object.
     """
 
@@ -235,14 +235,17 @@ class Aligner(Blast):
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
         db_output_directory = tempfile.mkdtemp()
-        out = tempfile.mktemp(dir=db_output_directory)
+        fv, out = tempfile.mkstemp(dir=db_output_directory)
 
         # seq_db
-        seq_db = PySeqDB()
-        seq_db.add_from_directory(subject_path)
-        subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
-        seq_db.concatenate_and_save(subject_path)
 
+        seq_db = PySeqDB()
+        if os.path.isdir(subject_path):
+            seq_db.add_from_directory(subject_path)
+            subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
+            seq_db.concatenate_and_save(subject_path)
+        else:
+            seq_db.add(subject_path)
 
         self.seq_db = seq_db
         super(Aligner, self).__init__(db_name, subject_path, query_path, db_output_directory, out, **config)
@@ -303,3 +306,46 @@ class Aligner(Blast):
             self.dump_to_json(path)
         return self.results
 
+
+class JSONBlast(Aligner):
+    """Object that runs blast starting from JSON inputs and outputs"""
+
+    def __init__(self, subject_json, query_json, **config):
+        dbname = str(uuid4())
+        super(JSONBlast, self).__init__(db_name=dbname,
+                                        subject_path=self.json_to_fasta_file(subject_json, dbname),
+                                        query_path=self.json_to_fasta_file(query_json, dbname),
+                                        **config)
+
+
+    def json_to_fasta_file(self, jsondata, prefix=""):
+        fd, temp_path = tempfile.mkstemp(prefix="query_{}__".format(prefix), suffix=".fasta")
+        with open(temp_path, 'w') as out:
+            out.write(self.json_to_fasta_data(jsondata))
+            out.close()
+        return temp_path
+
+    def json_to_fasta_data(self, jsondata):
+        """Super simple json to fasta converter"""
+        def convert(seq):
+            return ">{name}||{size}|{circular}\n{sequence}\n".format(**{
+                "name": seq["name"],
+                "size": len(seq["sequence"]),
+                "circular": "circular" if seq["circular"] else "linear",
+                "sequence": seq["sequence"]
+            })
+        if type(jsondata) is list:
+            return '\n'.join([convert(x) for x in jsondata])
+        else:
+            return convert(jsondata)
+
+    @classmethod
+    def use_test_data(cls):
+        """Create a Blast instance using predefined data located in tests"""
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dir_path, '..', 'tests/data/test_data/templates.json'), "r") as f:
+            subject = json.load(f)
+        with open(os.path.join(dir_path, '..', 'tests/data/test_data/query.json'), "r") as f:
+            query = json.load(f)
+        return cls(subject_json=subject,
+                   query_json=query)
