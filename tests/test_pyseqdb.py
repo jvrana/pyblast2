@@ -4,14 +4,14 @@ from Bio import SeqIO
 
 
 def test_init(here):
-    directory = os.path.join(here, "data/test_data/templates")
+    directory = os.path.join(here, "data/test_data/genbank/templates")
     db = PySeqDB()
     db.add_from_directory(directory)
     assert len(db.db) > 0
 
 
 def test_concat(here, tmpdir):
-    directory = os.path.join(here, "data/test_data/templates")
+    directory = os.path.join(here, "data/test_data/genbank/templates")
 
     exp_num_seqs = len(os.listdir(directory))
 
@@ -30,7 +30,7 @@ def test_concat(here, tmpdir):
 
 
 def test_ensure_db_returns_copy(here):
-    directory = os.path.join(here, "data/test_data/templates")
+    directory = os.path.join(here, "data/test_data/genbank/templates")
     db = PySeqDB()
     db.add_from_directory(directory)
 

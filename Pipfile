@@ -8,6 +8,8 @@ numpy = "*"
 marshmallow = "==3.0.0b10"
 biopython = "*"
 tqdm = "*"
+flask = "*"
+graphene = "*"
 
 [dev-packages]
 pandoc = "*"

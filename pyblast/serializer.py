@@ -1,7 +1,7 @@
 """Data parser for BLAST"""
 import re
 
-from pyblast.models import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
+from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema, SequenceSchema
 
 
 def str_to_f_to_i(v):
@@ -110,3 +110,8 @@ def parse_results(data, delim, context=None):
     deserialized = alignment_schema.load(serialized)
 
     return deserialized
+
+def parse_sequence_jsons(data):
+    many = type(data) is list
+    schema = SequenceSchema(many=many)
+    return schema.load(data)

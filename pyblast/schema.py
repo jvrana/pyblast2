@@ -1,45 +1,72 @@
-from marshmallow import Schema, fields, validates, ValidationError
+from uuid import uuid4
+
+from marshmallow import Schema, fields, validates, ValidationError, validates_schema, pre_load
 
 
-class SequenceSchema:
+class SequenceSchema(Schema):
+    size = fields.Integer()
+    sequence = fields.String(required=True)
+    circular = fields.Boolean(required=True)
+    name = fields.String(required=True)
+    id = fields.String(missing=lambda: str(uuid4()))
+    description = fields.String(missing="")
+    features = fields.Nested("FeatureSchema", many=True, missing=list())
+    notes = fields.Dict(missing=dict())
+
+    @pre_load
+    def make_default_size(self, data):
+        data = {k: v for k, v in data.items() if v is not None}
+        if 'size' not in data:
+            data['size'] = len(data['sequence'])
+        return data
+
+    @validates_schema
+    def validate_size(self, data):
+        len1 = len(data['sequence'])
+        if not data['size'] == len1:
+            raise ValidationError("size ({}) must be equal to sequence length ({})".format(data['size'], len1))
+
+
+class FeatureSchema(Schema):
+    name = fields.String(required=True)
+    type = fields.String(required=True)
+    id = fields.String(missing=lambda: str(uuid4()))
+    start = fields.Int(required=True)
+    end = fields.Int(required=True)
+    strand = fields.Int(required=True)
+    notes = fields.Dict(missing=dict())
+
+    @validates('strand')
+    def validate_strand(self, value):
+        if value not in [1, -1]:
+            raise ValidationError("Strand must by 1 [FORWARD] or -1 [REVERSE].")
+
+
+class SequenceSchemaMixIn:
     """Sequence Schema methods common to QuerySchema and SubjectSchema"""
     # seq = fields.Method(serialize="get_sequence", deserialize="return_value", allow_none=True)
-    filename = fields.Method(serialize="get_filename", deserialize="return_value", allow_none=True)
-    name = fields.Method(serialize="get_name", deserialize="return_value", allow_none=True)
-    circular = fields.Method(serialize="get_circular", deserialize="return_value", allow_none=True)
-
-    #
-    # name = fields.Function(lambda seq, context: context['db'][seq['acc']])
-    # name = fields.Function(lambda seq, context: context['db'][seq['acc']])
-
-    def return_value(self, value):
-        return value
+    name = fields.Method(serialize="get_name", allow_none=True)
+    circular = fields.Method(serialize="get_circular", allow_none=True)
 
     def get_sequence(self, obj):
+        """Searches the context for the sequence using the accession id"""
         if 'db' not in self.context:
             return None
         db = self.context['db']
         acc = obj['acc']
         if acc not in db:
+            # TODO: raise error is acc is not in context?
             return None
         return db[obj['acc']]
 
-    def get_seq_attribute(self, obj, attr):
-        seq = self.get_sequence(obj)
-        if seq is not None:
-            return getattr(seq, attr)
-
     def get_name(self, obj):
-        return self.get_seq_attribute(obj, "name")
-
-    def get_filename(self, obj):
-        return self.get_seq_attribute(obj, "filename")
+        return self.get_sequence(obj)["name"]
 
     def get_circular(self, obj):
-        return self.get_seq_attribute(obj, "circular")
+        return self.get_sequence(obj)["circular"]
 
 
-class QuerySchema(Schema, SequenceSchema):
+class QuerySchema(Schema, SequenceSchemaMixIn):
     acc = fields.String(data_key="query acc.", required=True)
     # filename = fields.String(data_key="query filename")
     # circular = fields.Boolean(data_key="query circular")
@@ -50,7 +77,7 @@ class QuerySchema(Schema, SequenceSchema):
     # alignment = fields.Nested("AlignmentSchema")
 
 
-class SubjectSchema(Schema, SequenceSchema):
+class SubjectSchema(Schema, SequenceSchemaMixIn):
     acc = fields.String(data_key="subject acc.", required=True)
     # filename = fields.String(data_key="subject filename")
     # circular = fields.Boolean(data_key="subject circular")
@@ -86,4 +113,4 @@ class AlignmentSchema(Schema):
     """Schema for a BLAST alignment"""
     query = fields.Nested('QuerySchema', )
     subject = fields.Nested('SubjectSchema', )
-    meta = fields.Nested("AlignmentMetaSchema", exclude=("alignment",))
+    meta = fields.Nested(AlignmentMetaSchema, exclude=("alignment",))

@@ -5,9 +5,14 @@ import re
 import os
 from pyblast import utils
 
-
+# TODO: This class is super sloppy. BOO!
 class PySeqDB(object):
-    """A dictionary like class for storing sequences and prepping them for BLAST"""
+    """A dictionary like class for storing sequences and prepping them for BLAST
+
+    {
+        uuid4: sequence_json
+    }
+    """
 
     def __init__(self):
         self._db = {}

@@ -1,7 +1,7 @@
 import pytest
 from marshmallow import Schema, fields, ValidationError
 
-from pyblast.models import QuerySchema, SubjectSchema, AlignmentMetaSchema
+from pyblast.schema import QuerySchema, SubjectSchema, AlignmentMetaSchema
 from pyblast.pysequence import PySequence
 
 
@@ -72,7 +72,6 @@ class TestSchema:
                         'start': 1374,
                         'end': 5592,
                         'name': None,
-                        'filename': None,
                         'circular': None,
                         'length': 10781
                         }
@@ -85,7 +84,6 @@ class TestSchema:
                         'start': 1,
                         'end': 4219,
                         'name': None,
-                        'filename': None,
                         'circular': None,
                         'length': 7883,
                         'strand': 'plus', }
@@ -125,7 +123,6 @@ class TestSchema:
             schema_with_context = QuerySchema()
             schema_with_context.context = context
             dumped_with_context = schema_with_context.dump(unmarshalled_data)
-            assert dumped_with_context['filename'] == 'myfilename'
             assert dumped_with_context['name'] == 'myseq'
             assert dumped_with_context['circular']
 
@@ -133,7 +130,6 @@ class TestSchema:
             # no context
             schema_no_context = QuerySchema()
             dumped_no_context = schema_no_context.dump(unmarshalled_data)
-            assert dumped_no_context['filename'] is None
             assert dumped_no_context['name'] is None
             assert dumped_no_context['circular'] is None
 
@@ -142,7 +138,6 @@ class TestSchema:
             schema_with_context = QuerySchema()
             schema_with_context.context = context
             dumped_with_context = schema_with_context.dump(unmarshalled_data)
-            assert dumped_with_context['filename'] is None
             assert dumped_with_context['name'] is None
             assert dumped_with_context['circular'] is None
 

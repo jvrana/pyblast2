@@ -43,7 +43,6 @@ def test_makedb(b):
     assert 'end' in query
     assert 'length' in query
     assert query['name'] is None
-    assert query['filename'] is None
     assert query['circular'] is None
 
     subject = res['subject']
@@ -52,7 +51,6 @@ def test_makedb(b):
     assert 'end' in subject
     assert 'length' in subject
     assert subject['name'] is None
-    assert subject['filename'] is None
     assert subject['circular'] is None
     assert subject['strand'] in ['plus', 'minus']
 
@@ -75,8 +73,8 @@ class TestAligner:
 
     @pytest.fixture
     def aligner(self, here):
-        template_dictionary = os.path.join(here, 'data/test_data/templates')
-        query_path = os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
+        template_dictionary = os.path.join(here, 'data/test_data/genbank/templates')
+        query_path = os.path.join(here, 'data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
         db_name = 'db'
 
         a = Aligner(db_name, template_dictionary, query_path)

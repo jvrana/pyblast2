@@ -12,11 +12,11 @@ import shutil
 import tempfile
 from uuid import uuid4
 from blast_bin import install_blast
-# from .pysequence import PySequence, PySeqDB
+from .pysequence import PySequence, PySeqDB
 from .utils import run_cmd
-from .parser import parse_results
+from .serializer import parse_results, parse_sequence_jsons
 
-from pyblast.models import QuerySchema, SubjectSchema, AlignmentMetaSchema, AlignmentSchema
+from pyblast.schema import QuerySchema, SubjectSchema, AlignmentMetaSchema, AlignmentSchema
 
 class PyBlastException(Exception):
     """A generic exception for pyBlast"""
@@ -24,7 +24,10 @@ class PyBlastException(Exception):
 
 class Blast(object):
     """
-    A Blast initializer for running blast searches against subjects contained in a directory.
+    A Blast initializer for running blast searches against subjects contained in a directory. Sequences
+    are kept on the local machine.
+
+    Note: This is not intended to be the endpoint. You should only use temporary files to run the blast search.
     """
 
     outfmt = [
@@ -237,20 +240,18 @@ class Aligner(Blast):
         db_output_directory = tempfile.mkdtemp()
         fv, out = tempfile.mkstemp(dir=db_output_directory)
 
+        super(Aligner, self).__init__(
+            db_name=db_name,
+            subject_path=subject_path,
+            query_path=query_path,
+            db_output_directory=db_output_directory,
+            results_out_path=out, **config)
+
         # seq_db
-
-        seq_db = PySeqDB()
-        if os.path.isdir(subject_path):
-            seq_db.add_from_directory(subject_path)
-            subject_path = os.path.join(db_output_directory, f"{db_name}.fsa")
-            seq_db.concatenate_and_save(subject_path)
-        else:
-            seq_db.add(subject_path)
-
-        self.seq_db = seq_db
-        super(Aligner, self).__init__(db_name, subject_path, query_path, db_output_directory, out, **config)
-        # add query_path
-        self._query = self.seq_db.add(query_path)[0]
+        keys = [x['id'] for x in self.subjects]
+        keys.append(self.query['id'])
+        seqs = self.subjects + [self.query]
+        self.seq_dict = dict(zip(keys, seqs))
 
         self.fields = self.fields + (
             'subject_name',
@@ -299,8 +300,8 @@ class Aligner(Blast):
         """
 
         # TODO: is replacing the raw text the right thing to do?
-        raw = re.sub('Query_1', self._query.id, self.raw_results)
-        self.results = parse_results(raw, delim, context={"db": self.seq_db.db})
+        raw = re.sub('Query_1', self.query['id'], self.raw_results)
+        self.results = parse_results(raw, delim, context={"db": self.seq_dict})
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
             self.dump_to_json(path)
@@ -312,13 +313,23 @@ class JSONBlast(Aligner):
 
     def __init__(self, subject_json, query_json, **config):
         dbname = str(uuid4())
+
+        # force json to sequence schema
+        self.query = parse_sequence_jsons(query_json)
+        self.subjects = parse_sequence_jsons(subject_json)
+
+        # create temporary files
+        subject_path = self.json_to_fasta_file(self.subjects)
+        query_path = self.json_to_fasta_file(self.query)
+
+
         super(JSONBlast, self).__init__(db_name=dbname,
-                                        subject_path=self.json_to_fasta_file(subject_json, dbname),
-                                        query_path=self.json_to_fasta_file(query_json, dbname),
+                                        subject_path=subject_path,
+                                        query_path=query_path,
                                         **config)
 
-
     def json_to_fasta_file(self, jsondata, prefix=""):
+        """Writes JSON data to a temporary fasta file"""
         fd, temp_path = tempfile.mkstemp(prefix="query_{}__".format(prefix), suffix=".fasta")
         with open(temp_path, 'w') as out:
             out.write(self.json_to_fasta_data(jsondata))
@@ -326,10 +337,10 @@ class JSONBlast(Aligner):
         return temp_path
 
     def json_to_fasta_data(self, jsondata):
-        """Super simple json to fasta converter"""
+        """Converts json to fasta format"""
         def convert(seq):
-            return ">{name}||{size}|{circular}\n{sequence}\n".format(**{
-                "name": seq["name"],
+            return ">{id}\n{sequence}\n".format(**{
+                "id": seq["id"],
                 "size": len(seq["sequence"]),
                 "circular": "circular" if seq["circular"] else "linear",
                 "sequence": seq["sequence"]
