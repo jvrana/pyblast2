@@ -231,3 +231,4 @@ _paths.json
 *.pyc
 .pytest_cache/v/cache/lastfailed
 .pytest_cache/v/cache/nodeids
+*.pyc

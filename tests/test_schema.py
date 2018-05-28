@@ -2,8 +2,6 @@ import pytest
 from marshmallow import Schema, fields, ValidationError
 
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentMetaSchema
-from pyblast.pysequence import PySequence
-
 
 def test_marshmallow_is_functional():
     class UserSchema(Schema):
@@ -114,9 +112,10 @@ class TestSchema:
 
         @pytest.fixture
         def seq(self):
-            return PySequence('', '', 'myseq', '', None, [], {}, {},
-                              filename='myfilename',
-                              circular=True)
+            return {
+                "name": "myseq",
+                "circular": True,
+            }
 
         def test_with_context(self, unmarshalled_data, seq):
             context = {'db': {'Query_1': seq}}
@@ -137,9 +136,8 @@ class TestSchema:
             context = {'db': {'Query_2': seq}}
             schema_with_context = QuerySchema()
             schema_with_context.context = context
-            dumped_with_context = schema_with_context.dump(unmarshalled_data)
-            assert dumped_with_context['name'] is None
-            assert dumped_with_context['circular'] is None
+            with pytest.raises(ValidationError):
+                dumped_with_context = schema_with_context.dump(unmarshalled_data)
 
     class TestLoadValidationErrors:
 

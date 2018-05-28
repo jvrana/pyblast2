@@ -12,8 +12,8 @@ import shutil
 import tempfile
 from uuid import uuid4
 from blast_bin import install_blast
-from .pysequence import PySequence, PySeqDB
 from .utils import run_cmd
+from .utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
 from .serializer import parse_results, parse_sequence_jsons
 
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentMetaSchema, AlignmentSchema
@@ -240,18 +240,15 @@ class Aligner(Blast):
         db_output_directory = tempfile.mkdtemp()
         fv, out = tempfile.mkstemp(dir=db_output_directory)
 
+        if os.path.isdir(subject_path):
+            subject_path = concat_fasta_to_tempfile(subject_path)
+
         super(Aligner, self).__init__(
             db_name=db_name,
             subject_path=subject_path,
             query_path=query_path,
             db_output_directory=db_output_directory,
             results_out_path=out, **config)
-
-        # seq_db
-        keys = [x['id'] for x in self.subjects]
-        keys.append(self.query['id'])
-        seqs = self.subjects + [self.query]
-        self.seq_dict = dict(zip(keys, seqs))
 
         self.fields = self.fields + (
             'subject_name',
@@ -283,8 +280,45 @@ class Aligner(Blast):
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         return cls('db',
-                   os.path.join(dir_path, '..', 'tests/data/test_data/templates'),
-                   os.path.join(dir_path, '..', 'tests/data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'))
+                   os.path.join(dir_path, '..', 'tests/data/test_data/db.fsa'),
+                   os.path.join(dir_path, '..', 'tests/data/test_data/query.fsa'))
+
+
+class JSONBlast(Aligner):
+    """Object that runs blast starting from JSON inputs and outputs"""
+
+    def __init__(self, subject_json, query_json, **config):
+        dbname = str(uuid4())
+
+        # force json to sequence schema
+        self.query = parse_sequence_jsons(query_json)
+        self.subjects = parse_sequence_jsons(subject_json)
+
+        # create temporary files
+        subject_path = json_to_fasta_tempfile(self.subjects, id="id")
+        query_path = json_to_fasta_tempfile(self.query, id="id")
+
+        # seq_db
+        keys = [x['id'] for x in self.subjects]
+        keys.append(self.query['id'])
+        seqs = self.subjects + [self.query]
+        self.seq_dict = dict(zip(keys, seqs))
+
+        super(JSONBlast, self).__init__(db_name=dbname,
+                                        subject_path=subject_path,
+                                        query_path=query_path,
+                                        **config)
+
+    @classmethod
+    def use_test_data(cls):
+        """Create a Blast instance using predefined data located in tests"""
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dir_path, '..', 'tests/data/test_data/templates.json'), "r") as f:
+            subject = json.load(f)
+        with open(os.path.join(dir_path, '..', 'tests/data/test_data/query.json'), "r") as f:
+            query = json.load(f)
+        return cls(subject_json=subject,
+                   query_json=query)
 
     def parse_results(self, save_as_json=True, delim=','):
         """
@@ -306,57 +340,3 @@ class Aligner(Blast):
             path = os.path.join(self.results_out_path + ".json")
             self.dump_to_json(path)
         return self.results
-
-
-class JSONBlast(Aligner):
-    """Object that runs blast starting from JSON inputs and outputs"""
-
-    def __init__(self, subject_json, query_json, **config):
-        dbname = str(uuid4())
-
-        # force json to sequence schema
-        self.query = parse_sequence_jsons(query_json)
-        self.subjects = parse_sequence_jsons(subject_json)
-
-        # create temporary files
-        subject_path = self.json_to_fasta_file(self.subjects)
-        query_path = self.json_to_fasta_file(self.query)
-
-
-        super(JSONBlast, self).__init__(db_name=dbname,
-                                        subject_path=subject_path,
-                                        query_path=query_path,
-                                        **config)
-
-    def json_to_fasta_file(self, jsondata, prefix=""):
-        """Writes JSON data to a temporary fasta file"""
-        fd, temp_path = tempfile.mkstemp(prefix="query_{}__".format(prefix), suffix=".fasta")
-        with open(temp_path, 'w') as out:
-            out.write(self.json_to_fasta_data(jsondata))
-            out.close()
-        return temp_path
-
-    def json_to_fasta_data(self, jsondata):
-        """Converts json to fasta format"""
-        def convert(seq):
-            return ">{id}\n{sequence}\n".format(**{
-                "id": seq["id"],
-                "size": len(seq["sequence"]),
-                "circular": "circular" if seq["circular"] else "linear",
-                "sequence": seq["sequence"]
-            })
-        if type(jsondata) is list:
-            return '\n'.join([convert(x) for x in jsondata])
-        else:
-            return convert(jsondata)
-
-    @classmethod
-    def use_test_data(cls):
-        """Create a Blast instance using predefined data located in tests"""
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(dir_path, '..', 'tests/data/test_data/templates.json'), "r") as f:
-            subject = json.load(f)
-        with open(os.path.join(dir_path, '..', 'tests/data/test_data/query.json'), "r") as f:
-            query = json.load(f)
-        return cls(subject_json=subject,
-                   query_json=query)

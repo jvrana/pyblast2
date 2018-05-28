@@ -1,15 +1,12 @@
-import pytest
+import os
 
+import pytest
 from pyblast.serializer import _serialize_data, parse_results
-from pyblast.pysequence import PySequence
 
 
 @pytest.fixture(scope="module")
 def example_raw_results(HERE):
     return HERE
-
-
-import os
 
 
 class TestSerializer:
@@ -21,8 +18,14 @@ class TestSerializer:
                 'subject seq': 'TCGCG', }
 
     context = {'db': {
-        '756c05c4-f3f2-4e3b-a344-a4ed75827529': PySequence('', '', 'myseq', '', None, [], {}, {}, filename='myfilename',
-                                                           circular=True)
+        '756c05c4-f3f2-4e3b-a344-a4ed75827529': {
+            "circular": True,
+            "name": "mysubject",
+        },
+        'Query_1': {
+            "circular": False,
+            "name": "myquery",
+        }
     }}
 
     serialized = _serialize_data([raw_data], context)
@@ -31,8 +34,8 @@ class TestSerializer:
             'query acc.': 'Query_1',
             'query length': 10781,
             'q. start': 1374, 'q. end': 5592,
-            'circular': None,
-            'name': None,
+            'circular': False,
+            'name': "myquery",
             'query seq': 'AAAAA',
         },
         'subject': {
@@ -42,7 +45,7 @@ class TestSerializer:
             's. end': 4219,
             'subject strand': 'plus',
             'circular': True,
-            'name': 'myseq',
+            'name': 'mysubject',
             'subject seq': 'TCGCG'
         },
         'meta': {

@@ -9,7 +9,7 @@ def pytest_namespace(here):
     return {'b':
                 Blast('db',
                       os.path.join(here, 'data/test_data/db.fsa'),
-                      os.path.join(here, 'data/test_data/designs/pmodkan-ho-pact1-z4-er-vpr.gb'),
+                      os.path.join(here, 'data/test_data/query.fsa'),
                       os.path.join(here, 'data/blast_results'),
                       os.path.join(here, 'data/blast_results/results.out')
                       )
@@ -27,6 +27,13 @@ def b(here):
 
 
 def test_makedb(b):
+    b.makedb()
+
+def test_blasn(b):
+    b.makedb()
+    b.blastn()
+
+def test_parse_results(b):
     b.makedb()
     b.blastn()
     b.parse_results()
@@ -73,8 +80,8 @@ class TestAligner:
 
     @pytest.fixture
     def aligner(self, here):
-        template_dictionary = os.path.join(here, 'data/test_data/genbank/templates')
-        query_path = os.path.join(here, 'data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb')
+        template_dictionary = os.path.join(here, 'data/test_data/db.fsa')
+        query_path = os.path.join(here, 'data/test_data/query.fsa')
         db_name = 'db'
 
         a = Aligner(db_name, template_dictionary, query_path)
@@ -85,16 +92,14 @@ class TestAligner:
         results = aligner.results
 
         for res in results:
-            assert res['query']['filename'] is not None
-            assert res['query']['circular'] is not None
-            assert res['query']['name'] is not None
+            assert res['query']['circular'] is None
+            assert res['query']['name'] is None
 
     def test_subject(self, aligner):
         results = aligner.results
         for res in results:
-            assert res['subject']['filename'] is not None
-            assert res['subject']['circular'] is not None
-            assert res['subject']['name'] is not None
+            assert res['subject']['circular'] is None
+            assert res['subject']['name'] is None
             assert res['subject']['strand'] in ['plus', 'minus']
 
     def test_example(self):

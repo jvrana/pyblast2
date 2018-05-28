@@ -2,16 +2,15 @@
 
 import shlex
 from subprocess import check_output
-import os
+
 
 # TODO: bin/sh is broken in Travis-CI linux >>>  E OSError: [Errno 8] Exec format error: 'makeblastdb'
-
 # def which(program):
 #     """Return path of executable"""
-# 
+#
 #     def is_exe(fpath):
 #         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-# 
+#
 #     fpath, fname = os.path.split(program)
 #     if fpath:
 #         if is_exe(program):
@@ -43,3 +42,4 @@ def run_cmd(cmd, **kwargs):
 def dict_to_cmd(cmd, **kwargs):
     """Create a command string for cmd and parameters 'kwargs'"""
     return cmd + " " + ' '.join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
+

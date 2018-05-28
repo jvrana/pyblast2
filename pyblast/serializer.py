@@ -100,8 +100,8 @@ def parse_results(data, delim, context=None):
     cleaned = _cleanup_raw_results(data, delim)
 
     # force data to deserialized according to the schemas
-    if context is None:
-        context = {'db': {}}
+    # if context is None:
+    #     context = {'db': {}}
     serialized = _serialize_data(cleaned, context)
 
     # force data back into models

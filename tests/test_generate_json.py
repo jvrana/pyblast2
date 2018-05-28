@@ -1,7 +1,6 @@
 import json
 import requests
 import os
-from pyblast import PySeqDB
 from glob import glob
 from tqdm import tqdm
 

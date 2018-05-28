@@ -15,10 +15,13 @@ class SequenceSchema(Schema):
 
     @pre_load
     def make_default_size(self, data):
-        data = {k: v for k, v in data.items() if v is not None}
+        data = self.clean_data(data)
         if 'size' not in data:
             data['size'] = len(data['sequence'])
         return data
+
+    def clean_data(self, data):
+        return {k: v for k, v in data.items() if v is not None}
 
     @validates_schema
     def validate_size(self, data):
@@ -41,29 +44,45 @@ class FeatureSchema(Schema):
         if value not in [1, -1]:
             raise ValidationError("Strand must by 1 [FORWARD] or -1 [REVERSE].")
 
+    @pre_load
+    def clean_data(self, data):
+        return {k: v for k, v in data.items() if v is not None}
+
 
 class SequenceSchemaMixIn:
     """Sequence Schema methods common to QuerySchema and SubjectSchema"""
     # seq = fields.Method(serialize="get_sequence", deserialize="return_value", allow_none=True)
-    name = fields.Method(serialize="get_name", allow_none=True)
-    circular = fields.Method(serialize="get_circular", allow_none=True)
+    name = fields.Method(serialize="get_name", deserialize="get_val", allow_none=True, )
+    circular = fields.Method(serialize="get_circular", deserialize="get_val", allow_none=True, )
+
+    def get_val(self, x):
+        return x
 
     def get_sequence(self, obj):
         """Searches the context for the sequence using the accession id"""
-        if 'db' not in self.context:
-            return None
+        # if 'db' not in self.context:
+        #     return {
+        #         "name": None,
+        #         "circular": None
+        #     }
         db = self.context['db']
         acc = obj['acc']
         if acc not in db:
-            # TODO: raise error is acc is not in context?
-            return None
+            raise ValidationError("No sequence was found with accession ID \"{}\". Sequence must be found "
+                                  "in schema context with key 'db' or must be run with no context".format(acc))
         return db[obj['acc']]
 
     def get_name(self, obj):
-        return self.get_sequence(obj)["name"]
+        if 'db' not in self.context:
+            return None
+        seq = self.get_sequence(obj)
+        return seq["name"]
 
     def get_circular(self, obj):
-        return self.get_sequence(obj)["circular"]
+        if 'db' not in self.context:
+            return None
+        seq = self.get_sequence(obj)
+        return seq["circular"]
 
 
 class QuerySchema(Schema, SequenceSchemaMixIn):
