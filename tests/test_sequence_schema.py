@@ -6,7 +6,7 @@ from pyblast.schema import SequenceSchema, FeatureSchema
 
 class TestSchema:
     preloaded_data = {
-        "sequence": "asaasdgasdgasdgasdgasgdasgdasdgasdgasgdagasdgasdfasdfdfasdfa",
+        "sequence": "gagagagagagagagggagagagcctatttaatat",
         "circular": True,
         "name": "pBbS8c-RFP",
         "description": "",
@@ -38,7 +38,7 @@ class TestLoad:
         schema = SequenceSchema()
         loaded = schema.load(TestSchema.preloaded_data)
         loaded.pop('id', None)
-        expected = {"size": 60, "notes": {}}
+        expected = {"size": 35, "notes": {}}
         expected.update(TestSchema.preloaded_data)
         assert loaded == expected
 

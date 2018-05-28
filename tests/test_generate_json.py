@@ -4,7 +4,7 @@ import os
 from glob import glob
 from tqdm import tqdm
 from pyblast.utils import fasta_to_json
-
+import pytest
 
 query = """
 query ParseSequences($file: String!, $filename: String!) {
@@ -29,7 +29,7 @@ query ParseSequences($file: String!, $filename: String!) {
 }
 """
 
-
+@pytest.mark.skip(reason="only run once")
 def test_generate_subjects(here):
 
     def parse_to_json(file, filename):
@@ -62,7 +62,7 @@ def test_generate_subjects(here):
         with open(os.path.join(here, "data/test_data/query.json"), 'w') as out:
             json.dump(res.json()["data"]["tojson"]["parsedSequence"], out)
 
-
+@pytest.mark.skip(reason="only run once")
 def test_gen_primer_json(here):
     with open(os.path.join(here, "data/test_data", "primerdb.fsa"), 'r') as infile:
         with open(os.path.join(here, "data/test_data", "primer.json"), 'w') as outfile:

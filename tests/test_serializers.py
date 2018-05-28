@@ -73,7 +73,7 @@ def test_parser(here):
     with open(path, 'r') as f:
         data = f.read()
 
-    parsed = parse_results(data, ',')
+    parsed = parse_results(data, ',').alignments
     expected_first = {
         'subject': {'length': 7883, 'strand': 'plus', 'end': 4219, 'circular': None,
                     'acc': '475e3b13-8206-4a7f-83ba-126c3fd9b7d4', 'start': 1, 'name': None,

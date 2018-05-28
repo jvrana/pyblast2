@@ -136,5 +136,5 @@ class TestJSONBlast:
         j = JSONBlast(subjects, query, task="blastn-short")
         # j.find_perfect_matches()
         j.quick_blastn()
-        print(len(j.results))
-        print(len(j.get_only_perfect_matches()))
+        print(len(j.results.alignments))
+        print(len(j.results.get_perfect().alignments))
