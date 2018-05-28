@@ -1,6 +1,9 @@
 from uuid import uuid4
 
-from marshmallow import Schema, fields, validates, ValidationError, validates_schema, pre_load
+from marshmallow import Schema, fields, validates, validates_schema, pre_load
+from marshmallow import ValidationError
+from pyblast.utils.dna_bases import rc_dict
+import logging
 
 
 class SequenceSchema(Schema):
@@ -29,6 +32,16 @@ class SequenceSchema(Schema):
         if not data['size'] == len1:
             raise ValidationError("size ({}) must be equal to sequence length ({})".format(data['size'], len1))
 
+    @validates("sequence")
+    def validate_sequence(self, sequence):
+        unknown_bases = []
+        for b in sequence:
+            if b not in rc_dict and b not in unknown_bases:
+                unknown_bases.append(b)
+        if len(unknown_bases) > 0:
+            raise ValidationError("Found unknown base(s): {}".format(', '.join(unknown_bases)))
+        if sequence.strip() == "":
+            raise ValidationError("Sequence cannot be empty")
 
 class FeatureSchema(Schema):
     name = fields.String(required=True)
@@ -69,7 +82,7 @@ class SequenceSchemaMixIn:
         acc = obj['acc']
         if acc not in db:
             raise ValidationError("No sequence was found with accession ID \"{}\". Sequence must be found "
-                                  "in schema context with key 'db' or must be run with no context".format(acc))
+                                  "in schema context with key 'db' or must be run with no context".format(acc), "acc")
         return db[obj['acc']]
 
     def get_name(self, obj):
@@ -111,7 +124,7 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
         expected_values = ['plus', 'minus']
         if value not in expected_values:
             raise ValidationError(
-                "subject_strand value must be one of the following: {}".format(','.join(expected_values)))
+                "subject_strand value must be one of the following: {}".format(','.join(expected_values)), "strand")
     # alignment = fields.Nested("AlignmentSchema")
 
 

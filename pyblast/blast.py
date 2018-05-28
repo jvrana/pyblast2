@@ -14,9 +14,10 @@ from uuid import uuid4
 from blast_bin import install_blast
 from .utils import run_cmd
 from .utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
-from .serializer import parse_results, parse_sequence_jsons
+from .results import AlignmentResults
+from pyblast.utils.seq_parser import parse_sequence_jsons
+from .utils import reverse_complement
 
-from pyblast.schema import QuerySchema, SubjectSchema, AlignmentMetaSchema, AlignmentSchema
 
 class PyBlastException(Exception):
     """A generic exception for pyBlast"""
@@ -166,9 +167,20 @@ class Blast(object):
         self.blastn()
         self.parse_results()
 
+    def quick_blastn_short(self):
+        self.makedb()
+        self.blastn_short()
+        self.parse_results()
+
     def blastn(self):
+        self._run("blastn")
+
+    def blastn_short(self):
+        self._run("blastn-short")
+
+    def _run(self, cmd):
         """Run the blastn using the current configuration"""
-        self.run_cmd("blastn", **self.create_config())
+        self.run_cmd(cmd, **self.create_config())
         with open(self.results_out_path, 'rU') as handle:
             self.raw_results = handle.read()
 
@@ -208,15 +220,11 @@ class Blast(object):
         :rtype:
         """
 
-        self.results = parse_results(self.raw_results, delim=delim)
+        self.results = AlignmentResults.parse_results(self.raw_results, delim=delim)
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
-            self.dump_to_json(path)
+            self.results.dump_to_json(path)
         return self.results
-
-    def dump_to_json(self, path):
-        with open(path, 'w') as out:
-            json.dump(self.results, out)
 
     def __str__(self):
         return "{}".format(self.create_config())
@@ -257,22 +265,6 @@ class Aligner(Blast):
             'query_name',
             'query_filename',
             'query_circular')
-
-    def find_perfect_matches(self):
-        """Finding perfect matches using python (i.e. not BLAST)"""
-
-        # get the query sequence as a string
-        query = PySequence.open(self.query_path)[0]
-        for subj in self.seq_db.sequences:
-            subj_seq = str(subj.seq).upper()
-            q_seq = str(query.seq).upper()
-            q_rc_seq = str(query.reverse_complement().seq).upper()
-
-            for match in re.finditer(subj_seq, q_seq):
-                print(match)
-            for rc_match in re.finditer(subj_seq, q_rc_seq):
-                print(rc_match)
-
 
     @classmethod
     def use_test_data(cls):
@@ -335,8 +327,29 @@ class JSONBlast(Aligner):
 
         # TODO: is replacing the raw text the right thing to do?
         raw = re.sub('Query_1', self.query['id'], self.raw_results)
-        self.results = parse_results(raw, delim, context={"db": self.seq_dict})
+        self.results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
-            self.dump_to_json(path)
+            self.results.dump_to_json(path)
         return self.results
+
+    def find_perfect_matches(self, min_match, filter=None):
+        """Finding perfect matches using python (i.e. not BLAST)"""
+
+        # get the query sequence as a string
+
+        from tqdm import tqdm
+        query_seq = self.query["sequence"].upper()
+        for subj in tqdm(self.subjects):
+            subj_seq = subj["sequence"].upper()
+            q_seq = query_seq
+            q_rc_seq = reverse_complement(query_seq)
+
+            for match in re.finditer(subj_seq[10:], q_seq):
+                print(subj['name'])
+                print(match)
+                pass
+            for rc_match in re.finditer(subj_seq[10:], q_rc_seq):
+                print(subj['name'])
+                print(rc_match)
+                pass

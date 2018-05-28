@@ -1,7 +1,12 @@
+import logging
 import os
 import tempfile
 from glob import glob
+
+from marshmallow import ValidationError
+
 from pyblast.schema import SequenceSchema
+from .dna_bases import rc_dict
 
 
 def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
@@ -12,14 +17,14 @@ def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
         out.close()
     return temp_path
 
-
 def json_to_fasta_data(jsondata, id="name"):
     """Converts json to fasta format"""
 
-    schema = SequenceSchema()
-    seq = schema.load(jsondata, many=type(jsondata) is list)
+    seq = parse_sequence_jsons(jsondata)
 
     def convert(data):
+        if "sequence" not in data:
+            pass
         return ">{id}\n{sequence}\n".format(id=data[id], sequence=data["sequence"].upper())
 
     if type(jsondata) is list:
@@ -41,8 +46,8 @@ def fasta_to_json(fasta, id="name"):
             "sequence": ''.join(seqs).strip(),
             "circular": False
         })
-    schema = SequenceSchema(many=True)
-    return schema.load(data)
+    return parse_sequence_jsons(data)
+
 
 def concat_fasta_to_tempfile(dir):
     # concatenate files if subject_path is directory
@@ -53,3 +58,19 @@ def concat_fasta_to_tempfile(dir):
         with open(fsa, 'r') as f:
             seqs += fasta_to_json(f.read())
     return json_to_fasta_tempfile(seqs)
+
+
+def reverse_complement(seq):
+    return ''.join([rc_dict[x] for x in seq])
+
+
+def parse_sequence_jsons(data):
+    many = type(data) is list
+    schema = SequenceSchema(many=many)
+    try:
+        result = schema.load(data)
+    except ValidationError as err:
+        logging.error(err.messages)
+        result = err.valid_data
+        result = [s[1] for s in enumerate(result) if s[0] not in err.messages.keys()]
+    return result

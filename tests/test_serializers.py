@@ -1,7 +1,10 @@
 import os
 
 import pytest
-from pyblast.serializer import _serialize_data, parse_results
+from pyblast.results import AlignmentResults
+
+_serialize_data = AlignmentResults._serialize_data
+parse_results = AlignmentResults.parse_results
 
 
 @pytest.fixture(scope="module")

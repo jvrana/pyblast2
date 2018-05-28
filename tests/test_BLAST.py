@@ -38,7 +38,7 @@ def test_parse_results(b):
     b.blastn()
     b.parse_results()
 
-    results = b.results
+    results = b.results.alignments
     res = results[0]
     assert 'query' in res
     assert 'subject' in res
@@ -91,13 +91,13 @@ class TestAligner:
     def test_query(self, aligner):
         results = aligner.results
 
-        for res in results:
+        for res in results.alignments:
             assert res['query']['circular'] is None
             assert res['query']['name'] is None
 
     def test_subject(self, aligner):
         results = aligner.results
-        for res in results:
+        for res in results.alignments:
             assert res['subject']['circular'] is None
             assert res['subject']['name'] is None
             assert res['subject']['strand'] in ['plus', 'minus']
@@ -105,10 +105,6 @@ class TestAligner:
     def test_example(self):
         a = Aligner.use_test_data()
         a.quick_blastn()
-
-    def test_perfect_matches(self):
-        a = Aligner.use_test_data()
-        a.find_perfect_matches()
     # def test_get_metadata():
     #     a = Aligner.use_test_data()
     #     a.quick_blastn()
@@ -119,8 +115,10 @@ class TestJSONBlast:
 
     @pytest.fixture
     def aligner(self, here):
-        query = json.load(here, "data/test_data/query.json")
-        subjects = json.load(here, "data/test_data/templates.json")
+        with open(os.path.join(here, "data/test_data/templates.json"), 'r') as f:
+            subjects = json.load(f)
+        with open(os.path.join(here, "data/test_data/query.json"), 'r') as f:
+            query = json.load(f)
         j = JSONBlast(query, subjects)
         j.quick_blastn()
         return j
@@ -129,3 +127,14 @@ class TestJSONBlast:
         j = JSONBlast.use_test_data()
         j.quick_blastn()
         pass
+
+    def test_perfect_matches(self, here):
+        with open(os.path.join(here, "data/test_data/primer.json"), 'r') as f:
+            subjects = json.load(f)
+        with open(os.path.join(here, "data/test_data/query.json"), 'r') as f:
+            query = json.load(f)
+        j = JSONBlast(subjects, query, task="blastn-short")
+        # j.find_perfect_matches()
+        j.quick_blastn()
+        print(len(j.results))
+        print(len(j.get_only_perfect_matches()))
