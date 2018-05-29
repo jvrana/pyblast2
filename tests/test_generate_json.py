@@ -2,7 +2,6 @@ import json
 import requests
 import os
 from glob import glob
-from tqdm import tqdm
 from pyblast.utils import fasta_to_json
 import pytest
 

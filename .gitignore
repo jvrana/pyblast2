@@ -229,3 +229,4 @@ tests/data/test_data/seqio_plasmids/concatenated/concat.json
 _paths.json
 .pytest_cache/v/cache/lastfailed
 .pytest_cache/v/cache/nodeids
+tests/data/blast_results/db.nin
