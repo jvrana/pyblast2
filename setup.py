@@ -28,7 +28,7 @@ setup(
     title=ver['title'],
     name='pyblast',
     version=ver['version'],
-    packages=['pyblast', 'blast_bin', 'tests'],
+    packages=['pyblast', 'blast_bin', 'tests', 'pyblast.utils'],
     url=ver['url'],
     license='MIT',
     author=ver['author'],

@@ -12,11 +12,11 @@ import shutil
 import tempfile
 from uuid import uuid4
 from blast_bin import install_blast
-from .utils import run_cmd
-from .utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
-from .results import AlignmentResults
+from pyblast.utils import run_cmd
+from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
+from pyblast.results import AlignmentResults
 from pyblast.utils.seq_parser import parse_sequence_jsons
-from .utils import reverse_complement
+from pyblast.utils import reverse_complement
 
 
 class PyBlastException(Exception):
