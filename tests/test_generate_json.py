@@ -46,7 +46,7 @@ def test_generate_subjects(here):
     directory = os.path.join(here, "data/test_data/genbank/templates")
 
     sequences = []
-    for path in tqdm(glob(os.path.join(directory, "*.gb"))):
+    for path in glob(os.path.join(directory, "*.gb")):
         with open(path, 'r') as f:
             res = parse_to_json(f.read(), os.path.basename(path))
             sequences.append(res.json())
