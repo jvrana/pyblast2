@@ -1,3 +1,5 @@
+"""seq_parser.py"""
+
 import logging
 import os
 import tempfile
@@ -16,6 +18,7 @@ def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
         out.write(json_to_fasta_data(jsondata, id=id))
         out.close()
     return temp_path
+
 
 def json_to_fasta_data(jsondata, id="name"):
     """Converts json to fasta format"""
@@ -60,11 +63,18 @@ def concat_fasta_to_tempfile(dir):
     return json_to_fasta_tempfile(seqs)
 
 
-def reverse_complement(seq):
+def complement(seq):
+    """Complement a DNA sequence"""
     return ''.join([rc_dict[x] for x in seq])
 
 
+def reverse_complement(seq):
+    """Reverse complement a sequence"""
+    return complement(seq)[::-1]
+
+
 def parse_sequence_jsons(data):
+    """Forces json data into the SequenceSchema """
     many = type(data) is list
     schema = SequenceSchema(many=many)
     try:

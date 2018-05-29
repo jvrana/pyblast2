@@ -1,15 +1,41 @@
+import os
+import re
 from distutils.core import setup
 
+tests_require = [
+    'pytest',
+    'pytest-cov'
+]
+
+install_requires = [
+    'marshmallow==3.0.0b10'
+]
+
+def parse_version_file():
+    here = os.path.abspath(os.path.dirname(__file__))
+    ver_dict = {}
+    with open(os.path.join(here, 'pyblast', '__version__.py'), 'r') as f:
+        for line in f.readlines():
+            m = re.match('__(\w+)__\s*=\s*(.+)', line)
+            if m:
+                ver_dict[m.group(1)] = m.group(2)
+    return ver_dict
+
+
+ver = parse_version_file()
+
 setup(
+    title=ver['title'],
     name='pyblast',
-    version='0.2.0a',
+    version=ver['version'],
     packages=['pyblast', 'blast_bin', 'tests'],
-    url='',
+    url=ver['url'],
     license='MIT',
-    author='Justin D. Vrana',
+    author=ver['author'],
     author_email='justin.vrana@gmail.com',
     description='Python wrapper for running BLAST locally',
-    install_requires=['biopython', 'marshmallow==3.0.0b10'],
+    install_requires=['marshmallow==3.0.0b10'],
+    tests_require=tests_require,
     entry_points={
         'console_scripts': [
             'install_pyblast = blast_bin.install_blast:main',

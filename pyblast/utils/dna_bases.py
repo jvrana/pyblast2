@@ -1,3 +1,5 @@
+"""dna_bases.py"""
+
 s1 = "ATUGCYRSWKMBDHVN"
 s2 = "TAACGRYSWMKVHDBN"
 

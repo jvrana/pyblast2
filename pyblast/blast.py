@@ -334,22 +334,22 @@ class JSONBlast(Aligner):
         return self.results
 
     def find_perfect_matches(self, min_match, filter=None):
+        raise DeprecationWarning("This method is depreciated. Please use blastn with --task blastn-short")
         """Finding perfect matches using python (i.e. not BLAST)"""
 
         # get the query sequence as a string
 
-        from tqdm import tqdm
         query_seq = self.query["sequence"].upper()
-        for subj in tqdm(self.subjects):
+        for subj in self.subjects:
             subj_seq = subj["sequence"].upper()
             q_seq = query_seq
             q_rc_seq = reverse_complement(query_seq)
 
-            for match in re.finditer(subj_seq[10:], q_seq):
+            for match in re.finditer(subj_seq, q_seq):
                 print(subj['name'])
                 print(match)
                 pass
-            for rc_match in re.finditer(subj_seq[10:], q_rc_seq):
+            for rc_match in re.finditer(subj_seq, q_rc_seq):
                 print(subj['name'])
                 print(rc_match)
                 pass

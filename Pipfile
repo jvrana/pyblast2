@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 marshmallow = "==3.0.0b10"
-tqdm = "*"
 
 [dev-packages]
 pandoc = "*"
@@ -13,3 +12,4 @@ coveralls = "*"
 pytest = "*"
 pytest-cov = "*"
 pylint = "*"
+tox = "*"

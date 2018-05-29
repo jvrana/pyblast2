@@ -1,4 +1,5 @@
-"""Data parser for BLAST"""
+"""AlignmentResults"""
+
 import re
 import json
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
@@ -16,6 +17,7 @@ def str_to_f_to_i(v):
     return v
 
 class AlignmentResults(object):
+    """Alignments results container"""
 
     def __init__(self, alignments):
         self.alignments = alignments

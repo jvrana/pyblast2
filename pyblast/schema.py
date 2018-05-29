@@ -1,9 +1,11 @@
+"""schema.py"""
+
 from uuid import uuid4
 
 from marshmallow import Schema, fields, validates, validates_schema, pre_load
 from marshmallow import ValidationError
+
 from pyblast.utils.dna_bases import rc_dict
-import logging
 
 
 class SequenceSchema(Schema):
@@ -42,6 +44,7 @@ class SequenceSchema(Schema):
             raise ValidationError("Found unknown base(s): {}".format(', '.join(unknown_bases)))
         if sequence.strip() == "":
             raise ValidationError("Sequence cannot be empty")
+
 
 class FeatureSchema(Schema):
     name = fields.String(required=True)
@@ -100,19 +103,14 @@ class SequenceSchemaMixIn:
 
 class QuerySchema(Schema, SequenceSchemaMixIn):
     acc = fields.String(data_key="query acc.", required=True)
-    # filename = fields.String(data_key="query filename")
-    # circular = fields.Boolean(data_key="query circular")
     start = fields.Integer(data_key="q. start", required=True)
     end = fields.Integer(data_key="q. end", required=True)
     length = fields.Integer(data_key='query length', required=True)
     sequence = fields.String(data_key='query seq')
-    # alignment = fields.Nested("AlignmentSchema")
 
 
 class SubjectSchema(Schema, SequenceSchemaMixIn):
     acc = fields.String(data_key="subject acc.", required=True)
-    # filename = fields.String(data_key="subject filename")
-    # circular = fields.Boolean(data_key="subject circular")
     start = fields.Integer(data_key="s. start", required=True)
     end = fields.Integer(data_key="s. end", required=True)
     length = fields.Integer(data_key='subject length', required=True)
@@ -125,7 +123,6 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
         if value not in expected_values:
             raise ValidationError(
                 "subject_strand value must be one of the following: {}".format(','.join(expected_values)), "strand")
-    # alignment = fields.Nested("AlignmentSchema")
 
 
 class AlignmentMetaSchema(Schema):

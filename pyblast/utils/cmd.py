@@ -1,27 +1,7 @@
-"""PyBlast utilities"""
+"""cmd.py"""
 
 import shlex
 from subprocess import check_output
-
-
-# TODO: bin/sh is broken in Travis-CI linux >>>  E OSError: [Errno 8] Exec format error: 'makeblastdb'
-# def which(program):
-#     """Return path of executable"""
-#
-#     def is_exe(fpath):
-#         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-#
-#     fpath, fname = os.path.split(program)
-#     if fpath:
-#         if is_exe(program):
-#             return program
-#     else:
-#         for path in os.environ["PATH"].split(os.pathsep):
-#             path = path.strip('"')
-#             exe_file = os.path.join(path, program)
-#             if is_exe(exe_file):
-#                 return exe_file
-#     return None
 
 
 def run_cmd_str(cmd_str):

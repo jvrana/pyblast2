@@ -3,7 +3,8 @@ import json
 import pytest
 
 from pyblast import Blast, Aligner, JSONBlast
-
+from pyblast.schema import SequenceSchema
+from pyblast.utils.seq_parser import reverse_complement
 
 def pytest_namespace(here):
     return {'b':
@@ -133,8 +134,9 @@ class TestJSONBlast:
             subjects = json.load(f)
         with open(os.path.join(here, "data/test_data/query.json"), 'r') as f:
             query = json.load(f)
+
         j = JSONBlast(subjects, query, task="blastn-short")
-        # j.find_perfect_matches()
         j.quick_blastn()
+        alignments = j.results.get_perfect().get_with_perfect_subjects().alignments
         print(len(j.results.alignments))
-        print(len(j.results.get_perfect().alignments))
+        print(len(alignments))
