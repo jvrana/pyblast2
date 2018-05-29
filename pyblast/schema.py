@@ -20,13 +20,16 @@ class SequenceSchema(Schema):
 
     @pre_load
     def make_default_size(self, data):
-        data = self.clean_data(data)
-        if 'size' not in data:
-            data['size'] = len(data['sequence'])
+        if type(data) is dict:
+            data = self.clean_data(data)
+            if 'size' not in data:
+                data['size'] = len(data['sequence'])
         return data
 
     def clean_data(self, data):
-        return {k: v for k, v in data.items() if v is not None}
+        if type(data) is dict:
+            return {k: v for k, v in data.items() if v is not None}
+        return data
 
     @validates_schema
     def validate_size(self, data):

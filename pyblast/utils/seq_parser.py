@@ -77,10 +77,14 @@ def parse_sequence_jsons(data):
     """Forces json data into the SequenceSchema """
     many = type(data) is list
     schema = SequenceSchema(many=many)
+    result = None
     try:
         result = schema.load(data)
     except ValidationError as err:
         logging.error(err.messages)
-        result = err.valid_data
-        result = [s[1] for s in enumerate(result) if s[0] not in err.messages.keys()]
+        if many:
+            result = err.valid_data
+            result = [s[1] for s in enumerate(result) if s[0] not in err.messages.keys()]
+        else:
+            raise err
     return result

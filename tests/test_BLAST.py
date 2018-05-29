@@ -140,3 +140,6 @@ class TestJSONBlast:
         alignments = j.results.get_perfect().get_with_perfect_subjects().alignments
         print(len(j.results.alignments))
         print(len(alignments))
+
+    def test_make_from_json(self):
+        j = JSONBlast([{"sequence": "AGGT", "name": "myseq", "circular": False}], {"sequence": "AGGTATA", "name": "myseq2", "circular": False})
