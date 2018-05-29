@@ -1,19 +1,15 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
-biopython = "*"
-
+marshmallow = "==3.0.0b10"
 
 [dev-packages]
-
 pandoc = "*"
 coveralls = "*"
 pytest = "*"
 pytest-cov = "*"
 pylint = "*"
+tox = "*"

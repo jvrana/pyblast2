@@ -210,12 +210,12 @@ venv.bak/
 
 /blast_bin/ncbi-blast*
 *.tar.gz
-/tests/.cache/
+tests/.cache/
+*.nin
+*.nhr
 tests/data/blast_results/db.json
 tests/data/blast_results/db.fsa
-tests/data/blast_results/db.json
-tests/data/blast_results/db.nhr
-tests/data/blast_results/db.nin
+tests/data/blast_results/results.out.json
 tests/data/blast_results/results.out
 tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
 tests/data/test_data/seqio_plasmids/concatenated/concat.json
@@ -225,7 +225,8 @@ tests/data/test_data/seqio_plasmids/concatenated/concat.json
 *.pyc
 /blast_bin/_paths.json
 /blast_bin/bin/
-*.pyc
 *.iml
 _paths.json
-*.pyc
+.pytest_cache/v/cache/lastfailed
+.pytest_cache/v/cache/nodeids
+tests/data/blast_results/db.nin

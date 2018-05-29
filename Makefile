@@ -6,6 +6,11 @@ init:
 	pipenv install --dev --skip-lock
 
 
+build:
+#	pipenv lock --requirements > requirements.txt
+#	pipenv lock --dev --requirements > requirements_dev.txt
+	docker build . --tag pyblast:testing
+
 blast:
 	pipenv run python blast_bin/install_blast.py $(EMAIL) $(PLATFORM)
 
