@@ -3,7 +3,7 @@ from pyblast.utils.seq_parser import parse_sequence_jsons
 import os
 import json
 
-def test_fast_to_json(here):
+def test_fasta_to_json(here):
     data = """
 >16079__W17-pJZC-gRNATarSeqSwap-R .
 A
