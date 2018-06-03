@@ -20,7 +20,11 @@ class AlignmentResults(object):
     """Alignments results container"""
 
     def __init__(self, alignments):
-        self.alignments = alignments
+        self._alignments = tuple(alignments)
+
+    @property
+    def alignments(self):
+        return self._alignments
 
     @staticmethod
     def _extract_metadata(r, delim):
