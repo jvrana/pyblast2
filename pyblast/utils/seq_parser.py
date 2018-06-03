@@ -77,6 +77,7 @@ def parse_sequence_jsons(data):
     """Forces json data into the SequenceSchema """
     many = type(data) is list
     schema = SequenceSchema(many=many)
+    data = schema.dump(data)
     result = None
     try:
         result = schema.load(data)

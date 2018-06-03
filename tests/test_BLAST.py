@@ -250,3 +250,46 @@ class TestJSONBlast:
         j.quick_blastn()
         results = j.results.alignments
         print(results)
+
+    def test_json_blast_with_repeats(self):
+        """We expect no hits from repeats"""
+        from collections import OrderedDict
+        j = JSONBlast(
+            [
+                OrderedDict({"id": "ABCDEFG",
+                 "sequence": "agtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtag",
+                 "name": "myseq",
+                 "circular": False})
+            ],
+            OrderedDict({"id": "1234",
+             "sequence": "agtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtagagtag",
+             "name": "myseq2",
+             "circular": False})
+        )
+        j.quick_blastn()
+        results = j.results.alignments
+        print(results)
+
+    def test_json_blast_with_objects(self):
+        class Sequence(object):
+
+            def __init__(self, **kwargs):
+                self.__dict__.update(**kwargs)
+
+        query = Sequence(
+            **{"id": "ABCDEFG",
+             "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "name": "myseq",
+             "circular": False}
+        )
+
+        r = SequenceSchema().dump(query)
+
+        from copy import copy
+        subject = copy(query)
+
+        from collections import OrderedDict
+        j = JSONBlast([subject], query)
+        j.quick_blastn()
+        results = j.results.alignments
+        assert len(results) > 0
