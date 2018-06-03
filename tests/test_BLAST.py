@@ -5,6 +5,8 @@ import pytest
 from pyblast import Blast, Aligner, JSONBlast
 from pyblast.schema import SequenceSchema
 from pyblast.utils.seq_parser import reverse_complement
+from pyblast.exceptions import PyBlastException
+
 
 def pytest_namespace(here):
     return {'b':
@@ -288,8 +290,29 @@ class TestJSONBlast:
         from copy import copy
         subject = copy(query)
 
-        from collections import OrderedDict
         j = JSONBlast([subject], query, preloaded=True)
         j.quick_blastn()
         results = j.results.alignments
         assert len(results) > 0
+
+    def test_json_blast_with_objects_raises_pyblasterror(self):
+        class Sequence(object):
+
+            def __init__(self, **kwargs):
+                self.__dict__.update(**kwargs)
+
+        query = Sequence(
+            **{"id": "ABCDEFG",
+             "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "name": "myseq",
+             "circular": False}
+        )
+
+        r = SequenceSchema().dump(query)
+
+        from copy import copy
+        subject = copy(query)
+
+        from collections import OrderedDict
+        with pytest.raises(PyBlastException):
+            j = JSONBlast([subject], query, preloaded=False)

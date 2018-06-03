@@ -294,8 +294,20 @@ class JSONBlast(Aligner):
 
         # force json to sequence schema
         if not preloaded:
-            query_json = load_sequence_jsons(query_json)
-            subject_json = load_sequence_jsons(subject_json)
+            try:
+                query_json = load_sequence_jsons(query_json)
+            except ValidationError as e:
+                raise PyBlastException("Validation error while deserializing query sequence data.\n"
+                                       " Received a {datatype} and attempted to load using schema.\n"
+                                       " Are you sure you shouldn't add 'preloaded=True'?\n"
+                                       " ValidationError: {error}".format(datatype=type(query_json), error=e.messages))
+            try:
+                subject_json = load_sequence_jsons(subject_json)
+            except ValidationError as e:
+                raise PyBlastException("Validation error while deserializing subject sequence data.\n"
+                                       " Received a {datatype} and attempted to load using schema.\n"
+                                       " Are you sure you shouldn't add 'preloaded=True'?\n"
+                                       " ValidationError: {error}".format(datatype=type(query_json), error=e.messages))
 
         try:
             self.query = dump_sequence_jsons(query_json)
