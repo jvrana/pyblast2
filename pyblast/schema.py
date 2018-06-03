@@ -14,20 +14,20 @@ class SequenceSchema(Schema):
     circular = fields.Boolean(required=True)
     name = fields.String(required=True)
     id = fields.String(missing=lambda: str(uuid4()))
-    description = fields.String(missing="")
+    description = fields.String(missing="", allow_none=True)
     features = fields.Nested("FeatureSchema", many=True, missing=list())
     notes = fields.Dict(missing=dict())
 
     @pre_load
     def make_default_size(self, data):
-        if type(data) is dict:
+        if issubclass(data.__class__, dict):
             data = self.clean_data(data)
             if 'size' not in data:
                 data['size'] = len(data['sequence'])
         return data
 
     def clean_data(self, data):
-        if type(data) is dict:
+        if issubclass(data.__class__, dict):
             return {k: v for k, v in data.items() if v is not None}
         return data
 

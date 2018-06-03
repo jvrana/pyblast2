@@ -189,3 +189,45 @@ class TestJSONBlast:
 
         assert results[0]['query'] == expected_query
         assert results[0]['subject'] == expected_subject
+
+    def test_json_blast_with_orderdict(self):
+        """JSONBlast should handle the subclasses of dict as inputs as well as dict"""
+        from collections import OrderedDict
+        j = JSONBlast(
+            [
+                OrderedDict({"id": "ABCDEFG",
+                 "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+                 "name": "myseq",
+                 "circular": False})
+            ],
+            OrderedDict({"id": "1234",
+             "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "name": "myseq2",
+             "circular": False})
+        )
+        j.quick_blastn()
+        results = j.results.alignments
+
+        expected_query = {
+            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "name": "myseq2",
+            "circular": False,
+            "length": 93,
+            "start": 1,
+            "end": 93,
+            "sequence_id": "1234"
+        }
+
+        expected_subject = {
+            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "name": "myseq",
+            "circular": False,
+            "length": 93,
+            "start": 1,
+            "end": 93,
+            "strand": "plus",
+            "sequence_id": "ABCDEFG"
+        }
+
+        assert results[0]['query'] == expected_query
+        assert results[0]['subject'] == expected_subject
