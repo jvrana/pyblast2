@@ -1,5 +1,6 @@
 from pyblast.utils import fasta_to_json, json_to_fasta_data, json_to_fasta_tempfile, concat_fasta_to_tempfile
-from pyblast.utils.seq_parser import parse_sequence_jsons
+from pyblast.utils.seq_parser import dump_sequence_jsons
+from pyblast.schema import SequenceSchema
 import os
 import json
 
@@ -88,10 +89,10 @@ def test_sequence_parser():
     seqs = [
         {"id": "AIUFOIDUOGLNEIOJ",
          "name": "myseq",
-         "sequence": "AGTGCTGTAGTGTTA",
+         "bases": "AGTGCTGTAGTGTTA",
          "description": None,
          "circular": False}
     ]
 
-    result = parse_sequence_jsons(seqs)
+    result = dump_sequence_jsons(seqs)
     print(result)

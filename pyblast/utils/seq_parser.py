@@ -8,11 +8,11 @@ from glob import glob
 from marshmallow import ValidationError
 
 from pyblast.schema import SequenceSchema
-from .dna_bases import rc_dict
+from pyblast.utils.dna_bases import rc_dict
 
 
 def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
-    """Writes JSON data to a temporary fasta file"""
+    """Writes serialized sequence model data to a temporary fasta file"""
     fd, temp_path = tempfile.mkstemp(prefix="query_{}__".format(prefix), suffix=".fasta")
     with open(temp_path, 'w') as out:
         out.write(json_to_fasta_data(jsondata, id=id))
@@ -21,9 +21,9 @@ def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
 
 
 def json_to_fasta_data(jsondata, id="name"):
-    """Converts json to fasta format"""
-
-    seq = parse_sequence_jsons(jsondata)
+    """Converts a serialized sequence model to fasta format"""
+    loaded = load_sequence_jsons(jsondata)
+    seq = dump_sequence_jsons(loaded)
 
     def convert(data):
         if "sequence" not in data:
@@ -37,6 +37,16 @@ def json_to_fasta_data(jsondata, id="name"):
 
 
 def fasta_to_json(fasta, id="name"):
+    """
+    Dumps a fasta file to serialize sequence
+
+    :param fasta:
+    :type fasta:
+    :param id:
+    :type id:
+    :return:
+    :rtype:
+    """
     data = []
     sequences = fasta.split('>')[1:]
     for seq in sequences:
@@ -46,10 +56,10 @@ def fasta_to_json(fasta, id="name"):
         cols = header.split('|')
         data.append({
             "{}".format(id): cols[0],
-            "sequence": ''.join(seqs).strip(),
+            "bases": ''.join(seqs).strip(),
             "circular": False
         })
-    return parse_sequence_jsons(data)
+    return dump_sequence_jsons(data)
 
 
 def concat_fasta_to_tempfile(dir):
@@ -73,14 +83,18 @@ def reverse_complement(seq):
     return complement(seq)[::-1]
 
 
-def parse_sequence_jsons(data):
-    """Forces json data into the SequenceSchema """
-    many = type(data) is list
+def load_sequence_jsons(preloaded_data):
+    many = issubclass(preloaded_data.__class__, list)
     schema = SequenceSchema(many=many)
-    data = schema.dump(data)
+    return schema.load(preloaded_data)
+
+
+def dump_sequence_jsons(postloaded_data):
+    """Forces json data into the SequenceSchema """
+    many = issubclass(postloaded_data.__class__, list)
+    schema = SequenceSchema(many=many)
     try:
-        loaded = schema.load(data)
-        dumped = schema.dump(loaded)
+        dumped = schema.dump(postloaded_data)
     except ValidationError as err:
         logging.error(err.messages)
         if many:

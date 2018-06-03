@@ -270,7 +270,7 @@ class TestJSONBlast:
         results = j.results.alignments
         print(results)
 
-    def test_json_blast_with_objects(self):
+    def test_json_blast_with_preloaded_objects(self):
         class Sequence(object):
 
             def __init__(self, **kwargs):
@@ -278,7 +278,7 @@ class TestJSONBlast:
 
         query = Sequence(
             **{"id": "ABCDEFG",
-             "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
              "name": "myseq",
              "circular": False}
         )
@@ -289,7 +289,7 @@ class TestJSONBlast:
         subject = copy(query)
 
         from collections import OrderedDict
-        j = JSONBlast([subject], query)
+        j = JSONBlast([subject], query, preloaded=True)
         j.quick_blastn()
         results = j.results.alignments
         assert len(results) > 0

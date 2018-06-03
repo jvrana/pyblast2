@@ -38,16 +38,18 @@ class TestLoad:
         schema = SequenceSchema()
         loaded = schema.load(TestSchema.preloaded_data)
         loaded.pop('id', None)
-        expected = {"size": 35, "notes": {}}
+        expected = {"notes": {}}
         expected.update(TestSchema.preloaded_data)
+        expected['bases'] = expected['sequence']
+        del expected['sequence']
         assert loaded == expected
 
-    def test_validation_error_wrong_size(self):
-        schema = SequenceSchema()
-        test_data = TestSchema.preloaded_data
-        test_data['size'] = 50
-        with pytest.raises(ValidationError):
-            schema.load(test_data)
+    # def test_validation_error_wrong_size(self):
+    #     schema = SequenceSchema()
+    #     test_data = TestSchema.preloaded_data
+    #     test_data['size'] = 50
+    #     with pytest.raises(ValidationError):
+    #         schema.load(test_data)
 
     def test_feature_load(self):
         schema = FeatureSchema()

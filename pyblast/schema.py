@@ -9,43 +9,41 @@ from pyblast.utils.dna_bases import rc_dict
 
 
 class SequenceSchema(Schema):
-    size = fields.Integer()
-    sequence = fields.String(required=True)
+    size = fields.Method("get_size")
+    bases = fields.String(required=True, data_key='sequence')
     circular = fields.Boolean(required=True)
     name = fields.String(required=True)
-    id = fields.String(missing=lambda: str(uuid4()))
-    description = fields.String(missing="", allow_none=True)
-    features = fields.Nested("FeatureSchema", many=True, missing=list())
-    notes = fields.Dict(missing=dict())
+    id = fields.String(default=lambda: str(uuid4()))
+    description = fields.String(default="", allow_none=True)
+    features = fields.Nested("FeatureSchema", many=True, default=list())
+    notes = fields.Dict(default=dict())
 
-    @pre_load
-    def make_default_size(self, data):
-        if issubclass(data.__class__, dict):
-            data = self.clean_data(data)
-            if 'size' not in data:
-                data['size'] = len(data['sequence'])
-        return data
+    def get_size(self, obj):
+        if hasattr(obj, 'bases'):
+            return len(obj.bases)
+        else:
+            return len(obj['bases'])
 
     def clean_data(self, data):
         if issubclass(data.__class__, dict):
             return {k: v for k, v in data.items() if v is not None}
         return data
 
-    @validates_schema
-    def validate_size(self, data):
-        len1 = len(data['sequence'])
-        if not data['size'] == len1:
-            raise ValidationError("size ({}) must be equal to sequence length ({})".format(data['size'], len1))
+    # @validates_schema
+    # def validate_size(self, data):
+    #     len1 = len(data['sequence'])
+    #     if not data['size'] == len1:
+    #         raise ValidationError("size ({}) must be equal to sequence length ({})".format(data['size'], len1))
 
-    @validates("sequence")
-    def validate_sequence(self, sequence):
+    @validates("bases")
+    def validate_sequence(self, bases):
         unknown_bases = []
-        for b in sequence:
+        for b in bases:
             if b not in rc_dict and b not in unknown_bases:
                 unknown_bases.append(b)
         if len(unknown_bases) > 0:
             raise ValidationError("Found unknown base(s): {}".format(', '.join(unknown_bases)))
-        if sequence.strip() == "":
+        if bases.strip() == "":
             raise ValidationError("Sequence cannot be empty")
 
 

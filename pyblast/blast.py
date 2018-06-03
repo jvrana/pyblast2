@@ -15,7 +15,7 @@ from blast_bin import install_blast
 from pyblast.utils import run_cmd
 from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
 from pyblast.results import AlignmentResults
-from pyblast.utils.seq_parser import parse_sequence_jsons
+from pyblast.utils.seq_parser import dump_sequence_jsons, load_sequence_jsons
 from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
 from marshmallow import ValidationError
@@ -277,16 +277,32 @@ class Aligner(Blast):
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, **config):
+    def __init__(self, subject_json, query_json, preloaded=False, **config):
+        """
+        Initialize JSONBlast
+
+        :param subject_json: subject sequences as serialized json
+        :type subject_json: list of dict, mapping, or Object
+        :param query_json: query sequence as serialized json
+        :type query_json: dict, mapping, or Object
+        :param preloaded: whether the data is preloaded into the SequenceSchema or not. Practially, this means the "bases"
+        for the sequence if refered to as "sequence" in serialized data and as "bases" after data is loaded (preloaded=True)
+        :param config: optional arguments
+        :type config: dict
+        """
         dbname = str(uuid4())
 
         # force json to sequence schema
+        if not preloaded:
+            query_json = load_sequence_jsons(query_json)
+            subject_json = load_sequence_jsons(subject_json)
+
         try:
-            self.query = parse_sequence_jsons(query_json)
+            self.query = dump_sequence_jsons(query_json)
         except ValidationError as e:
             raise PyBlastException("There was a parsing error while parsing the query sequence.\n{}".format(e.messages))
         try:
-            self.subjects = parse_sequence_jsons(subject_json)
+            self.subjects = dump_sequence_jsons(subject_json)
         except ValidationError as e:
             raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}".format(e.messages))
 
