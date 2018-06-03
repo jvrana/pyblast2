@@ -38,7 +38,7 @@ class TestLoad:
         schema = SequenceSchema()
         loaded = schema.load(TestSchema.preloaded_data)
         loaded.pop('id', None)
-        expected = {"notes": {}}
+        expected = {}
         expected.update(TestSchema.preloaded_data)
         expected['bases'] = expected['sequence']
         del expected['sequence']
