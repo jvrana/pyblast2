@@ -17,11 +17,8 @@ from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
 from pyblast.results import AlignmentResults
 from pyblast.utils.seq_parser import parse_sequence_jsons
 from pyblast.utils import reverse_complement
+from pyblast.exceptions import PyBlastException
 from marshmallow import ValidationError
-
-
-class PyBlastException(Exception):
-    """A generic exception for pyBlast"""
 
 
 class Blast(object):

@@ -3,7 +3,7 @@
 import re
 import json
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
-
+from pyblast.exceptions import PyBlastException
 
 def str_to_f_to_i(v):
     try:
@@ -29,9 +29,11 @@ class AlignmentResults(object):
             '#\s*(?P<blast_ver>.+)\n' +
             '# Query:\s*(?P<query>.*)\n' +
             '# Database:\s*(?P<database>.+)\n' +
-            '# Fields:\s*(?P<fields>.+)',
+            '(?:# Fields:\s*(?P<fields>.+))?',
             r)
         metadata = g.groupdict()
+        if metadata['fields'] is None:
+            return metadata
         fields_array = re.split('\s*{}\s*'.format(delim), metadata['fields'])
         metadata['fields'] = fields_array
         return metadata
@@ -67,9 +69,11 @@ class AlignmentResults(object):
         if raw_text.strip() == '':
             return {}
         meta = cls._extract_metadata(raw_text, delim)
-        fields = tuple(meta['fields'])
+        fields = meta['fields']
+        if fields is None:
+            return [{}]
         alignment_rows = cls._get_alignment_rows(raw_text)
-        match_dicts = cls._validate_matches(alignment_rows, fields)
+        match_dicts = cls._validate_matches(alignment_rows, tuple(fields))
         return match_dicts
 
     @staticmethod
@@ -105,7 +109,8 @@ class AlignmentResults(object):
         """Convert raw BLAST results into Alignment model"""
         # first clean up the data and get the flattened dictionary
         cleaned = cls._cleanup_raw_results(data, delim)
-
+        if cleaned == [{}]:
+            return cls(alignments=list())
         # force data to deserialized according to the schemas
         # if context is None:
         #     context = {'db': {}}

@@ -231,3 +231,22 @@ class TestJSONBlast:
 
         assert results[0]['query'] == expected_query
         assert results[0]['subject'] == expected_subject
+
+    def test_json_blast_with_no_hits(self):
+        """JSONBlast should handle the subclasses of dict as inputs as well as dict"""
+        from collections import OrderedDict
+        j = JSONBlast(
+            [
+                OrderedDict({"id": "ABCDEFG",
+                 "sequence": "aggagagagagaggagggagagaagaggagagagagaga",
+                 "name": "myseq",
+                 "circular": False})
+            ],
+            OrderedDict({"id": "1234",
+             "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "name": "myseq2",
+             "circular": False})
+        )
+        j.quick_blastn()
+        results = j.results.alignments
+        print(results)
