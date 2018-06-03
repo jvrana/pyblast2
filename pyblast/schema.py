@@ -85,11 +85,11 @@ class SequenceSchemaMixIn:
         #         "circular": None
         #     }
         db = self.context['db']
-        acc = obj['acc']
-        if acc not in db:
+        seq_id = obj['sequence_id']
+        if seq_id not in db:
             raise ValidationError("No sequence was found with accession ID \"{}\". Sequence must be found "
-                                  "in schema context with key 'db' or must be run with no context".format(acc), "acc")
-        return db[obj['acc']]
+                                  "in schema context with key 'db' or must be run with no context".format(seq_id), "acc")
+        return db[obj['sequence_id']]
 
     def get_name(self, obj):
         if 'db' not in self.context:
@@ -103,9 +103,16 @@ class SequenceSchemaMixIn:
         seq = self.get_sequence(obj)
         return seq["circular"]
 
+    def load_sequence_id(self, value):
+        return str(value)
+
+    def get_sequence_id(self, obj):
+        return obj['sequence_id']
+
 
 class QuerySchema(Schema, SequenceSchemaMixIn):
-    acc = fields.String(data_key="query acc.", required=True)
+    # acc = fields.String(data_key="query acc.", required=True)
+    sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='query acc.', required=True)
     start = fields.Integer(data_key="q. start", required=True)
     end = fields.Integer(data_key="q. end", required=True)
     length = fields.Integer(data_key='query length', required=True)
@@ -113,12 +120,14 @@ class QuerySchema(Schema, SequenceSchemaMixIn):
 
 
 class SubjectSchema(Schema, SequenceSchemaMixIn):
-    acc = fields.String(data_key="subject acc.", required=True)
+    sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='subject acc.', required=True)
+    # acc = fields.String(data_key="subject acc.", required=True)
     start = fields.Integer(data_key="s. start", required=True)
     end = fields.Integer(data_key="s. end", required=True)
     length = fields.Integer(data_key='subject length', required=True)
     sequence = fields.String(data_key='subject seq')
     strand = fields.String(data_key='subject strand')
+
 
     @validates("strand")
     def strand_validation(self, value):

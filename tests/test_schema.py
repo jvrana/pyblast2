@@ -66,7 +66,7 @@ class TestSchema:
         def test_query_load(self):
             schema = QuerySchema()
             loaded = schema.load(TestSchema.preloaded_data['query'])
-            expected = {"acc": 'Query_1',
+            expected = {'sequence_id': 'Query_1',
                         'start': 1374,
                         'end': 5592,
                         'name': None,
@@ -78,7 +78,7 @@ class TestSchema:
         def test_subject_load(self):
             schema = SubjectSchema()
             loaded = schema.load(TestSchema.preloaded_data['subject'])
-            expected = {"acc": '756c05c4-f3f2-4e3b-a344-a4ed75827529',
+            expected = {'sequence_id': '756c05c4-f3f2-4e3b-a344-a4ed75827529',
                         'start': 1,
                         'end': 4219,
                         'name': None,
@@ -104,7 +104,7 @@ class TestSchema:
 
         @pytest.fixture
         def unmarshalled_data(self):
-            return {"acc": 'Query_1',
+            return {'sequence_id': 'Query_1',
                     'start': 1374,
                     'end': 5592,
                     'length': 10781

@@ -17,6 +17,7 @@ from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
 from pyblast.results import AlignmentResults
 from pyblast.utils.seq_parser import parse_sequence_jsons
 from pyblast.utils import reverse_complement
+from marshmallow import ValidationError
 
 
 class PyBlastException(Exception):
@@ -283,8 +284,14 @@ class JSONBlast(Aligner):
         dbname = str(uuid4())
 
         # force json to sequence schema
-        self.query = parse_sequence_jsons(query_json)
-        self.subjects = parse_sequence_jsons(subject_json)
+        try:
+            self.query = parse_sequence_jsons(query_json)
+        except ValidationError as e:
+            raise PyBlastException("There was a parsing error while parsing the query sequence.\n{}".format(e.messages))
+        try:
+            self.subjects = parse_sequence_jsons(subject_json)
+        except ValidationError as e:
+            raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}".format(e.messages))
 
         # create temporary files
         subject_path = json_to_fasta_tempfile(self.subjects, id="id")

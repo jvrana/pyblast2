@@ -90,6 +90,7 @@ class TestLoad:
         with pytest.raises(ValidationError):
             schema.load(test_data)
 
+
 # class TestDump:
 #
 #     @pytest.fixture

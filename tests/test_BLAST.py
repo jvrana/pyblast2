@@ -46,7 +46,7 @@ def test_parse_results(b):
     assert 'meta' in res
 
     query = res['query']
-    assert 'acc' in query
+    assert 'sequence_id' in query
     assert 'start' in query
     assert 'end' in query
     assert 'length' in query
@@ -54,7 +54,7 @@ def test_parse_results(b):
     assert query['circular'] is None
 
     subject = res['subject']
-    assert 'acc' in subject
+    assert 'sequence_id' in subject
     assert 'start' in subject
     assert 'end' in subject
     assert 'length' in subject
@@ -146,3 +146,46 @@ class TestJSONBlast:
         j.quick_blastn()
         results = j.results.alignments
         print(results)
+
+    def test_make_from_json_with_preloaded_id(self):
+        """We expect the alignment results to contain the very same id and information in the query and subject
+        alignments as the sequences that went into the JSONBlast alignment. Since this is a perfect alignment,
+        we also expect the sequences to be spit back out."""
+        j = JSONBlast(
+            [
+                {"id": "ABCDEFG",
+                 "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+                 "name": "myseq",
+                 "circular": False}
+            ],
+            {"id": "1234",
+             "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta",
+             "name": "myseq2",
+             "circular": False}
+        )
+        j.quick_blastn()
+        results = j.results.alignments
+
+        expected_query = {
+            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "name": "myseq2",
+            "circular": False,
+            "length": 93,
+            "start": 1,
+            "end": 93,
+            "sequence_id": "1234"
+        }
+
+        expected_subject = {
+            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "name": "myseq",
+            "circular": False,
+            "length": 93,
+            "start": 1,
+            "end": 93,
+            "strand": "plus",
+            "sequence_id": "ABCDEFG"
+        }
+
+        assert results[0]['query'] == expected_query
+        assert results[0]['subject'] == expected_subject
