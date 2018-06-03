@@ -169,17 +169,18 @@ class TestJSONBlast:
         results = j.results.alignments
 
         expected_query = {
-            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
             "name": "myseq2",
             "circular": False,
             "length": 93,
             "start": 1,
             "end": 93,
-            "sequence_id": "1234"
+            "sequence_id": "1234",
+            "strand": "plus"
         }
 
         expected_subject = {
-            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
             "name": "myseq",
             "circular": False,
             "length": 93,
@@ -211,17 +212,18 @@ class TestJSONBlast:
         results = j.results.alignments
 
         expected_query = {
-            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
             "name": "myseq2",
             "circular": False,
             "length": 93,
             "start": 1,
             "end": 93,
-            "sequence_id": "1234"
+            "sequence_id": "1234",
+            "strand": "plus"
         }
 
         expected_subject = {
-            "sequence": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
+            "bases": "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta".upper(),
             "name": "myseq",
             "circular": False,
             "length": 93,

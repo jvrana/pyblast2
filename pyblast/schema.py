@@ -114,7 +114,8 @@ class QuerySchema(Schema, SequenceSchemaMixIn):
     start = fields.Integer(data_key="q. start", required=True)
     end = fields.Integer(data_key="q. end", required=True)
     length = fields.Integer(data_key='query length', required=True)
-    sequence = fields.String(data_key='query seq')
+    bases = fields.String(data_key='query seq')
+    strand = fields.String(missing="plus", default="plus")
 
 
 class SubjectSchema(Schema, SequenceSchemaMixIn):
@@ -123,7 +124,7 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
     start = fields.Integer(data_key="s. start", required=True)
     end = fields.Integer(data_key="s. end", required=True)
     length = fields.Integer(data_key='subject length', required=True)
-    sequence = fields.String(data_key='subject seq')
+    bases = fields.String(data_key='subject seq')
     strand = fields.String(data_key='subject strand')
 
 

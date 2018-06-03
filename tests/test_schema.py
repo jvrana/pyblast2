@@ -71,7 +71,8 @@ class TestSchema:
                         'end': 5592,
                         'name': None,
                         'circular': None,
-                        'length': 10781
+                        'length': 10781,
+                        "strand": "plus"
                         }
             assert loaded == expected
 
