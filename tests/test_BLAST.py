@@ -272,7 +272,7 @@ class TestJSONBlast:
         )
         j.quick_blastn()
         results = j.results.alignments
-        print(results)
+        assert results == ()
 
     def test_json_blast_with_preloaded_objects(self):
         class Sequence(object):

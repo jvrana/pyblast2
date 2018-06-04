@@ -315,11 +315,11 @@ class JSONBlast(Aligner):
         try:
             self.query = dump_sequence_jsons(query_json)
         except ValidationError as e:
-            raise PyBlastException("There was a parsing error while parsing the query sequence.\n{}".format(e.messages))
+            raise PyBlastException("There was a parsing error while parsing the query sequence.\n{}\n{}".format(e.messages, query_json))
         try:
             self.subjects = dump_sequence_jsons(subject_json)
         except ValidationError as e:
-            raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}".format(e.messages))
+            raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}\n{}".format(e.messages, subject_json))
 
         # create temporary files
         subject_path = json_to_fasta_tempfile(self.subjects, id="id")

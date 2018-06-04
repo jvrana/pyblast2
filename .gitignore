@@ -230,3 +230,5 @@ _paths.json
 .pytest_cache/v/cache/lastfailed
 .pytest_cache/v/cache/nodeids
 tests/data/blast_results/db.nin
+*.nin
+tests/data/blast_results/results.out.json
