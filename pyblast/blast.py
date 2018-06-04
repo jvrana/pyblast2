@@ -160,12 +160,13 @@ class Blast(object):
         return config_dict
 
     def quick_blastn(self):
-        """Make a db, run blastn, parse results"""
+        """Produce database, run blastn protocol, & parse results """
         self.makedb()
         self.blastn()
         self.parse_results()
 
     def quick_blastn_short(self):
+        """Produce database, run blastn short protocol, & parse results """
         self.makedb()
         self.blastn_short()
         self.parse_results()
@@ -174,11 +175,13 @@ class Blast(object):
         self._run("blastn")
 
     def blastn_short(self):
-        self._run("blastn-short")
+        self._run("blastn", task="blastn-short")
 
-    def _run(self, cmd):
+    def _run(self, cmd, **config_opts):
         """Run the blastn using the current configuration"""
-        self.run_cmd(cmd, **self.create_config())
+        config = self.create_config()
+        config.update(config_opts)
+        self.run_cmd(cmd, **config)
         with open(self.results_out_path, 'rU') as handle:
             self.raw_results = handle.read()
 

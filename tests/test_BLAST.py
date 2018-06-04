@@ -137,8 +137,8 @@ class TestJSONBlast:
         with open(os.path.join(here, "data/test_data/query.json"), 'r') as f:
             query = json.load(f)
 
-        j = JSONBlast(subjects, query, task="blastn-short")
-        j.quick_blastn()
+        j = JSONBlast(subjects, query)
+        j.quick_blastn_short()
         alignments = j.results.get_perfect().get_with_perfect_subjects().alignments
         print(len(j.results.alignments))
         print(len(alignments))
