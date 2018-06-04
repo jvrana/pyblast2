@@ -18,7 +18,6 @@ class TestSchema:
                 "start": 1,
                 "end": 3,
                 "strand": 1,
-                "notes": {},
             },
             {
                 "name": "coding region 1",
@@ -27,7 +26,6 @@ class TestSchema:
                 "start": 12,
                 "end": 9,
                 "strand": -1,
-                "notes": {},
             }
         ],
     }
@@ -61,7 +59,6 @@ class TestLoad:
             "start": 1,
             "end": 3,
             "strand": 1,
-            "notes": {},
         }
         assert loaded == expected
 
@@ -79,7 +76,6 @@ class TestLoad:
             "start": 1,
             "end": 3,
             "strand": 1,
-            "notes": {},
         }
         assert not loaded_id == old_id
         assert len(loaded_id) > 10

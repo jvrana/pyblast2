@@ -32,7 +32,6 @@ GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC
             "features": [],
             "size": 7,
             "id": seqs[0]["id"],
-            "notes": {}
         }
 
     assert seqs[1] == {
@@ -43,7 +42,6 @@ GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC
             "features": [],
             "size": 53,
             "id": seqs[1]["id"],
-            "notes": {}
         }
 
 

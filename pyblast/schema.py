@@ -16,7 +16,6 @@ class SequenceSchema(Schema):
     id = fields.String(default=lambda: str(uuid4()))
     description = fields.String(default="", allow_none=True)
     features = fields.Nested("FeatureSchema", many=True, default=list())
-    notes = fields.Dict(default=dict())
 
     def get_size(self, obj):
         if hasattr(obj, 'bases'):
@@ -54,7 +53,6 @@ class FeatureSchema(Schema):
     start = fields.Int(required=True)
     end = fields.Int(required=True)
     strand = fields.Int(required=True)
-    notes = fields.Dict(missing=dict())
 
     @validates('strand')
     def validate_strand(self, value):
