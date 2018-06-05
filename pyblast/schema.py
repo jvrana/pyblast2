@@ -152,3 +152,11 @@ class AlignmentSchema(Schema):
     query = fields.Nested('QuerySchema', )
     subject = fields.Nested('SubjectSchema', )
     meta = fields.Nested(AlignmentMetaSchema, exclude=("alignment",))
+
+
+
+    @validates_schema
+    def validate_alignment_length(self, data):
+        query_bases = data['query']['bases']
+        subject_bases = data['subject']['bases']
+

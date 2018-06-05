@@ -19,7 +19,7 @@ from pyblast.utils.seq_parser import dump_sequence_jsons, load_sequence_jsons
 from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
 from marshmallow import ValidationError
-
+from copy import copy
 
 class Blast(object):
     """
@@ -280,7 +280,7 @@ class Aligner(Blast):
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, preloaded=False, **config):
+    def __init__(self, subject_json, query_json, preloaded=False, span_origin=False, **config):
         """
         Initialize JSONBlast
 
@@ -290,6 +290,8 @@ class JSONBlast(Aligner):
         :type query_json: dict, mapping, or Object
         :param preloaded: whether the data is preloaded into the SequenceSchema or not. Practially, this means the "bases"
         for the sequence if refered to as "sequence" in serialized data and as "bases" after data is loaded (preloaded=True)
+        :param span_origin: default False. If True, circular sequences will be pseudocircularized for alignment over the origin
+        :type span_origin: boolean
         :param config: optional arguments
         :type config: dict
         """
@@ -321,9 +323,16 @@ class JSONBlast(Aligner):
         except ValidationError as e:
             raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}\n{}".format(e.messages, subject_json))
 
+        _subjects = self.subjects
+        _query = self.query
+        self.__span_origin = span_origin
+        if self.__span_origin:
+            _subjects = [self.pseudocircularize(s) for s in self.subjects]
+            _query = self.pseudocircularize(self.query)
+
         # create temporary files
-        subject_path = json_to_fasta_tempfile(self.subjects, id="id")
-        query_path = json_to_fasta_tempfile(self.query, id="id")
+        subject_path = json_to_fasta_tempfile(_subjects, id="id")
+        query_path = json_to_fasta_tempfile(_query, id="id")
 
         # seq_db
         keys = [x['id'] for x in self.subjects]
@@ -347,6 +356,14 @@ class JSONBlast(Aligner):
         return cls(subject_json=subject,
                    query_json=query)
 
+    def pseudocircularize(self, seq):
+        if not seq['circular']:
+            return seq
+        seq_copy = copy(seq)
+        seq_copy['sequence'] = seq['sequence']*2
+        seq_copy['size'] = seq['size']*2
+        return seq_copy
+
     def parse_results(self, save_as_json=True, delim=','):
         """
         Parses the raw blast result to a JSON
@@ -362,11 +379,87 @@ class JSONBlast(Aligner):
 
         # TODO: is replacing the raw text the right thing to do?
         raw = re.sub('Query_1', self.query['id'], self.raw_results)
-        self.results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
+        results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
+
+        if self.__span_origin:
+            new_alignments = self.span_origin_results(results.alignments)
+            results = AlignmentResults(new_alignments)
+
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
-            self.results.dump_to_json(path)
+            results.dump_to_json(path)
+
+        self.results = results
         return self.results
+
+    def span_origin_results(self, alignments):
+        new_alignments = []
+        for a in alignments:
+            a_copy = copy(a)
+            new_alignments.append(a_copy)
+            query = a_copy['query']
+            query_seq = self.seq_dict[query['sequence_id']]
+            subject = a_copy['subject']
+            subject_seq = self.seq_dict[subject['sequence_id']]
+            meta = a_copy['meta']
+
+            def adjust(this_seq, other_seq, this_reg, other_reg):
+                meta['alignment_length'] = this_seq['size']
+
+                excess = len(this_reg['bases']) - this_seq['size']
+                s1, e1 = this_reg['start'], this_reg['end']
+                s2, e2 = other_reg['start'], other_reg['end']
+
+                if s1 < e1:
+                    this_reg['end'] -= excess
+                    this_reg['bases'] = this_reg['bases'][:-excess]
+                else:
+                    this_reg['end'] += excess
+                    this_reg['bases'] = this_reg['bases'][excess:]
+
+                if s2 < e2:
+                    other_reg['end'] -= excess
+                    other_reg['bases'] = other_reg['bases'][:-excess]
+                else:
+                    other_reg['end'] += excess
+                    other_reg['bases'] = other_reg['bases'][excess:]
+                pass
+
+                # this_reg['bases'] = this_seq['bases']
+                # other_reg['bases'] = (other_seq['bases']*2)[other_reg['start']-1:other_reg['end']]
+
+            if query_seq['circular'] and meta['alignment_length'] > query_seq['size']:
+                adjust(query_seq, subject_seq, query, subject)
+            if subject_seq['circular'] and meta['alignment_length'] > subject_seq['size']:
+                adjust(subject_seq, subject_seq, subject, query)
+
+            if query_seq['circular']:
+                assert query['length'] == query_seq['size'] * 2
+                if query['start'] > query_seq['size']:
+                    query['start'] += -query_seq['size']
+                if query['end'] > query_seq['size']:
+                    query['end'] += -query_seq['size']
+                query['length'] = query_seq['size']
+
+            if subject_seq['circular']:
+                assert subject['length'] == subject_seq['size'] * 2
+                if subject['start'] > subject_seq['size']:
+                    subject['start'] += -subject_seq['size']
+                if subject['end'] > subject_seq['size']:
+                    subject['end'] += -subject_seq['size']
+                subject['length'] = subject_seq['size']
+            assert len(query['bases']) == meta['alignment_length']
+            assert len(subject['bases']) == meta['alignment_length']
+
+
+
+        return new_alignments
+
+            # if alignment length is longer than subject
+            # if alignment length is longer than query
+
+            # remap to smaller context
+
 
     def find_perfect_matches(self, min_match, filter=None):
         raise DeprecationWarning("This method is depreciated. Please use blastn with --task blastn-short")
