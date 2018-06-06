@@ -145,6 +145,7 @@ class AlignmentMetaSchema(Schema):
     gaps = fields.Integer(required=True)
     alignment_length = fields.Integer(data_key='alignment length', required=True)
     alignment = fields.Nested("AlignmentSchema")
+    span_origin = fields.Boolean(default=False)
 
 
 class AlignmentSchema(Schema):

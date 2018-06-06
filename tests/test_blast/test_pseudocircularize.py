@@ -91,8 +91,8 @@ class TestPseudocircularize:
 
         assert len(j2.subjects[0]['sequence']) == len(subjects[0].bases)
         assert len(j2.query['sequence']) == len(query.bases)
-        assert j2.results.alignments[0]['query']['length'] == len(query.bases)
-        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases)
+        assert j2.results.alignments[0]['query']['length'] == len(query.bases) * 2
+        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases) * 2
 
     def test_json_pseudocircularize_is_false(self, alignments_span_origin_false, frag1, frag2, seqs):
         assert 2 == len(alignments_span_origin_false)
@@ -121,36 +121,12 @@ class TestPseudocircularize:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align['subject']['length'] == len(subjects[0].bases)
-            assert align['query']['length'] == len(query.bases)
+            assert align['subject']['length'] == len(subjects[0].bases) * 2
+            assert align['query']['length'] == len(query.bases) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true]
         assert len(subjects[0].bases) in alignment_lengths
-
-    def test_query_start_and_end_match_sequence(self, alignments_span_origin_true, seqs):
-        subjects, query = seqs
-        passed = False
-        for align in alignments_span_origin_true:
-            if len(subjects[0].bases) == align['meta']['alignment_length']:
-                frag1 = query.bases[align['query']['start'] - 1:]
-                frag2 = query.bases[:align['query']['end']]
-
-                assert align['query']['bases'].upper() == (frag1 + frag2).upper()
-                assert align['meta']['alignment_length'] == len(frag1 + frag2)
-                passed = True
-        assert passed
-
-    def test_subject_start_and_end_match_sequence(self, alignments_span_origin_true, seqs):
-        subjects, query = seqs
-        passed = False
-        for align in alignments_span_origin_true:
-            if len(subjects[0].bases) == align['meta']['alignment_length']:
-                frag1 = subjects[0].bases[align['subject']['start'] - 1:align['subject']['end']]
-                assert align['subject']['bases'].upper() == frag1.upper()
-                assert align['meta']['alignment_length'] == len(frag1)
-                passed = True
-        assert passed
 
     def test_assert_query_and_subject_bases_are_equal(self, alignments_span_origin_true):
         for align in alignments_span_origin_true:
@@ -242,8 +218,8 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         assert len(j2.subjects[0]['sequence']) == len(subjects[0].bases)
         assert len(j2.query['sequence']) == len(query.bases)
-        assert j2.results.alignments[0]['query']['length'] == len(query.bases)
-        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases)
+        assert j2.results.alignments[0]['query']['length'] == len(query.bases) * 2
+        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases) * 2
 
     def test_json_pseudocircularize_is_false(self, alignments_span_origin_false, frag1, frag2, seqs):
         assert 2 == len(alignments_span_origin_false)
@@ -272,36 +248,12 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align['subject']['length'] == len(subjects[0].bases)
-            assert align['query']['length'] == len(query.bases)
+            assert align['subject']['length'] == len(subjects[0].bases) * 2
+            assert align['query']['length'] == len(query.bases) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true]
         assert len(query.bases) in alignment_lengths
-
-    def test_query_start_and_end_match_sequence(self, alignments_span_origin_true, seqs):
-        subjects, query = seqs
-        passed = False
-        for align in alignments_span_origin_true:
-            if len(query.bases) == align['meta']['alignment_length']:
-                frag1 = subjects[0].bases[align['subject']['start'] - 1:]
-                frag2 = subjects[0].bases[:align['subject']['end']]
-
-                assert align['subject']['bases'].upper() == (frag1 + frag2).upper()
-                assert align['meta']['alignment_length'] == len(frag1 + frag2)
-                passed = True
-        assert passed
-
-    def test_subject_start_and_end_match_sequence(self, alignments_span_origin_true, seqs):
-        subjects, query = seqs
-        passed = False
-        for align in alignments_span_origin_true:
-            if len(query.bases) == align['meta']['alignment_length']:
-                frag1 = query.bases[align['query']['start'] - 1:align['query']['end']]
-                assert align['query']['bases'].upper() == frag1.upper()
-                assert align['meta']['alignment_length'] == len(frag1)
-                passed = True
-        assert passed
 
     def test_assert_query_and_subject_bases_are_equal(self, alignments_span_origin_true):
         for align in alignments_span_origin_true:
@@ -376,7 +328,7 @@ class TestPseudocirculariseWithLongSeqs:
         assert expected_len in lens
 
     def test_expect_max_alignment(self, long_seqs_alignment, frag1, frag2):
-        expected_len = len(frag1)
+        expected_len = len(frag1 + frag2)
         lens = [a['meta']['alignment_length'] for a in long_seqs_alignment]
         assert expected_len == max(lens)
 
@@ -395,18 +347,5 @@ class TestPseudocirculariseWithLongSeqs:
         for align in long_seqs_alignment:
             if align['meta']['alignment_length'] == expected_len:
                 assert align['subject']['bases'].upper() == frag1.upper()
-                passed = True
-        assert passed
-
-    def test_expected_start_and_end(self, long_seqs_alignment, long_seqs):
-        subjects, query = long_seqs
-        passed = False
-        for align in long_seqs_alignment:
-            if len(query.bases) == align['meta']['alignment_length']:
-                subject_seq = reverse_complement(subjects[0].bases)
-                frag1 = subject_seq[align['subject']['end']-1:align['subject']['start']]
-
-                assert align['subject']['bases'].upper() == (frag1).upper()
-                assert align['meta']['alignment_length'] == len(frag1)
                 passed = True
         assert passed
