@@ -19,7 +19,7 @@ from pyblast.utils.seq_parser import dump_sequence_jsons, load_sequence_jsons
 from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
 from marshmallow import ValidationError
-
+from copy import copy
 
 class Blast(object):
     """
@@ -91,9 +91,6 @@ class Blast(object):
 
         # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
-
-        # validate the files to make sure they exist
-        self.validate_files()
 
 
     @staticmethod
@@ -205,6 +202,7 @@ class Blast(object):
 
     def makedb(self):
         """Creates a blastdb from sequences grabbed from the input directory"""
+        self.validate_files()
         self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
         return self.db
 
@@ -246,6 +244,7 @@ class Aligner(Blast):
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
+
         db_output_directory = tempfile.mkdtemp()
         fv, out = tempfile.mkstemp(dir=db_output_directory)
 
@@ -276,11 +275,13 @@ class Aligner(Blast):
                    os.path.join(dir_path, '..', 'tests/data/test_data/db.fsa'),
                    os.path.join(dir_path, '..', 'tests/data/test_data/query.fsa'))
 
+    def makedb(self):
+        super(Aligner, self).makedb()
 
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, preloaded=False, **config):
+    def __init__(self, subject_json, query_json, preloaded=False, span_origin=False, **config):
         """
         Initialize JSONBlast
 
@@ -290,6 +291,8 @@ class JSONBlast(Aligner):
         :type query_json: dict, mapping, or Object
         :param preloaded: whether the data is preloaded into the SequenceSchema or not. Practially, this means the "bases"
         for the sequence if refered to as "sequence" in serialized data and as "bases" after data is loaded (preloaded=True)
+        :param span_origin: default False. If True, circular sequences will be pseudocircularized for alignment over the origin
+        :type span_origin: boolean
         :param config: optional arguments
         :type config: dict
         """
@@ -321,9 +324,16 @@ class JSONBlast(Aligner):
         except ValidationError as e:
             raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}\n{}".format(e.messages, subject_json))
 
+        _subjects = self.subjects
+        _query = self.query
+        self.__span_origin = span_origin
+        if self.__span_origin:
+            _subjects = [self.pseudocircularize(s) for s in self.subjects]
+            _query = self.pseudocircularize(self.query)
+
         # create temporary files
-        subject_path = json_to_fasta_tempfile(self.subjects, id="id")
-        query_path = json_to_fasta_tempfile(self.query, id="id")
+        subject_path = json_to_fasta_tempfile(_subjects, id="id")
+        query_path = json_to_fasta_tempfile(_query, id="id")
 
         # seq_db
         keys = [x['id'] for x in self.subjects]
@@ -347,6 +357,14 @@ class JSONBlast(Aligner):
         return cls(subject_json=subject,
                    query_json=query)
 
+    def pseudocircularize(self, seq):
+        if not seq['circular']:
+            return seq
+        seq_copy = copy(seq)
+        seq_copy['sequence'] = seq['sequence']*2
+        seq_copy['size'] = seq['size']*2
+        return seq_copy
+
     def parse_results(self, save_as_json=True, delim=','):
         """
         Parses the raw blast result to a JSON
@@ -362,10 +380,17 @@ class JSONBlast(Aligner):
 
         # TODO: is replacing the raw text the right thing to do?
         raw = re.sub('Query_1', self.query['id'], self.raw_results)
-        self.results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
+        results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
+
+        if self.__span_origin:
+            for alignment in results.alignments:
+                alignment['meta']['span_origin'] = True
+
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
-            self.results.dump_to_json(path)
+            results.dump_to_json(path)
+
+        self.results = results
         return self.results
 
     def find_perfect_matches(self, min_match, filter=None):

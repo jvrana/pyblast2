@@ -1,14 +1,20 @@
 """cmd.py"""
 
 import shlex
-from subprocess import check_output
+from subprocess import check_output, STDOUT, CalledProcessError
 
 
 def run_cmd_str(cmd_str):
     """Runs a command from a string"""
     print("CMD: " + cmd_str)
     args = shlex.split(cmd_str)
-    output = check_output(args)
+    try:
+        output = check_output(args, stderr=STDOUT)
+    except CalledProcessError as error:
+        error_message = ">>> Error while executing:\n{}\n>>> Returned with error:\n{}".format(cmd_str, str(error.output))
+        error_message += "\nParameter info: https://www.ncbi.nlm.nih.gov/books/NBK279684/"
+        raise Exception(error_message)
+
     # output = subprocess.Popen(args, shell=False)
     # output.wait()
     return output.decode()

@@ -145,6 +145,7 @@ class AlignmentMetaSchema(Schema):
     gaps = fields.Integer(required=True)
     alignment_length = fields.Integer(data_key='alignment length', required=True)
     alignment = fields.Nested("AlignmentSchema")
+    span_origin = fields.Boolean(default=False)
 
 
 class AlignmentSchema(Schema):
@@ -152,3 +153,17 @@ class AlignmentSchema(Schema):
     query = fields.Nested('QuerySchema', )
     subject = fields.Nested('SubjectSchema', )
     meta = fields.Nested(AlignmentMetaSchema, exclude=("alignment",))
+
+
+
+    @validates_schema
+    def validate_alignment_length(self, data):
+        query_bases = data['query']['bases']
+        subject_bases = data['subject']['bases']
+
+
+# class BlastnParametersSchema(Schema):
+#
+#     word_size = fields.Integer(description="Length of initial exact match.")
+#     gapopen = fields.Integer(description="DefaultCost to open a gap. See appendix “BLASTN reward/penalty values”.")
+
