@@ -160,3 +160,9 @@ class AlignmentSchema(Schema):
         query_bases = data['query']['bases']
         subject_bases = data['subject']['bases']
 
+
+# class BlastnParametersSchema(Schema):
+#
+#     word_size = fields.Integer(description="Length of initial exact match.")
+#     gapopen = fields.Integer(description="DefaultCost to open a gap. See appendix “BLASTN reward/penalty values”.")
+

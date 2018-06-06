@@ -92,9 +92,6 @@ class Blast(object):
         # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
 
-        # validate the files to make sure they exist
-        self.validate_files()
-
 
     @staticmethod
     def add_to_sys_paths():
@@ -205,6 +202,7 @@ class Blast(object):
 
     def makedb(self):
         """Creates a blastdb from sequences grabbed from the input directory"""
+        self.validate_files()
         self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
         return self.db
 
@@ -246,6 +244,7 @@ class Aligner(Blast):
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
+
         db_output_directory = tempfile.mkdtemp()
         fv, out = tempfile.mkstemp(dir=db_output_directory)
 
@@ -276,6 +275,8 @@ class Aligner(Blast):
                    os.path.join(dir_path, '..', 'tests/data/test_data/db.fsa'),
                    os.path.join(dir_path, '..', 'tests/data/test_data/query.fsa'))
 
+    def makedb(self):
+        super(Aligner, self).makedb()
 
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
