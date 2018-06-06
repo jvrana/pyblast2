@@ -36,6 +36,7 @@ class TestSchema:
             "query acc.": 'Query_1',
             'q. start': 1374,
             'q. end': 5592,
+            'query seq': 'AGTAT',
             'name': None,
             'filename': None,
             'circular': None,
@@ -45,6 +46,7 @@ class TestSchema:
             "subject acc.": '756c05c4-f3f2-4e3b-a344-a4ed75827529',
             's. start': 1,
             's. end': 4219,
+            'subject seq': 'aggagagag',
             'name': None,
             'filename': None,
             'circular': None,
@@ -67,6 +69,7 @@ class TestSchema:
             schema = QuerySchema()
             loaded = schema.load(TestSchema.preloaded_data['query'])
             expected = {'sequence_id': 'Query_1',
+                        'bases': 'AGTAT',
                         'start': 1374,
                         'end': 5592,
                         'name': None,
@@ -80,6 +83,7 @@ class TestSchema:
             schema = SubjectSchema()
             loaded = schema.load(TestSchema.preloaded_data['subject'])
             expected = {'sequence_id': '756c05c4-f3f2-4e3b-a344-a4ed75827529',
+                        'bases': 'aggagagag',
                         'start': 1,
                         'end': 4219,
                         'name': None,

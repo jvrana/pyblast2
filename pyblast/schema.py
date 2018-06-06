@@ -112,7 +112,7 @@ class QuerySchema(Schema, SequenceSchemaMixIn):
     start = fields.Integer(data_key="q. start", required=True)
     end = fields.Integer(data_key="q. end", required=True)
     length = fields.Integer(data_key='query length', required=True)
-    bases = fields.String(data_key='query seq')
+    bases = fields.String(data_key='query seq', required=True)
     strand = fields.String(missing="plus", default="plus")
 
 
@@ -122,8 +122,8 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
     start = fields.Integer(data_key="s. start", required=True)
     end = fields.Integer(data_key="s. end", required=True)
     length = fields.Integer(data_key='subject length', required=True)
-    bases = fields.String(data_key='subject seq')
-    strand = fields.String(data_key='subject strand')
+    bases = fields.String(data_key='subject seq', required=True)
+    strand = fields.String(data_key='subject strand', required=True)
 
 
     @validates("strand")
