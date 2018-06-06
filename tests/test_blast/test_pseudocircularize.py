@@ -94,6 +94,12 @@ class TestPseudocircularize:
         assert j2.results.alignments[0]['query']['length'] == len(query.bases) * 2
         assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases) * 2
 
+    def test_span_origin_false(self, alignments_span_origin_false):
+        assert alignments_span_origin_false[0]['meta']['span_origin'] is False
+
+    def test_span_origin_true(self, alignments_span_origin_true):
+        assert alignments_span_origin_true[0]['meta']['span_origin'] is True
+
     def test_json_pseudocircularize_is_false(self, alignments_span_origin_false, frag1, frag2, seqs):
         assert 2 == len(alignments_span_origin_false)
         assert alignments_span_origin_false[0]['subject']['bases'].upper() == frag1.upper()

@@ -384,7 +384,7 @@ class JSONBlast(Aligner):
 
         if self.__span_origin:
             for alignment in results.alignments:
-                alignment['span_origin'] = True
+                alignment['meta']['span_origin'] = True
 
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
