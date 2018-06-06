@@ -40,7 +40,7 @@ class TestSerializer:
             'circular': False,
             'name': "myquery",
             'query seq': 'AAAAA',
-            "strand": "plus"
+            "strand": "plus",
         },
         'subject': {
             'subject acc.': '756c05c4-f3f2-4e3b-a344-a4ed75827529',
@@ -50,7 +50,7 @@ class TestSerializer:
             'subject strand': 'plus',
             'circular': True,
             'name': 'mysubject',
-            'subject seq': 'TCGCG'
+            'subject seq': 'TCGCG',
         },
         'meta': {
             'score': 4219, 'evalue': 0,
