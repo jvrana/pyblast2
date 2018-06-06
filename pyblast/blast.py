@@ -413,18 +413,15 @@ class JSONBlast(Aligner):
 
                 if s1 < e1:
                     this_reg['end'] -= excess
-                    this_reg['bases'] = this_reg['bases'][:-excess]
                 else:
-                    this_reg['end'] += excess
-                    this_reg['bases'] = this_reg['bases'][excess:]
-
+                    this_reg['start'] -= excess
                 if s2 < e2:
-                    other_reg['end'] -= excess
-                    other_reg['bases'] = other_reg['bases'][:-excess]
+                    this_reg['end'] -= excess
                 else:
-                    other_reg['end'] += excess
-                    other_reg['bases'] = other_reg['bases'][excess:]
-                pass
+                    this_reg['start'] -= excess
+                this_reg['bases'] = this_reg['bases'][:-excess]
+                other_reg['bases'] = other_reg['bases'][:-excess]
+
 
                 # this_reg['bases'] = this_seq['bases']
                 # other_reg['bases'] = (other_seq['bases']*2)[other_reg['start']-1:other_reg['end']]
