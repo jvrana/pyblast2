@@ -36,7 +36,7 @@ pip install pyblast
 
 ## Status
 
-In alpha, but let me know if you are interested in this repo!
+In alpha, but let me know if you are interested in this repo.
 
 ## Usage
 

@@ -21,6 +21,7 @@ from pyblast.exceptions import PyBlastException
 from marshmallow import ValidationError
 from copy import copy
 
+
 class Blast(object):
     """
     A Blast initializer for running blast searches against subjects contained in a directory. Sequences
@@ -278,6 +279,7 @@ class Aligner(Blast):
     def makedb(self):
         super(Aligner, self).makedb()
 
+
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
 
@@ -285,7 +287,7 @@ class JSONBlast(Aligner):
         """
         Initialize JSONBlast
 
-        :param subject_json: subject sequences as serialized json
+        :param subject_json: subject sequences as serialized json. Schema may be found in :class:`pyblast.schema.SequenceSchema`
         :type subject_json: list of dict, mapping, or Object
         :param query_json: query sequence as serialized json
         :type query_json: dict, mapping, or Object

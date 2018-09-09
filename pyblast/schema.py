@@ -9,6 +9,19 @@ from pyblast.utils.dna_bases import rc_dict
 
 
 class SequenceSchema(Schema):
+    """
+    Sequence JSON schema.
+
+    .. code-block::
+
+        size = fields.Method("get_size")
+        bases = fields.String(required=True, data_key='sequence')
+        circular = fields.Boolean(required=True)
+        name = fields.String(required=True)
+        id = fields.String(default=lambda: str(uuid4()))
+        description = fields.String(default="", allow_none=True)
+        features = fields.Nested("FeatureSchema", many=True, default=list())
+    """
     size = fields.Method("get_size")
     bases = fields.String(required=True, data_key='sequence')
     circular = fields.Boolean(required=True)
@@ -47,6 +60,17 @@ class SequenceSchema(Schema):
 
 
 class FeatureSchema(Schema):
+    """
+    .. code-block::
+
+        name = fields.String(required=True)
+        type = fields.String(required=True)
+        id = fields.String(missing=lambda: str(uuid4()))
+        start = fields.Int(required=True)
+        end = fields.Int(required=True)
+        strand = fields.Int(required=True)
+
+    """
     name = fields.String(required=True)
     type = fields.String(required=True)
     id = fields.String(missing=lambda: str(uuid4()))
@@ -65,7 +89,14 @@ class FeatureSchema(Schema):
 
 
 class SequenceSchemaMixIn:
-    """Sequence Schema methods common to QuerySchema and SubjectSchema"""
+    """Sequence Schema methods common to QuerySchema and SubjectSchema.
+
+    .. code-block::
+
+        name = fields.Method(serialize="get_name", deserialize="get_val", allow_none=True, )
+        circular = fields.Method(serialize="get_circular", deserialize="get_val", allow_none=True, )
+
+    """
     # seq = fields.Method(serialize="get_sequence", deserialize="return_value", allow_none=True)
     name = fields.Method(serialize="get_name", deserialize="get_val", allow_none=True, )
     circular = fields.Method(serialize="get_circular", deserialize="get_val", allow_none=True, )
@@ -107,6 +138,16 @@ class SequenceSchemaMixIn:
 
 
 class QuerySchema(Schema, SequenceSchemaMixIn):
+    """
+    .. code-block::
+
+        sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='query acc.', required=True)
+        start = fields.Integer(data_key="q. start", required=True)
+        end = fields.Integer(data_key="q. end", required=True)
+        length = fields.Integer(data_key='query length', required=True)
+        bases = fields.String(data_key='query seq', required=True)
+        strand = fields.String(missing="plus", default="plus")
+    """
     # acc = fields.String(data_key="query acc.", required=True)
     sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='query acc.', required=True)
     start = fields.Integer(data_key="q. start", required=True)
@@ -117,6 +158,17 @@ class QuerySchema(Schema, SequenceSchemaMixIn):
 
 
 class SubjectSchema(Schema, SequenceSchemaMixIn):
+    """
+    .. code-block::
+
+        sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='subject acc.', required=True)
+        # acc = fields.String(data_key="subject acc.", required=True)
+        start = fields.Integer(data_key="s. start", required=True)
+        end = fields.Integer(data_key="s. end", required=True)
+        length = fields.Integer(data_key='subject length', required=True)
+        bases = fields.String(data_key='subject seq', required=True)
+        strand = fields.String(data_key='subject strand', required=True)
+    """
     sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='subject acc.', required=True)
     # acc = fields.String(data_key="subject acc.", required=True)
     start = fields.Integer(data_key="s. start", required=True)
@@ -135,7 +187,23 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
 
 
 class AlignmentMetaSchema(Schema):
-    """Schema for alignment score metadata for an alignment"""
+    """
+    Schema for alignment score metadata for an alignment
+
+    .. code-block::
+
+        score = fields.Float(required=True)
+        evalue = fields.Float(required=True)
+        bit_score = fields.Integer(data_key='bit score', required=True)
+
+        identical = fields.Integer(required=True)
+        gaps_open = fields.Integer(data_key="gap opens", required=True)
+        gaps = fields.Integer(required=True)
+        alignment_length = fields.Integer(data_key='alignment length', required=True)
+        alignment = fields.Nested("AlignmentSchema")
+        span_origin = fields.Boolean(default=False)
+
+    """
     score = fields.Float(required=True)
     evalue = fields.Float(required=True)
     bit_score = fields.Integer(data_key='bit score', required=True)
@@ -149,7 +217,13 @@ class AlignmentMetaSchema(Schema):
 
 
 class AlignmentSchema(Schema):
-    """Schema for a BLAST alignment"""
+    """Schema for a BLAST alignment
+
+    .. code-block::
+        query = fields.Nested('QuerySchema', )
+        subject = fields.Nested('SubjectSchema', )
+        meta = fields.Nested(AlignmentMetaSchema, exclude=("alignment",))
+    """
     query = fields.Nested('QuerySchema', )
     subject = fields.Nested('SubjectSchema', )
     meta = fields.Nested(AlignmentMetaSchema, exclude=("alignment",))

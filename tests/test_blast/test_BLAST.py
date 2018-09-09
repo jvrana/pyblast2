@@ -33,6 +33,7 @@ def test_blasn(b):
     b.makedb()
     b.blastn()
 
+
 def test_parse_results(b):
     b.makedb()
     b.blastn()

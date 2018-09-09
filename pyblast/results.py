@@ -5,7 +5,9 @@ import json
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
 from pyblast.exceptions import PyBlastException
 
+
 def str_to_f_to_i(v):
+    """"""
     try:
         v = float(v)
     except ValueError:
