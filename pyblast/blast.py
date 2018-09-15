@@ -8,16 +8,15 @@ BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
 import json
 import os
 import re
-import shutil
 import tempfile
 from uuid import uuid4
-from blast_bin import install_blast
 from pyblast.utils import run_cmd
 from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
 from pyblast.results import AlignmentResults
 from pyblast.utils.seq_parser import dump_sequence_jsons, load_sequence_jsons
 from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
+from pyblast.blast_bin import BlastWrapper
 from marshmallow import ValidationError
 from copy import copy
 
@@ -58,9 +57,9 @@ class Blast(object):
         """
 
         # add executable to the system path
-        Blast.add_to_sys_paths()
-        self.executable_path = Blast.get_executable()
-        print("BLAST executable: {}".format(self.executable_path))
+        blast_wrapper = BlastWrapper()
+        if not blast_wrapper.is_installed():
+            raise Exception("Blast not installed")
 
         # name of the database
         self.name = db_name
@@ -92,28 +91,6 @@ class Blast(object):
 
         # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
-
-
-    @staticmethod
-    def add_to_sys_paths():
-        """Add the path located in blast_bin/_paths.txt to the environment in an attempt to run blast"""
-        if not Blast.has_executable():
-            install_blast.add_paths_to_environment()
-        if not Blast.has_executable():
-            error_message = "BLAST executables not found in path. Be sure BLAST is correctly installed."
-            help_message = "Please run 'install_pyblast <youremail> <yourplatform>' in your terminal." \
-                           "Run 'install_pyblast -h' for help."
-            raise PyBlastException(error_message + "\n" + "*" * 50 + "\n" + help_message)
-
-    @staticmethod
-    def has_executable():
-        """Whether blast is installed and executable"""
-        return install_blast.has_executable()
-
-    @staticmethod
-    def get_executable():
-        """Find the executable path for 'makeblastdb'"""
-        return os.path.dirname(shutil.which("makeblastdb"))
 
     def validate_files(self):
         """

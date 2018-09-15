@@ -28,6 +28,7 @@ query ParseSequences($file: String!, $filename: String!) {
 }
 """
 
+
 @pytest.mark.skip(reason="only run once")
 def test_generate_subjects(here):
 
@@ -60,6 +61,7 @@ def test_generate_subjects(here):
         res = parse_to_json(f.read(), f.name)
         with open(os.path.join(here, "data/test_data/query.json"), 'w') as out:
             json.dump(res.json()["data"]["tojson"]["parsedSequence"], out)
+
 
 @pytest.mark.skip(reason="only run once")
 def test_gen_primer_json(here):

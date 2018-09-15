@@ -28,7 +28,7 @@ setup(
     title=ver['title'],
     name='pyblast',
     version=ver['version'],
-    packages=['pyblast', 'blast_bin', 'tests', 'pyblast.utils'],
+    packages=['pyblast', 'pyblast.blast_bin', 'tests', 'pyblast.utils'],
     url=ver['url'],
     license='MIT',
     author=ver['author'],
@@ -38,7 +38,7 @@ setup(
     tests_require=tests_require,
     entry_points={
         'console_scripts': [
-            'install_pyblast = blast_bin.install_blast:main',
+            'pyblast = pyblast.cli:main',
         ]
     }
 )

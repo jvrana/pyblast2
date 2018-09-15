@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 marshmallow = "==3.0.0b10"
+fire = "*"
 
 [dev-packages]
 pandoc = "*"

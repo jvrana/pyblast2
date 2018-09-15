@@ -1,3 +1,0 @@
-"""
-Scripts for installing BLAST
-"""
