@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-marshmallow = "==3.0.0b10"
+marshmallow = "==3.0.0b13"
 fire = "*"
 
 [dev-packages]
@@ -14,3 +14,6 @@ pytest = "*"
 pytest-cov = "*"
 pylint = "*"
 tox = "*"
+
+[pipenv]
+allow_prereleases = true

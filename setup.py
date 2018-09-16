@@ -8,7 +8,7 @@ tests_require = [
 ]
 
 install_requires = [
-    'marshmallow==3.0.0b10'
+    'marshmallow==3.0.0b13'
 ]
 
 def parse_version_file():
@@ -34,7 +34,7 @@ setup(
     author=ver['author'],
     author_email='justin.vrana@gmail.com',
     description='Python wrapper for running BLAST locally',
-    install_requires=['marshmallow==3.0.0b10'],
+    install_requires=install_requires,
     tests_require=tests_require,
     entry_points={
         'console_scripts': [

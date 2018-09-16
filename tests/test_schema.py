@@ -38,7 +38,6 @@ class TestSchema:
             'q. end': 5592,
             'query seq': 'AGTAT',
             'name': None,
-            'filename': None,
             'circular': None,
             'query length': 10781
         },
@@ -48,7 +47,6 @@ class TestSchema:
             's. end': 4219,
             'subject seq': 'aggagagag',
             'name': None,
-            'filename': None,
             'circular': None,
             'subject length': 7883,
             'subject strand': 'plus',

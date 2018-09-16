@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from marshmallow import Schema, fields, validates, validates_schema, pre_load
+from marshmallow import Schema, fields, validates, validates_schema, pre_load, EXCLUDE
 from marshmallow import ValidationError
 
 from pyblast.utils.dna_bases import rc_dict
@@ -22,6 +22,8 @@ class SequenceSchema(Schema):
         description = fields.String(default="", allow_none=True)
         features = fields.Nested("FeatureSchema", many=True, default=list())
     """
+    class Meta:
+        unknown = EXCLUDE
     size = fields.Method("get_size")
     bases = fields.String(required=True, data_key='sequence')
     circular = fields.Boolean(required=True)
@@ -149,6 +151,8 @@ class QuerySchema(Schema, SequenceSchemaMixIn):
         strand = fields.String(missing="plus", default="plus")
     """
     # acc = fields.String(data_key="query acc.", required=True)
+    class Meta:
+        unknown = EXCLUDE
     sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='query acc.', required=True)
     start = fields.Integer(data_key="q. start", required=True)
     end = fields.Integer(data_key="q. end", required=True)
@@ -169,6 +173,8 @@ class SubjectSchema(Schema, SequenceSchemaMixIn):
         bases = fields.String(data_key='subject seq', required=True)
         strand = fields.String(data_key='subject strand', required=True)
     """
+    class Meta:
+        unknown = EXCLUDE
     sequence_id = fields.Method("get_sequence_id", deserialize="load_sequence_id", data_key='subject acc.', required=True)
     # acc = fields.String(data_key="subject acc.", required=True)
     start = fields.Integer(data_key="s. start", required=True)
@@ -204,6 +210,8 @@ class AlignmentMetaSchema(Schema):
         span_origin = fields.Boolean(default=False)
 
     """
+    class Meta:
+        unknown = EXCLUDE
     score = fields.Float(required=True)
     evalue = fields.Float(required=True)
     bit_score = fields.Integer(data_key='bit score', required=True)
