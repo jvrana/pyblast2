@@ -11,6 +11,7 @@ install_requires = [
     'marshmallow==3.0.0b13'
 ]
 
+
 def parse_version_file():
     here = os.path.abspath(os.path.dirname(__file__))
     ver_dict = {}
@@ -28,7 +29,7 @@ setup(
     title=ver['title'],
     name='pyblast',
     version=ver['version'],
-    packages=['pyblast', 'pyblast.blast_bin', 'tests', 'pyblast.utils'],
+    packages=['pyblast', 'pyblast.blast_bin', 'pyblast.utils'],
     url=ver['url'],
     license='MIT',
     author=ver['author'],
@@ -36,6 +37,9 @@ setup(
     description='Python wrapper for running BLAST locally',
     install_requires=install_requires,
     tests_require=tests_require,
+    data_files=[
+        ('tests', ['data/test_data/query.json', 'data/test_data/templates.json'])
+    ],
     entry_points={
         'console_scripts': [
             'pyblast = pyblast.cli:main',

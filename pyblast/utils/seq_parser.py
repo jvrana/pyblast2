@@ -28,7 +28,7 @@ def json_to_fasta_data(jsondata, id="name"):
     def convert(data):
         if "sequence" not in data:
             pass
-        return ">{id}\n{sequence}\n".format(id=data[id], sequence=data["sequence"].upper())
+        return ">{id}\n{bases}\n".format(id=data[id], bases=data["bases"].upper())
 
     if type(jsondata) is list:
         return '\n'.join([convert(x).strip() for x in seq])

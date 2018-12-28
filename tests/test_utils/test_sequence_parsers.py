@@ -26,7 +26,7 @@ GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC
 
     assert seqs[0] == {
             "name": "16079__W17-pJZC-gRNATarSeqSwap-R .",
-            "sequence": "AGGGTTT",
+            "bases": "AGGGTTT",
             "circular": False,
             "description": "",
             "features": [],
@@ -36,7 +36,7 @@ GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC
 
     assert seqs[1] == {
             "name": "1867__BFL1_pETCON_R .",
-            "sequence": "GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC",
+            "bases": "GCTTTTGTTCGGATCCGCCCCCCTCGAGACCTGATTTCGGTTCAAATTTTTTC",
             "circular": False,
             "description": "",
             "features": [],

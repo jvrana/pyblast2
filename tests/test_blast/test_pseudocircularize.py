@@ -30,24 +30,16 @@ class TestPseudocircularize:
 
     @pytest.fixture
     def seqs(self, seq_example, frag1, frag2):
-        class Sequence(object):
 
-            def __init__(self, **kwargs):
-                self.__dict__.update(**kwargs)
-
-        query = Sequence(
-            **{"id": "myquery",
+        query = {"id": "myquery",
                "bases": seq_example,
                "name": "myseq",
                "circular": True}
-        )
 
-        subject = Sequence(
-            **{"id": "mysubject",
+        subject = {"id": "mysubject",
                "bases": frag1 + frag2,
                "name": "myseq",
                "circular": True}
-        )
 
         return [subject], query
 
@@ -70,7 +62,7 @@ class TestPseudocircularize:
     @pytest.fixture
     def alignments_span_origin_true_query_not_circular(self, seqs):
         subjects, query = seqs
-        query.circular = False
+        query['circular'] = False
         j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
@@ -78,21 +70,21 @@ class TestPseudocircularize:
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
 
-        assert len(j.subjects[0]['sequence']) == len(subjects[0].bases)
-        assert len(j.query['sequence']) == len(query.bases)
-        assert j.results.alignments[0]['query']['length'] == len(query.bases)
-        assert j.results.alignments[0]['subject']['length'] == len(subjects[0].bases)
+        assert len(j.subjects[0]['bases']) == len(subjects[0]['bases'])
+        assert len(j.queries[0]['bases']) == len(query['bases'])
+        assert j.results.alignments[0]['query']['length'] == len(query['bases'])
+        assert j.results.alignments[0]['subject']['length'] == len(subjects[0]['bases'])
 
         j2 = JSONBlast(subjects, query, preloaded=True, span_origin=True)
         j2.quick_blastn()
 
-        assert len(j2.subjects[0]['sequence']) == len(subjects[0].bases)
-        assert len(j2.query['sequence']) == len(query.bases)
-        assert j2.results.alignments[0]['query']['length'] == len(query.bases) * 2
-        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases) * 2
+        assert len(j2.subjects[0]['bases']) == len(subjects[0]['bases'])
+        assert len(j2.queries[0]['bases']) == len(query['bases'])
+        assert j2.results.alignments[0]['query']['length'] == len(query['bases']) * 2
+        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0]['bases']) * 2
 
     def test_span_origin_false(self, alignments_span_origin_false):
         assert alignments_span_origin_false[0]['meta']['span_origin'] is False
@@ -107,7 +99,7 @@ class TestPseudocircularize:
 
         subjects, query = seqs
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_false]
-        assert len(subjects[0].bases) not in alignment_lengths
+        assert len(subjects[0]['bases']) not in alignment_lengths
 
     def test_json_pseudocircularize_is_true_but_sequences_are_not_circular(self,
                                                                            alignments_span_origin_true_query_not_circular,
@@ -119,7 +111,7 @@ class TestPseudocircularize:
 
         subjects, query = seqs
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true_query_not_circular]
-        assert len(subjects[0].bases) not in alignment_lengths
+        assert len(subjects[0]['bases']) not in alignment_lengths
 
     def test_json_pseudocircularize_is_true(self, alignments_span_origin_true, seqs):
         subjects, query = seqs
@@ -127,12 +119,12 @@ class TestPseudocircularize:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align['subject']['length'] == len(subjects[0].bases) * 2
-            assert align['query']['length'] == len(query.bases) * 2
+            assert align['subject']['length'] == len(subjects[0]['bases']) * 2
+            assert align['query']['length'] == len(query['bases']) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true]
-        assert len(subjects[0].bases) in alignment_lengths
+        assert len(subjects[0]['bases']) in alignment_lengths
 
     def test_assert_query_and_subject_bases_are_equal(self, alignments_span_origin_true):
         for align in alignments_span_origin_true:
@@ -163,24 +155,17 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
     @pytest.fixture
     def seqs(self, seq_example, frag1, frag2):
-        class Sequence(object):
 
-            def __init__(self, **kwargs):
-                self.__dict__.update(**kwargs)
-
-        subject = Sequence(
-            **{"id": "myquery",
+        subject = {"id": "myquery",
                "bases": seq_example,
                "name": "myseq",
                "circular": True}
-        )
 
-        query = Sequence(
-            **{"id": "mysubject",
+
+        query = {"id": "mysubject",
                "bases": frag1 + frag2,
                "name": "myseq",
                "circular": True}
-        )
 
         return [subject], query
 
@@ -203,7 +188,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     @pytest.fixture
     def alignments_span_origin_true_query_not_circular(self, seqs):
         subjects, query = seqs
-        query.circular = False
+        query['circular'] = False
         j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
@@ -214,18 +199,18 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
         j.quick_blastn()
 
-        assert len(j.subjects[0]['sequence']) == len(subjects[0].bases)
-        assert len(j.query['sequence']) == len(query.bases)
-        assert j.results.alignments[0]['query']['length'] == len(query.bases)
-        assert j.results.alignments[0]['subject']['length'] == len(subjects[0].bases)
+        assert len(j.subjects[0]['bases']) == len(subjects[0]['bases'])
+        assert len(j.queries[0]['bases']) == len(query['bases'])
+        assert j.results.alignments[0]['query']['length'] == len(query['bases'])
+        assert j.results.alignments[0]['subject']['length'] == len(subjects[0]['bases'])
 
         j2 = JSONBlast(subjects, query, preloaded=True, span_origin=True)
         j2.quick_blastn()
 
-        assert len(j2.subjects[0]['sequence']) == len(subjects[0].bases)
-        assert len(j2.query['sequence']) == len(query.bases)
-        assert j2.results.alignments[0]['query']['length'] == len(query.bases) * 2
-        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0].bases) * 2
+        assert len(j2.subjects[0]['bases']) == len(subjects[0]['bases'])
+        assert len(j2.queries[0]['bases']) == len(query['bases'])
+        assert j2.results.alignments[0]['query']['length'] == len(query['bases']) * 2
+        assert j2.results.alignments[0]['subject']['length'] == len(subjects[0]['bases']) * 2
 
     def test_json_pseudocircularize_is_false(self, alignments_span_origin_false, frag1, frag2, seqs):
         assert 2 == len(alignments_span_origin_false)
@@ -234,7 +219,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         subjects, query = seqs
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_false]
-        assert len(subjects[0].bases) not in alignment_lengths
+        assert len(subjects[0]['bases']) not in alignment_lengths
 
     def test_json_pseudocircularize_is_true_but_sequences_are_not_circular(self,
                                                                            alignments_span_origin_true_query_not_circular,
@@ -246,7 +231,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         subjects, query = seqs
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true_query_not_circular]
-        assert len(subjects[0].bases) not in alignment_lengths
+        assert len(subjects[0]['bases']) not in alignment_lengths
 
     def test_json_pseudocircularize_is_true(self, alignments_span_origin_true, seqs, x1, x2):
         subjects, query = seqs
@@ -254,12 +239,12 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align['subject']['length'] == len(subjects[0].bases) * 2
-            assert align['query']['length'] == len(query.bases) * 2
+            assert align['subject']['length'] == len(subjects[0]['bases']) * 2
+            assert align['query']['length'] == len(query['bases']) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [a['meta']['alignment_length'] for a in alignments_span_origin_true]
-        assert len(query.bases) in alignment_lengths
+        assert len(query['bases']) in alignment_lengths
 
     def test_assert_query_and_subject_bases_are_equal(self, alignments_span_origin_true):
         for align in alignments_span_origin_true:
@@ -281,27 +266,18 @@ class TestPseudocirculariseWithLongSeqs:
     def long_seqs(self, frag1, frag2):
         """Alignments that wraps around the query more than onces"""
 
-        class Sequence(object):
-
-            def __init__(self, **kwargs):
-                self.__dict__.update(**kwargs)
-
         junk1 = "atgctatgctgatgctgctgtgctgatgctgatgtgtattgctgtatcgcgcgagttagc"
         junk2 = "g" * 30
 
-        query = Sequence(
-            **{"id": "myquery",
+        query = {"id": "myquery",
                "bases": frag1,
                "name": "myseq",
                "circular": True}
-        )
 
-        subject = Sequence(
-            **{"id": "mysubject",
+        subject = {"id": "mysubject",
                "bases": junk1 + reverse_complement(frag2 + frag1) + junk2,
                "name": "myseq",
                "circular": True}
-        )
 
         return [subject], query
 

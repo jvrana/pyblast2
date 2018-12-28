@@ -25,7 +25,7 @@ class SequenceSchema(Schema):
     class Meta:
         unknown = EXCLUDE
     size = fields.Method("get_size")
-    bases = fields.String(required=True, data_key='sequence')
+    bases = fields.String(required=True)
     circular = fields.Boolean(required=True)
     name = fields.String(required=True)
     id = fields.String(default=lambda: str(uuid4()))

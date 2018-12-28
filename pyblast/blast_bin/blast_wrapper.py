@@ -6,6 +6,7 @@ import re
 import shutil
 from glob import glob
 
+
 class BlastWrapper(object):
     """A really shallow wrapper for running blast commands"""
 
@@ -60,11 +61,13 @@ class BlastWrapper(object):
         :rtype: None
         """
         dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
         path = self.install_blast_using_ftp(email, platform, dir)
         self.path = os.path.join(path, 'bin')
 
-    @classmethod
-    def _get_format(cls, platform):
+    @staticmethod
+    def _platform_formats():
         version_pattern = "\d+\.\d+\.\d+\+"
         blast_pattern = '(ncbi-blast-{ver})-{platform}{ext}'
         tarball_ext = '\.tar\.gz'
@@ -73,6 +76,15 @@ class BlastWrapper(object):
             "linux(pentium)": blast_pattern.format(ver=version_pattern, platform='ia32-linux', ext=tarball_ext),
             "linux(X64 chip)": blast_pattern.format(ver=version_pattern, platform='x64-linux', ext=tarball_ext)
         }
+        return tarball_formats
+
+    @classmethod
+    def _valid_platforms(cls):
+        return list(cls._platform_formats().keys())
+
+    @classmethod
+    def _get_format(cls, platform):
+        tarball_formats = cls._platform_formats()
         fmt = tarball_formats.get(platform, None)
         if fmt is None:
             raise Exception("Cannot find platform \"{}\". Please select from {}".format(platform, list(tarball_formats.keys())))
@@ -136,3 +148,15 @@ class BlastWrapper(object):
             os.remove(input_file)
         print("Blast installed to {}".format(input_file))
         return input_file
+
+    def ask_to_install(self):
+        response = input("Blast not installed and so script cannot run. Would you like to install it now?\n" +
+                         "Note that this will require an internet connection and your email to download blast "
+                         "from NCBI: (y|n)")
+        if response == 'y':
+            email = input('email address: ')
+            platform = input('platform ({}): '.format(BlastWrapper._valid_platforms()))
+            self.install(email, platform)
+        else:
+            raise Exception("Blast not installed. Please run 'pyblast install [EMAIL] [PLATFORM]' from the commandline"
+                            " For help, type 'pyblast install' in the commandline.")

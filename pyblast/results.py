@@ -4,6 +4,7 @@ import re
 import json
 from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
 
+
 def str_to_f_to_i(v):
     """"""
     try:
@@ -16,11 +17,15 @@ def str_to_f_to_i(v):
         pass
     return v
 
+
 class AlignmentResults(object):
     """Alignments results container"""
 
     def __init__(self, alignments):
         self._alignments = tuple(alignments)
+
+    def __len__(self):
+        return len(self._alignments)
 
     @property
     def alignments(self):

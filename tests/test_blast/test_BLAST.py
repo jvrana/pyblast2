@@ -98,6 +98,7 @@ class TestAligner:
 
     def test_subject(self, aligner):
         results = aligner.results
+        assert len(results)
         for res in results.alignments:
             assert res['subject']['circular'] is None
             assert res['subject']['name'] is None
@@ -106,6 +107,7 @@ class TestAligner:
     def test_example(self):
         a = Aligner.use_test_data()
         a.quick_blastn()
+        print(a.results)
     # def test_get_metadata():
     #     a = Aligner.use_test_data()
     #     a.quick_blastn()

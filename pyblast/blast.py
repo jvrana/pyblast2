@@ -19,7 +19,7 @@ from pyblast.exceptions import PyBlastException
 from pyblast.blast_bin import BlastWrapper
 from marshmallow import ValidationError
 from copy import copy
-
+from Bio import SeqIO
 
 class Blast(object):
     """
@@ -59,7 +59,7 @@ class Blast(object):
         # add executable to the system path
         blast_wrapper = BlastWrapper()
         if not blast_wrapper.is_installed():
-            raise Exception("Blast not installed")
+            blast_wrapper.ask_to_install()
 
         # name of the database
         self.name = db_name
@@ -118,6 +118,8 @@ class Blast(object):
         if len(errors) > 0:
             raise PyBlastException("\n".join(errors))
 
+
+
         # seq = PySequence.open(self.query_path)
         # if len(seq) == 0:
         #     raise PyBlastException("Query path \"{}\" has no sequences".format(self.query_path))
@@ -138,19 +140,19 @@ class Blast(object):
         """Produce database, run blastn protocol, & parse results """
         self.makedb()
         self.blastn()
-        self.parse_results()
+        return self.parse_results()
 
     def quick_blastn_short(self):
         """Produce database, run blastn short protocol, & parse results """
         self.makedb()
         self.blastn_short()
-        self.parse_results()
+        return self.parse_results()
 
     def blastn(self):
-        self._run("blastn")
+        return self._run("blastn")
 
     def blastn_short(self):
-        self._run("blastn", task="blastn-short")
+        return self._run("blastn", task="blastn-short")
 
     def _run(self, cmd, **config_opts):
         """Run the blastn using the current configuration"""
@@ -159,6 +161,7 @@ class Blast(object):
         self.run_cmd(cmd, **config)
         with open(self.results_out_path, 'rU') as handle:
             self.raw_results = handle.read()
+        return self.raw_results
 
     # Wrapper for the util.run_cmd
     def run_cmd(self, cmd, **kwargs):
@@ -178,9 +181,25 @@ class Blast(object):
     #     self.input_sequences = seqs
     #     return out, seqs
 
-    def makedb(self):
+    def _fasta_details(self, path):
+        seqs = list(SeqIO.parse(path, format='fasta'))
+        tot_bps = sum([len(s) for s in seqs])
+        return {'num_sequence': len(seqs), 'total_bps': tot_bps}
+
+    def makedb(self, verbose=True):
         """Creates a blastdb from sequences grabbed from the input directory"""
         self.validate_files()
+
+        if verbose:
+            query_details = self._fasta_details(self.query_path)
+            subject_details = self._fasta_details(self.subject_path)
+            details = {
+                'query': query_details,
+                'subject': subject_details
+            }
+            print("Making BLAST database from:")
+            print(json.dumps(details, indent=2))
+
         self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
         return self.db
 
@@ -276,54 +295,37 @@ class JSONBlast(Aligner):
         :type config: dict
         """
         dbname = str(uuid4())
-
-        # force json to sequence schema
-        if not preloaded:
-            try:
-                query_json = load_sequence_jsons(query_json)
-            except ValidationError as e:
-                raise PyBlastException("Validation error while deserializing query sequence data.\n"
-                                       " Received a {datatype} and attempted to load using schema.\n"
-                                       " Are you sure you shouldn't add 'preloaded=True'?\n"
-                                       " ValidationError: {error}".format(datatype=type(query_json), error=e.messages))
-            try:
-                subject_json = load_sequence_jsons(subject_json)
-            except ValidationError as e:
-                raise PyBlastException("Validation error while deserializing subject sequence data.\n"
-                                       " Received a {datatype} and attempted to load using schema.\n"
-                                       " Are you sure you shouldn't add 'preloaded=True'?\n"
-                                       " ValidationError: {error}".format(datatype=type(query_json), error=e.messages))
-
-        try:
-            self.query = dump_sequence_jsons(query_json)
-        except ValidationError as e:
-            raise PyBlastException("There was a parsing error while parsing the query sequence.\n{}\n{}".format(e.messages, query_json))
-        try:
-            self.subjects = dump_sequence_jsons(subject_json)
-        except ValidationError as e:
-            raise PyBlastException("There was a parsing error while parsing the subject sequences.\n{}\n{}".format(e.messages, subject_json))
-
-        _subjects = self.subjects
-        _query = self.query
+        subjects, _subjects, subject_path = self.from_json(subject_json, span_origin)
+        queries, _queries, query_path = self.from_json(query_json, span_origin)
         self.__span_origin = span_origin
-        if self.__span_origin:
-            _subjects = [self.pseudocircularize(s) for s in self.subjects]
-            _query = self.pseudocircularize(self.query)
-
-        # create temporary files
-        subject_path = json_to_fasta_tempfile(_subjects, id="id")
-        query_path = json_to_fasta_tempfile(_query, id="id")
-
-        # seq_db
-        keys = [x['id'] for x in self.subjects]
-        keys.append(self.query['id'])
-        seqs = self.subjects + [self.query]
-        self.seq_dict = dict(zip(keys, seqs))
-
+        self.queries = queries
+        self.subjects = subjects
+        self.seq_dict = {s['id']: s for s in queries + subjects}
         super(JSONBlast, self).__init__(db_name=dbname,
                                         subject_path=subject_path,
                                         query_path=query_path,
                                         **config)
+
+    def from_json(self, seq_json, span_origin=False):
+        # validate
+        if not isinstance(seq_json, list):
+            seq_json = [seq_json]
+        try:
+            seq_json = load_sequence_jsons(seq_json)
+        except ValidationError as e:
+            raise PyBlastException("Validation error while deserializing subject sequence data.\n"
+                                   " Received a {datatype} and attempted to load using schema.\n"
+                                   " ValidationError: {error}".format(datatype=type(seq_json), error=e.messages))
+        try:
+            seqs = dump_sequence_jsons(seq_json)
+        except ValidationError as e:
+            raise PyBlastException(
+                "There was a parsing error while parsing the query sequence.\n{}\n{}".format(e.messages, seq_json))
+        _seqs = seqs
+        if span_origin:
+            _seqs = [self.pseudocircularize(s) for s in seqs]
+        filepath = json_to_fasta_tempfile(_seqs, id="id")
+        return seqs, _seqs, filepath
 
     @classmethod
     def use_test_data(cls):
@@ -340,7 +342,7 @@ class JSONBlast(Aligner):
         if not seq['circular']:
             return seq
         seq_copy = copy(seq)
-        seq_copy['sequence'] = seq['sequence']*2
+        seq_copy['bases'] = seq['bases']*2
         seq_copy['size'] = seq['size']*2
         return seq_copy
 
@@ -358,7 +360,7 @@ class JSONBlast(Aligner):
         """
 
         # TODO: is replacing the raw text the right thing to do?
-        raw = re.sub('Query_1', self.query['id'], self.raw_results)
+        raw = re.sub('Query_1', self.queries[0]['id'], self.raw_results)
         results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
 
         if self.__span_origin:

@@ -6,7 +6,7 @@ from pyblast.schema import SequenceSchema, FeatureSchema
 
 class TestSchema:
     preloaded_data = {
-        "sequence": "gagagagagagagagggagagagcctatttaatat",
+        "bases": "gagagagagagagagggagagagcctatttaatat",
         "circular": True,
         "name": "pBbS8c-RFP",
         "description": "",
@@ -38,8 +38,7 @@ class TestLoad:
         loaded.pop('id', None)
         expected = {}
         expected.update(TestSchema.preloaded_data)
-        expected['bases'] = expected['sequence']
-        del expected['sequence']
+        expected['bases'] = expected['bases']
         assert loaded == expected
 
     # def test_validation_error_wrong_size(self):
