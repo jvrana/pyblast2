@@ -193,12 +193,12 @@ class Blast(object):
         if verbose:
             query_details = self._fasta_details(self.query_path)
             subject_details = self._fasta_details(self.subject_path)
-            details = {
-                'query': query_details,
-                'subject': subject_details
-            }
+
             print("Making BLAST database from:")
-            print(json.dumps(details, indent=2))
+            print(json.dumps(subject_details, indent=2))
+
+            print("Query:")
+            print(json.dumps(query_details, indent=2))
 
         self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
         return self.db
