@@ -279,7 +279,7 @@ class Aligner(Blast):
 class JSONBlast(Aligner):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, preloaded=False, span_origin=False, **config):
+    def __init__(self, subject_json, query_json, span_origin=False, **config):
         """
         Initialize JSONBlast
 

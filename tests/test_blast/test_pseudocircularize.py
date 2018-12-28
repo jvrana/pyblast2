@@ -32,21 +32,21 @@ class TestPseudocircularize:
     def seqs(self, seq_example, frag1, frag2):
 
         query = {"id": "myquery",
-               "bases": seq_example,
-               "name": "myseq",
-               "circular": True}
+                 "bases": seq_example,
+                 "name": "myseq",
+                 "circular": True}
 
         subject = {"id": "mysubject",
-               "bases": frag1 + frag2,
-               "name": "myseq",
-               "circular": True}
+                   "bases": frag1 + frag2,
+                   "name": "myseq",
+                   "circular": True}
 
         return [subject], query
 
     @pytest.fixture
     def alignments_span_origin_false(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -54,7 +54,7 @@ class TestPseudocircularize:
     @pytest.fixture
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=True)
+        j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -63,7 +63,7 @@ class TestPseudocircularize:
     def alignments_span_origin_true_query_not_circular(self, seqs):
         subjects, query = seqs
         query['circular'] = False
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -78,7 +78,7 @@ class TestPseudocircularize:
         assert j.results.alignments[0]['query']['length'] == len(query['bases'])
         assert j.results.alignments[0]['subject']['length'] == len(subjects[0]['bases'])
 
-        j2 = JSONBlast(subjects, query, preloaded=True, span_origin=True)
+        j2 = JSONBlast(subjects, query, span_origin=True)
         j2.quick_blastn()
 
         assert len(j2.subjects[0]['bases']) == len(subjects[0]['bases'])
@@ -157,22 +157,21 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     def seqs(self, seq_example, frag1, frag2):
 
         subject = {"id": "myquery",
-               "bases": seq_example,
-               "name": "myseq",
-               "circular": True}
-
+                   "bases": seq_example,
+                   "name": "myseq",
+                   "circular": True}
 
         query = {"id": "mysubject",
-               "bases": frag1 + frag2,
-               "name": "myseq",
-               "circular": True}
+                 "bases": frag1 + frag2,
+                 "name": "myseq",
+                 "circular": True}
 
         return [subject], query
 
     @pytest.fixture
     def alignments_span_origin_false(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -180,7 +179,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     @pytest.fixture
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=True)
+        j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -189,14 +188,14 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     def alignments_span_origin_true_query_not_circular(self, seqs):
         subjects, query = seqs
         query['circular'] = False
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
 
         assert len(j.subjects[0]['bases']) == len(subjects[0]['bases'])
@@ -204,7 +203,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         assert j.results.alignments[0]['query']['length'] == len(query['bases'])
         assert j.results.alignments[0]['subject']['length'] == len(subjects[0]['bases'])
 
-        j2 = JSONBlast(subjects, query, preloaded=True, span_origin=True)
+        j2 = JSONBlast(subjects, query, span_origin=True)
         j2.quick_blastn()
 
         assert len(j2.subjects[0]['bases']) == len(subjects[0]['bases'])
@@ -251,7 +250,6 @@ class TestPseudocircularize_SwitchQueryAndSubject:
             assert align['query']['bases'] == align['subject']['bases']
 
 
-
 class TestPseudocirculariseWithLongSeqs:
 
     @pytest.fixture
@@ -270,21 +268,21 @@ class TestPseudocirculariseWithLongSeqs:
         junk2 = "g" * 30
 
         query = {"id": "myquery",
-               "bases": frag1,
-               "name": "myseq",
-               "circular": True}
+                 "bases": frag1,
+                 "name": "myseq",
+                 "circular": True}
 
         subject = {"id": "mysubject",
-               "bases": junk1 + reverse_complement(frag2 + frag1) + junk2,
-               "name": "myseq",
-               "circular": True}
+                   "bases": junk1 + reverse_complement(frag2 + frag1) + junk2,
+                   "name": "myseq",
+                   "circular": True}
 
         return [subject], query
 
     @pytest.fixture
     def long_seqs_alignment(self, long_seqs):
         subjects, query = long_seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=True, gapopen=3, gapextend=3, penalty=-5, reward=1)
+        j = JSONBlast(subjects, query, span_origin=True, gapopen=3, gapextend=3, penalty=-5, reward=1)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments

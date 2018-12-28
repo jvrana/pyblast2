@@ -37,9 +37,9 @@ setup(
     description='Python wrapper for running BLAST locally',
     install_requires=install_requires,
     tests_require=tests_require,
-    data_files=[
-        ('tests', ['data/test_data/query.json', 'data/test_data/templates.json'])
-    ],
+    # data_files=[
+    #     ('tests', ['data/test_data/query.json', 'data/test_data/templates.json'])
+    # ],
     entry_points={
         'console_scripts': [
             'pyblast = pyblast.cli:main',

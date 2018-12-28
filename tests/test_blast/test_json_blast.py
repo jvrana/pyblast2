@@ -240,7 +240,7 @@ class TestJSONBlastForExpectedSequences:
     @pytest.fixture
     def alignments(self, seqs):
         subjects, query = seqs
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
@@ -249,7 +249,7 @@ class TestJSONBlastForExpectedSequences:
     def alignments_rc_subject(self, seqs):
         subjects, query = seqs
         subjects[0]['bases'] = reverse_complement(subjects[0]['bases'])
-        j = JSONBlast(subjects, query, preloaded=True, span_origin=False)
+        j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.results.get_perfect()
         return results.alignments
