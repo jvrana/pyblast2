@@ -21,6 +21,7 @@ from marshmallow import ValidationError
 from copy import copy
 from Bio import SeqIO
 
+
 class Blast(object):
     """
     A Blast initializer for running blast searches against subjects contained in a directory. Sequences
@@ -305,6 +306,40 @@ class JSONBlast(Aligner):
                                         subject_path=subject_path,
                                         query_path=query_path,
                                         **config)
+
+    # # TODO: from list of string
+    # # TODO: from json
+    # # TODO: from path
+    # # TODO: from bio seq
+    #
+    # def strings_to_json(self, list_of_seqs):
+    #     return [{
+    #         'bases': s,
+    #         'name': 'unknown',
+    #         'circular': False
+    #     } for s in list_of_seqs]
+    #
+    # def tuples_to_json(self, list_of_tuples):
+    #     return [{
+    #         'bases': t[0],
+    #         'name': t[1],
+    #         'circular': t[2]
+    #     } for t in list_of_tuples]
+    #
+    # def seqrecords_to_json(self, list_of_records):
+    #     return [{
+    #         'bases': str(r.seq),
+    #         'name': r.id,
+    #         'circular': False
+    #     } for r in list_of_records]
+
+    # @staticmethod
+    # def make_seq_json(bases, name, circular):
+    #     return {
+    #         'bases': bases,
+    #         'name': name,
+    #         'circular': circular
+    #     }
 
     def from_json(self, seq_json, span_origin=False):
         # validate
