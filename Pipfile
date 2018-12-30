@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-marshmallow = "==3.0.0b13"
+marshmallow = "==3.0.0rc1"
 fire = "*"
 biopython = "*"
 

@@ -187,7 +187,7 @@ class Blast(object):
         tot_bps = sum([len(s) for s in seqs])
         return {'num_sequence': len(seqs), 'total_bps': tot_bps}
 
-    def makedb(self, verbose=True):
+    def makedb(self, verbose=False):
         """Creates a blastdb from sequences grabbed from the input directory"""
         self.validate_files()
 
