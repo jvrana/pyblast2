@@ -9,7 +9,7 @@ tests_require = [
 
 install_requires = [
     'fire',
-    'marshmallow==3.0.0b13',
+    'marshmallow==3.0.0rc1',
     'biopython'
 ]
 
