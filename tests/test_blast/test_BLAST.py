@@ -58,7 +58,7 @@ def test_parse_results(b):
     assert "start" in subject
     assert "end" in subject
     assert "length" in subject
-    assert subject["strand"] in ["plus", "minus"]
+    assert subject["strand"] in [1, -1]
 
     meta = res["meta"]
     assert "score" in meta
@@ -93,7 +93,7 @@ class TestAligner:
         results = aligner.results
         assert len(results)
         for res in results:
-            assert res["subject"]["strand"] in ["plus", "minus"]
+            assert res["subject"]["strand"] in [1, -1]
 
     def test_example(self):
         a = TmpBlast.use_test_data()

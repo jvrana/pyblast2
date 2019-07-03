@@ -62,6 +62,20 @@ class TestPseudocircularize:
         results = j.get_perfect()
         return results
 
+    def test_alignments(self, seqs):
+        """Expect alignments to be returned"""
+        subjects, query = seqs
+        j = JSONBlast(subjects, query, span_origin=False)
+        j.quick_blastn()
+        assert j.alignments()
+
+    def test_pseudocircularized_alignments(self, seqs):
+        """Expect alignments to be returned"""
+        subjects, query = seqs
+        j = JSONBlast(subjects, query, span_origin=True)
+        j.quick_blastn()
+        assert j.alignments()
+
     @pytest.fixture
     def alignments_span_origin_true_query_not_circular(self, seqs):
         subjects, query = seqs
@@ -190,6 +204,20 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         }
 
         return [subject], query
+
+    def test_alignments(self, seqs):
+        """Expect alignments to be returned"""
+        subjects, query = seqs
+        j = JSONBlast(subjects, query, span_origin=False)
+        j.quick_blastn()
+        assert j.alignments()
+
+    def test_pseudocircularized_alignments(self, seqs):
+        """Expect alignments to be returned"""
+        subjects, query = seqs
+        j = JSONBlast(subjects, query, span_origin=True)
+        j.quick_blastn()
+        assert j.alignments()
 
     @pytest.fixture
     def alignments_span_origin_false(self, seqs):

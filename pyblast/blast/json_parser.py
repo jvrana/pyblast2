@@ -1,7 +1,8 @@
-from Bio.SeqFeature import CompoundLocation, FeatureLocation, SeqFeature
+from Bio.SeqFeature import SeqFeature
 from Bio.SeqRecord import SeqRecord
 from uuid import uuid4
 from Bio.Seq import Seq
+from .utils import new_feature_location
 
 
 class JSONParser(object):
@@ -9,27 +10,16 @@ class JSONParser(object):
     def clean_data(data):
         return {k: v for k, v in data.items() if v is not None}
 
-    @staticmethod
-    def JSON_to_SeqFeature(data, length=None):
+    @classmethod
+    def JSON_to_SeqFeature(cls, data, length=None):
         start = data["start"]
         end = data["end"]
-        if start > end:
-            if length is None:
-                raise ValueError(
-                    "A length must be provided to create a feature with start > end."
-                )
-            pass
-            f1 = FeatureLocation(start, length, data["strand"])
-            f2 = FeatureLocation(0, end, data["strand"])
-            if data["strand"] == -1:
-                location = CompoundLocation([f2, f1])
-            else:
-                location = CompoundLocation([f1, f2])
-        else:
-            location = FeatureLocation(
-                data["start"], data["end"], strand=data["strand"]
-            )
-        return SeqFeature(location=location, type=data["type"], id=data["name"])
+        strand = data["strand"]
+        return SeqFeature(
+            location=new_feature_location(start, end, strand=strand, length=length),
+            type=data["type"],
+            id=data["name"],
+        )
 
     @classmethod
     def __JSON_to_SeqRecord(cls, data):

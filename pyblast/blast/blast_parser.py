@@ -2,9 +2,10 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from uuid import uuid4
 import re
+from .utils import new_feature_location
 
 
-class BlastParser(object):
+class BlastResultParser(object):
     @staticmethod
     def str_to_f_to_i(v):
         """"""
@@ -50,7 +51,13 @@ class BlastParser(object):
         return match_dicts
 
     @staticmethod
-    def __clean_json(data_list):
+    def __convert_strand_label(strand_lable):
+        if strand_lable.strip().lower() != "plus":
+            return -1
+        return 1
+
+    @classmethod
+    def __clean_json(cls, data_list):
         for data in data_list:
             query = {}
             subject = {}
@@ -58,14 +65,16 @@ class BlastParser(object):
             query["start"] = data["q. start"]
             query["end"] = data["q. end"]
             query["bases"] = data["query seq"]
-            query["strand"] = data.get("query strand", "plus")
+            query["strand"] = cls.__convert_strand_label(
+                data.get("query strand", "plus")
+            )
             query["length"] = data["query length"]
             query["sequence_id"] = data["query acc."]
 
             subject["start"] = data["s. start"]
             subject["end"] = data["s. end"]
             subject["bases"] = data["subject seq"]
-            subject["strand"] = data.get("subject strand", "plus")
+            subject["strand"] = cls.__convert_strand_label(data["subject strand"])
             subject["length"] = data["subject length"]
             subject["sequence_id"] = data["subject acc."]
 
@@ -111,8 +120,11 @@ class BlastParser(object):
             ),
             features=[
                 SeqFeature(
-                    location=FeatureLocation(
-                        align["query"]["start"], align["query"]["end"], strand=1
+                    location=new_feature_location(
+                        align["query"]["start"],
+                        align["query"]["end"],
+                        strand=1,
+                        length=align["query"]["length"],
                     ),
                     type="alignment",
                     id="query alignment",
@@ -132,10 +144,11 @@ class BlastParser(object):
             ),
             features=[
                 SeqFeature(
-                    location=FeatureLocation(
+                    location=new_feature_location(
                         align["subject"]["start"],
                         align["subject"]["end"],
                         strand=strand,
+                        length=align["subject"]["length"],
                     ),
                     type="alignment",
                     id="subject alignment",

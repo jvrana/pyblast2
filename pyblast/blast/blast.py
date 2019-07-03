@@ -17,7 +17,7 @@ import typing
 from copy import deepcopy
 from Bio import SeqIO
 from .constants import Constants as C
-from .blast_parser import BlastParser
+from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
 from .utils import glob_fasta_to_tmpfile, records_to_tmpfile
 from .seqdb import SeqRecordDB
@@ -244,13 +244,13 @@ class BlastBase(object):
         :return:
         :rtype:
         """
-        results = BlastParser.results_to_json(self.raw_results, delim=delim)
+        results = BlastResultParser.results_to_json(self.raw_results, delim=delim)
         results = self._unique_results(results)
         self.results = results
         return self.results
 
     def get_perfect(self):
-        return BlastParser.get_perfect(self.results)
+        return BlastResultParser.get_perfect(self.results)
 
     def __str__(self):
         return "{}".format(self.create_config())
@@ -387,7 +387,9 @@ class BioBlast(TmpBlast):
     #
 
     def parse_results(self, delim=","):
-        parsed_results = BlastParser.results_to_json(self.raw_results, delim=delim)
+        parsed_results = BlastResultParser.results_to_json(
+            self.raw_results, delim=delim
+        )
 
         # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
         for v in parsed_results:
@@ -420,11 +422,11 @@ class BioBlast(TmpBlast):
         return self.results
 
     def alignments(self):
-        results_json = BlastParser.results_to_json(self.raw_results)
+        results_json = BlastResultParser.results_to_json(self.raw_results)
         alignments = []
         for align in results_json:
             alignments.append(
-                BlastParser.alignment_to_seqrecord(align, self.seq_db.records)
+                BlastResultParser.alignment_to_seqrecord(align, self.seq_db.records)
             )
         return alignments
 

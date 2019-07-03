@@ -107,7 +107,7 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "origin_sequence_id": "1234",
-            "strand": "plus",
+            "strand": 1,
         }
 
         expected_subject = {
@@ -117,7 +117,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "strand": "plus",
+            "strand": 1,
             "origin_sequence_id": "ABCDEFG",
         }
         del results[0]["query"]["sequence_id"]
@@ -161,7 +161,7 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "origin_sequence_id": "1234",
-            "strand": "plus",
+            "strand": 1,
         }
 
         expected_subject = {
@@ -171,7 +171,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "strand": "plus",
+            "strand": 1,
             "origin_sequence_id": "ABCDEFG",
         }
 
@@ -309,13 +309,13 @@ class TestJSONBlastForExpectedSequences:
     def test_expected_query_sequence(self, alignments, frag):
         assert len(alignments) == 1
         alignment = alignments[0]
-        assert alignment["query"]["strand"] == "plus"
+        assert alignment["query"]["strand"] == 1
         assert alignment["query"]["bases"].upper() == frag.upper()
 
     def test_expected_subject_sequence(self, alignments, frag):
         assert len(alignments) == 1
         alignment = alignments[0]
-        assert alignment["subject"]["strand"] == "plus"
+        assert alignment["subject"]["strand"] == 1
         assert alignment["subject"]["bases"].upper() == frag.upper()
 
     def test_expected_length(self, alignments):
@@ -332,11 +332,11 @@ class TestJSONBlastForExpectedSequences:
     def test_expected_query_sequence_rc_subject(self, alignments_rc_subject, frag):
         assert len(alignments_rc_subject) == 1
         alignment = alignments_rc_subject[0]
-        assert alignment["query"]["strand"] == "plus"
+        assert alignment["query"]["strand"] == 1
         assert alignment["query"]["bases"].upper() == frag.upper()
 
     def test_expected_subject_sequence_rc_subject(self, alignments_rc_subject, frag):
         assert len(alignments_rc_subject) == 1
         alignment = alignments_rc_subject[0]
-        assert alignment["subject"]["strand"] == "minus"
+        assert alignment["subject"]["strand"] == -1
         assert alignment["subject"]["bases"].upper() == frag.upper()
