@@ -21,6 +21,7 @@ from .blast_parser import BlastParser
 from .json_parser import JSONParser
 from .utils import glob_fasta_to_tmpfile, records_to_tmpfile
 from .seqdb import SeqRecordDB
+from more_itertools import unique_everseen, groupby_transform
 
 
 class BlastBase(object):
@@ -216,6 +217,21 @@ class BlastBase(object):
         )
         return self.db
 
+    def _unique_results(self, results):
+        return list(
+            unique_everseen(
+                results,
+                key=lambda x: (
+                    x["query"]["origin_sequence_id"],
+                    x["query"]["start"],
+                    x["query"]["end"],
+                    x["subject"]["origin_sequence_id"],
+                    x["subject"]["start"],
+                    x["subject"]["end"],
+                ),
+            )
+        )
+
     def parse_results(self, delim=","):
         """
         Parses the raw blast result to a JSON
@@ -228,7 +244,9 @@ class BlastBase(object):
         :return:
         :rtype:
         """
-        self.results = BlastParser.results_to_json(self.raw_results, delim=delim)
+        results = BlastParser.results_to_json(self.raw_results, delim=delim)
+        results = self._unique_results(results)
+        self.results = results
         return self.results
 
     def get_perfect(self):
@@ -340,6 +358,34 @@ class BioBlast(TmpBlast):
         )
         return self.seq_db.get_many(keys)
 
+    # def _merge_results(self, results):
+    #
+    #     def mergable(d1, d2):
+    #         if d1['end'] == d1['length']:
+    #             if d1['circular']:
+    #                 return True
+    #             else:
+    #                 return False
+    #         elif d1['end'] + 1 == d2['start']:
+    #             return True
+    #         return False
+    #
+    #     def alignment_mergable(v1, v2):
+    #         return all([mergable(v1[x], v2[x]) for x in ['query', 'subject']])
+
+    # sorted_by_query_ends = sorted(results, key=lambda x: x['query']['end'])
+    # grouped_by_qs = groupby_transform(results,
+    #                                   keyfunc=lambda x: x['query']['sequence_id'] + "__" + x['subject']['sequence_id'])
+    # for _, group in grouped_by_qs:
+    #     grouped_by_query_starts = dict(groupby_transform(group, keyfunc=lambda x: x['query']['start']))
+    #     for v1 in group:
+    #         e = v1['query']['end']
+    #         if e == v1['query']['length']:
+    #             qs = grouped_by_query_starts.get(0, list())
+    #             for v2 in grouped_by_query_starts.get(0, list()):
+    #                 if alignment_mergable(v1, v2):
+    #
+
     def parse_results(self, delim=","):
         parsed_results = BlastParser.results_to_json(self.raw_results, delim=delim)
 
@@ -347,14 +393,29 @@ class BioBlast(TmpBlast):
         for v in parsed_results:
             if v:
                 for x in ["query", "subject"]:
-                    if x not in v:
-                        raise Exception("On no")
+
                     record = self.seq_db.get_origin(v[x]["sequence_id"])
-                    v[x]["circular"] = self.seq_db.is_circular(record)
+                    is_circular = self.seq_db.is_circular(record)
+
+                    v[x]["circular"] = is_circular
                     v[x]["name"] = record.name
                     v[x]["origin_sequence_id"] = record.id
                     v[x]["length"] = len(record.seq)
+
+                    if is_circular:
+                        s = v[x]["start"]
+                        e = v[x]["end"]
+                        l = v[x]["length"]
+                        if s > l:
+                            s -= l
+                        if e > l:
+                            e -= l
+                        v[x]["start"] = s
+                        v[x]["end"] = e
+
                 v["meta"]["span_origin"] = self.span_origin
+
+        parsed_results = self._unique_results(parsed_results)
         self.results = parsed_results
         return self.results
 
