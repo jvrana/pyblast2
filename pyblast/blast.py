@@ -611,15 +611,16 @@ class SeqRecordBlast(Aligner):
         self,
         subjects: typing.Sequence[SeqRecord],
         queries: typing.Sequence[SeqRecord],
-        span_origin=False,
+        span_origin=True,
         **config
     ):
+
+        self.span_origin = span_origin
         self.seq_db = SeqRecordDB()
         subjects = self.add_records(subjects)
         queries = self.add_records(queries)
         self.subjects = subjects
         self.queries = queries
-        self.__span_origin = span_origin
         db_name = str(uuid4())
         subject_path = self.tmp_fasta(subjects)
         query_path = self.tmp_fasta(queries)
@@ -639,9 +640,14 @@ class SeqRecordBlast(Aligner):
 
         circular = [r for r in records if self.seq_db.is_circular(r)]
         linear = [r for r in records if not self.seq_db.is_circular(r)]
-        keys = self.seq_db.add_many_with_transformations(
-            circular, pseudocircularize, Constants.PSEUDOCIRCULAR
-        )
+        if self.span_origin:
+            keys = self.seq_db.add_many_with_transformations(
+                circular, pseudocircularize, Constants.PSEUDOCIRCULAR
+            )
+        else:
+            keys = self.seq_db.add_many_with_transformations(
+                circular, copy_record, Constants.PSEUDOCIRCULAR
+            )
         keys += self.seq_db.add_many_with_transformations(
             linear, copy_record, Constants.COPY_RECORD
         )
@@ -660,6 +666,8 @@ class SeqRecordBlast(Aligner):
                     v[x]["circular"] = self.seq_db.is_circular(record)
                     v[x]["name"] = record.name
                     v[x]["origin_sequence_id"] = record.id
+                    v[x]["length"] = len(record.seq)
+                v["meta"]["span_origin"] = self.span_origin
         self.results = parsed_results
         return self.results
 
@@ -735,7 +743,7 @@ class JSONParser(object):
 class JSONBlast(SeqRecordBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, **config):
+    def __init__(self, subject_json, query_json, span_origin=True, **config):
         """
         Initialize JSONBlast
 
@@ -754,7 +762,7 @@ class JSONBlast(SeqRecordBlast):
         qrecords = JSONParser.JSON_to_SeqRecords(query_json)
         self.subject_json = subject_json
         self.query_json = query_json
-        super().__init__(srecords, qrecords)
+        super().__init__(srecords, qrecords, span_origin=span_origin)
 
     @classmethod
     def use_test_data(cls):

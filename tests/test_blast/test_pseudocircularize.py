@@ -51,16 +51,16 @@ class TestPseudocircularize:
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     @pytest.fixture
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     @pytest.fixture
     def alignments_span_origin_true_query_not_circular(self, seqs):
@@ -69,7 +69,7 @@ class TestPseudocircularize:
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         results = j.get_perfect()
-        return results.alignments
+        return results
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
@@ -80,17 +80,6 @@ class TestPseudocircularize:
         assert len(j.query_json["bases"]) == len(query["bases"])
         assert j.results[0]["query"]["length"] == len(query["bases"])
         assert j.results[0]["subject"]["length"] == len(subjects[0]["bases"])
-
-        j2 = JSONBlast(subjects, query, span_origin=True)
-        j2.quick_blastn()
-
-        assert len(j2.subjects[0]["bases"]) == len(subjects[0]["bases"])
-        assert len(j2.queries[0]["bases"]) == len(query["bases"])
-        assert j2.results.alignments[0]["query"]["length"] == len(query["bases"]) * 2
-        assert (
-            j2.results.alignments[0]["subject"]["length"]
-            == len(subjects[0]["bases"]) * 2
-        )
 
     def test_span_origin_false(self, alignments_span_origin_false):
         assert alignments_span_origin_false[0]["meta"]["span_origin"] is False
@@ -111,7 +100,7 @@ class TestPseudocircularize:
 
         subjects, query = seqs
         alignment_lengths = [
-            a["meta"]["alignment_length"] for a in alignments_span_origin_false
+            a["meta"]["alignment length"] for a in alignments_span_origin_false
         ]
         assert len(subjects[0]["bases"]) not in alignment_lengths
 
@@ -135,23 +124,23 @@ class TestPseudocircularize:
 
         subjects, query = seqs
         alignment_lengths = [
-            a["meta"]["alignment_length"]
+            a["meta"]["alignment length"]
             for a in alignments_span_origin_true_query_not_circular
         ]
         assert len(subjects[0]["bases"]) not in alignment_lengths
 
     def test_json_pseudocircularize_is_true(self, alignments_span_origin_true, seqs):
         subjects, query = seqs
-        # assert len(j.results.alignments) == 3
+        # assert len(j.results) == 3
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align["subject"]["length"] == len(subjects[0]["bases"]) * 2
-            assert align["query"]["length"] == len(query["bases"]) * 2
+            assert align["subject"]["length"] == len(subjects[0]["bases"])
+            assert align["query"]["length"] == len(query["bases"])
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [
-            a["meta"]["alignment_length"] for a in alignments_span_origin_true
+            a["meta"]["alignment length"] for a in alignments_span_origin_true
         ]
         assert len(subjects[0]["bases"]) in alignment_lengths
 
@@ -207,16 +196,16 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     @pytest.fixture
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     @pytest.fixture
     def alignments_span_origin_true_query_not_circular(self, seqs):
@@ -224,29 +213,18 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         query["circular"] = False
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
 
-        assert len(j.subjects[0]["bases"]) == len(subjects[0]["bases"])
-        assert len(j.queries[0]["bases"]) == len(query["bases"])
-        assert j.results.alignments[0]["query"]["length"] == len(query["bases"])
-        assert j.results.alignments[0]["subject"]["length"] == len(subjects[0]["bases"])
-
-        j2 = JSONBlast(subjects, query, span_origin=True)
-        j2.quick_blastn()
-
-        assert len(j2.subjects[0]["bases"]) == len(subjects[0]["bases"])
-        assert len(j2.queries[0]["bases"]) == len(query["bases"])
-        assert j2.results.alignments[0]["query"]["length"] == len(query["bases"]) * 2
-        assert (
-            j2.results.alignments[0]["subject"]["length"]
-            == len(subjects[0]["bases"]) * 2
-        )
+        assert len(j.subject_json[0]["bases"]) == len(subjects[0]["bases"])
+        assert len(j.query_json["bases"]) == len(query["bases"])
+        assert j.results[0]["query"]["length"] == len(query["bases"])
+        assert j.results[0]["subject"]["length"] == len(subjects[0]["bases"])
 
     def test_json_pseudocircularize_is_false(
         self, alignments_span_origin_false, frag1, frag2, seqs
@@ -261,7 +239,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         subjects, query = seqs
         alignment_lengths = [
-            a["meta"]["alignment_length"] for a in alignments_span_origin_false
+            a["meta"]["alignment length"] for a in alignments_span_origin_false
         ]
         assert len(subjects[0]["bases"]) not in alignment_lengths
 
@@ -285,7 +263,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         subjects, query = seqs
         alignment_lengths = [
-            a["meta"]["alignment_length"]
+            a["meta"]["alignment length"]
             for a in alignments_span_origin_true_query_not_circular
         ]
         assert len(subjects[0]["bases"]) not in alignment_lengths
@@ -294,16 +272,16 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         self, alignments_span_origin_true, seqs, x1, x2
     ):
         subjects, query = seqs
-        # assert len(j.results.alignments) == 3
+        # assert len(j.results) == 3
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align["subject"]["length"] == len(subjects[0]["bases"]) * 2
-            assert align["query"]["length"] == len(query["bases"]) * 2
+            assert align["subject"]["length"] == len(subjects[0]["bases"])
+            assert align["query"]["length"] == len(query["bases"])
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [
-            a["meta"]["alignment_length"] for a in alignments_span_origin_true
+            a["meta"]["alignment length"] for a in alignments_span_origin_true
         ]
         assert len(query["bases"]) in alignment_lengths
 
@@ -354,8 +332,8 @@ class TestPseudocirculariseWithLongSeqs:
             reward=1,
         )
         j.quick_blastn()
-        results = j.results.get_perfect()
-        return results.alignments
+        results = j.get_perfect()
+        return results
 
     def test_json_pseudocircularize_is_true_long_seqs(self, long_seqs_alignment):
         results = long_seqs_alignment
@@ -368,29 +346,29 @@ class TestPseudocirculariseWithLongSeqs:
         self, long_seqs_alignment
     ):
         for align in long_seqs_alignment:
-            assert align["meta"]["alignment_length"] == len(align["query"]["bases"])
+            assert align["meta"]["alignment length"] == len(align["query"]["bases"])
 
     def test_long_seqs_subject_bases_length_equals_alignment_length(
         self, long_seqs_alignment
     ):
         for align in long_seqs_alignment:
-            assert align["meta"]["alignment_length"] == len(align["subject"]["bases"])
+            assert align["meta"]["alignment length"] == len(align["subject"]["bases"])
 
     def test_long_alignment_found(self, long_seqs_alignment, frag1, frag2):
         expected_len = len(frag1)
-        lens = [a["meta"]["alignment_length"] for a in long_seqs_alignment]
+        lens = [a["meta"]["alignment length"] for a in long_seqs_alignment]
         assert expected_len in lens
 
     def test_expect_max_alignment(self, long_seqs_alignment, frag1, frag2):
         expected_len = len(frag1 + frag2)
-        lens = [a["meta"]["alignment_length"] for a in long_seqs_alignment]
+        lens = [a["meta"]["alignment length"] for a in long_seqs_alignment]
         assert expected_len == max(lens)
 
     def test_expected_query_sequence(self, long_seqs_alignment, frag1):
         expected_len = len(frag1)
         passed = False
         for align in long_seqs_alignment:
-            if align["meta"]["alignment_length"] == expected_len:
+            if align["meta"]["alignment length"] == expected_len:
                 assert align["query"]["bases"].upper() == frag1.upper()
                 passed = True
         assert passed
@@ -399,7 +377,7 @@ class TestPseudocirculariseWithLongSeqs:
         expected_len = len(frag1)
         passed = False
         for align in long_seqs_alignment:
-            if align["meta"]["alignment_length"] == expected_len:
+            if align["meta"]["alignment length"] == expected_len:
                 assert align["subject"]["bases"].upper() == frag1.upper()
                 passed = True
         assert passed
