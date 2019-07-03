@@ -213,10 +213,7 @@ venv.bak/
 tests/.cache/
 *.nin
 *.nhr
-tests/data/blast_results/db.json
-tests/data/blast_results/db.fsa
-tests/data/blast_results/results.out.json
-tests/data/blast_results/results.out
+tests/data/blast_results/**/*
 tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
 tests/data/test_data/seqio_plasmids/concatenated/concat.json
 .cache/v/cache/lastfailed
@@ -225,9 +222,3 @@ tests/data/test_data/seqio_plasmids/concatenated/concat.json
 *.pyc
 /pyblast/blast_bin/bin/
 *.iml
-_paths.json
-.pytest_cache/v/cache/lastfailed
-.pytest_cache/v/cache/nodeids
-tests/data/blast_results/db.nin
-*.nin
-tests/data/blast_results/results.out.json

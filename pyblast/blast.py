@@ -309,6 +309,7 @@ class Aligner(Blast):
         super(Aligner, self).makedb()
 
 
+# TODO: """This should be the only entrypoint to the program."""
 class SeqRecordBlast(Aligner):
     def __init__(
         self,
