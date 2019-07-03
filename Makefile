@@ -2,31 +2,63 @@ PIP=pip3
 
 
 init:
-	$(PIP) install pipenv --upgrade
-	pipenv install --dev --skip-lock
+	pip install pip -U
+	curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+	poetry self:update
+	poetry install
+	poetry run pre-commit install
 
 
-build:
-#	pipenv lock --requirements > requirements.txt
-#	pipenv lock --dev --requirements > requirements_dev.txt
-	docker build . --tag pyblast:testing
+clean:
+	rm -rf dist
+	rm -rf pip-wheel-metadata
+	rm -rf docs
+	rm -rf .pytest_cache
+
 
 blast:
-	pipenv run python blast_bin/install_blast.py $(EMAIL) $(PLATFORM)
-
-
-test:
-	pipenv run py.test
-
-
-ci:
-	pipenv run py.test -n 8 --boxed
+	poetry run python blast_bin/install_blast.py $(EMAIL) $(PLATFORM)
 
 
 testwithcoverage:
-	pipenv run py.test --cov=pyblast --cov-report term-missing
+	poetry run py.test --cov=pyblast --cov-report term-missing
 
 
-pylint:
-	pipenv run pylint pyblast
+test:
+	poetry run python -m pytest
 
+
+lint:
+	poetry run pylint -E pydent
+
+
+docs:
+	echo "No documentation"
+
+
+format:
+	poetry run upver
+	poetry run black pyblast tests
+
+
+ci:
+	poetry run py.test -n 8 --boxed
+
+
+lock:
+	poetry run upver
+	poetry update
+
+
+
+build:
+	poetry run upver
+	poetry build
+
+
+release:
+	sh scripts/release.sh
+
+
+klocs:
+	find . -name '*.py' | xargs wc -l

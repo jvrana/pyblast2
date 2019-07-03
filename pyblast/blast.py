@@ -20,6 +20,9 @@ from pyblast.blast_bin import BlastWrapper
 from marshmallow import ValidationError
 from copy import copy
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+import typing
 
 
 class Blast(object):
@@ -31,19 +34,39 @@ class Blast(object):
     """
 
     outfmt = [
-        "7", "qacc", "sacc",
-        "score", "evalue", "bitscore", "length", "nident",
-        "gapopen", "gaps", "qlen", "qstart", "qend",
-        "slen", "sstart", "send", "sstrand",
-        "qseq", "sseq"
+        "7",
+        "qacc",
+        "sacc",
+        "score",
+        "evalue",
+        "bitscore",
+        "length",
+        "nident",
+        "gapopen",
+        "gaps",
+        "qlen",
+        "qstart",
+        "qend",
+        "slen",
+        "sstart",
+        "send",
+        "sstrand",
+        "qseq",
+        "sseq",
     ]
 
-    blast_config = {
-        "outfmt": "\"{0}\"".format(' '.join(outfmt))
-    }
+    blast_config = {"outfmt": '"{0}"'.format(" ".join(outfmt))}
 
-    def __init__(self, db_name, subject_path, query_path, db_output_directory, results_out_path,
-                 output_formatter=None, **config):
+    def __init__(
+        self,
+        db_name,
+        subject_path,
+        query_path,
+        db_output_directory,
+        results_out_path,
+        output_formatter=None,
+        **config
+    ):
         """
         A Blast initializer for running blast searches.
 
@@ -71,7 +94,7 @@ class Blast(object):
         # build the configuration
         if output_formatter is None:
             self.outfmt = Blast.outfmt
-        self.config = {"outfmt": "\"{0}\"".format(' '.join(self.outfmt))}
+        self.config = {"outfmt": '"{0}"'.format(" ".join(self.outfmt))}
         if config is not None:
             self.config.update(config)
 
@@ -81,7 +104,7 @@ class Blast(object):
         # path to the blast database
         self.db = os.path.join(db_output_directory, db_name)
 
-        #list of expected fields in the result
+        # list of expected fields in the result
         self.fields = ()
 
         # the raw results from running blast from the command line
@@ -118,8 +141,6 @@ class Blast(object):
                 errors.append("Directory not found {}".format(dir_))
         if len(errors) > 0:
             raise PyBlastException("\n".join(errors))
-
-
 
         # seq = PySequence.open(self.query_path)
         # if len(seq) == 0:
@@ -160,7 +181,7 @@ class Blast(object):
         config = self.create_config()
         config.update(config_opts)
         self.run_cmd(cmd, **config)
-        with open(self.results_out_path, 'rU') as handle:
+        with open(self.results_out_path, "rU") as handle:
             self.raw_results = handle.read()
         return self.raw_results
 
@@ -183,9 +204,9 @@ class Blast(object):
     #     return out, seqs
 
     def _fasta_details(self, path):
-        seqs = list(SeqIO.parse(path, format='fasta'))
+        seqs = list(SeqIO.parse(path, format="fasta"))
         tot_bps = sum([len(s) for s in seqs])
-        return {'num_sequence': len(seqs), 'total_bps': tot_bps}
+        return {"num_sequence": len(seqs), "total_bps": tot_bps}
 
     def makedb(self, verbose=False):
         """Creates a blastdb from sequences grabbed from the input directory"""
@@ -201,10 +222,16 @@ class Blast(object):
             print("Query:")
             print(json.dumps(query_details, indent=2))
 
-        self.run_cmd("makeblastdb", dbtype="nucl", title=self.name, out=self.db, **{"in": self.subject_path})
+        self.run_cmd(
+            "makeblastdb",
+            dbtype="nucl",
+            title=self.name,
+            out=self.db,
+            **{"in": self.subject_path}
+        )
         return self.db
 
-    def parse_results(self, save_as_json=True, delim=','):
+    def parse_results(self, save_as_json=True, delim=","):
         """
         Parses the raw blast result to a JSON
 
@@ -254,27 +281,60 @@ class Aligner(Blast):
             subject_path=subject_path,
             query_path=query_path,
             db_output_directory=db_output_directory,
-            results_out_path=out, **config)
+            results_out_path=out,
+            **config
+        )
 
         self.fields = self.fields + (
-            'subject_name',
-            'subject_filename',
-            'subject_circular',
-            'query_name',
-            'query_filename',
-            'query_circular')
+            "subject_name",
+            "subject_filename",
+            "subject_circular",
+            "query_name",
+            "query_filename",
+            "query_circular",
+        )
 
     @classmethod
     def use_test_data(cls):
         """Create a Blast instance using predefined data located in tests"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        return cls('db',
-                   os.path.join(dir_path, '..', 'tests/data/test_data/db.fsa'),
-                   os.path.join(dir_path, '..', 'tests/data/test_data/query.fsa'))
+        return cls(
+            "db",
+            os.path.join(dir_path, "..", "tests/data/test_data/db.fsa"),
+            os.path.join(dir_path, "..", "tests/data/test_data/query.fsa"),
+        )
 
     def makedb(self):
         super(Aligner, self).makedb()
+
+
+class SeqRecordBlast(Aligner):
+    def __init__(
+        self,
+        subjects: typing.Sequence[SeqRecord],
+        queries: typing.Sequence[SeqRecord],
+        span_origin=False,
+        **config
+    ):
+        dbname = str(uuid4())
+
+        # create a temporary fasta file for the database
+        # create a temporary query fasta file for the query
+        # create a reference of ids to SeqRecords?
+
+        subjects, _subjects, subject_path = self.from_json(subject_json, span_origin)
+        queries, _queries, query_path = self.from_json(query_json, span_origin)
+        self.__span_origin = span_origin
+        self.queries = queries
+        self.subjects = subjects
+        self.seq_dict = {s["id"]: s for s in queries + subjects}
+        super(JSONBlast, self).__init__(
+            db_name=dbname, subject_path=subject_path, query_path=query_path, **config
+        )
+
+    def from_seq_record(self):
+        pass
 
 
 class JSONBlast(Aligner):
@@ -301,11 +361,10 @@ class JSONBlast(Aligner):
         self.__span_origin = span_origin
         self.queries = queries
         self.subjects = subjects
-        self.seq_dict = {s['id']: s for s in queries + subjects}
-        super(JSONBlast, self).__init__(db_name=dbname,
-                                        subject_path=subject_path,
-                                        query_path=query_path,
-                                        **config)
+        self.seq_dict = {s["id"]: s for s in queries + subjects}
+        super(JSONBlast, self).__init__(
+            db_name=dbname, subject_path=subject_path, query_path=query_path, **config
+        )
 
     # # TODO: from list of string
     # # TODO: from json
@@ -341,24 +400,32 @@ class JSONBlast(Aligner):
     #         'circular': circular
     #     }
 
-    def from_json(self, seq_json, span_origin=False):
+    @classmethod
+    def from_json(cls, seq_json, span_origin=False):
         # validate
         if not isinstance(seq_json, list):
             seq_json = [seq_json]
         try:
             seq_json = load_sequence_jsons(seq_json)
         except ValidationError as e:
-            raise PyBlastException("Validation error while deserializing subject sequence data.\n"
-                                   " Received a {datatype} and attempted to load using schema.\n"
-                                   " ValidationError: {error}".format(datatype=type(seq_json), error=e.messages))
+            raise PyBlastException(
+                "Validation error while deserializing subject sequence data.\n"
+                " Received a {datatype} and attempted to load using schema.\n"
+                " ValidationError: {error}".format(
+                    datatype=type(seq_json), error=e.messages
+                )
+            )
         try:
             seqs = dump_sequence_jsons(seq_json)
         except ValidationError as e:
             raise PyBlastException(
-                "There was a parsing error while parsing the query sequence.\n{}\n{}".format(e.messages, seq_json))
+                "There was a parsing error while parsing the query sequence.\n{}\n{}".format(
+                    e.messages, seq_json
+                )
+            )
         _seqs = seqs
         if span_origin:
-            _seqs = [self.pseudocircularize(s) for s in seqs]
+            _seqs = [cls.pseudocircularize(s) for s in seqs]
         filepath = json_to_fasta_tempfile(_seqs, id="id")
         return seqs, _seqs, filepath
 
@@ -366,22 +433,26 @@ class JSONBlast(Aligner):
     def use_test_data(cls):
         """Create a Blast instance using predefined data located in tests"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(dir_path, '..', 'tests/data/test_data/templates.json'), "r") as f:
+        with open(
+            os.path.join(dir_path, "..", "tests/data/test_data/templates.json"), "r"
+        ) as f:
             subject = json.load(f)
-        with open(os.path.join(dir_path, '..', 'tests/data/test_data/query.json'), "r") as f:
+        with open(
+            os.path.join(dir_path, "..", "tests/data/test_data/query.json"), "r"
+        ) as f:
             query = json.load(f)
-        return cls(subject_json=subject,
-                   query_json=query)
+        return cls(subject_json=subject, query_json=query)
 
-    def pseudocircularize(self, seq):
-        if not seq['circular']:
+    @staticmethod
+    def pseudocircularize(seq):
+        if not seq["circular"]:
             return seq
         seq_copy = copy(seq)
-        seq_copy['bases'] = seq['bases']*2
-        seq_copy['size'] = seq['size']*2
+        seq_copy["bases"] = seq["bases"] * 2
+        seq_copy["size"] = seq["size"] * 2
         return seq_copy
 
-    def parse_results(self, save_as_json=True, delim=','):
+    def parse_results(self, save_as_json=True, delim=","):
         """
         Parses the raw blast result to a JSON
 
@@ -395,12 +466,14 @@ class JSONBlast(Aligner):
         """
 
         # TODO: is replacing the raw text the right thing to do?
-        raw = re.sub('Query_1', self.queries[0]['id'], self.raw_results)
-        results = AlignmentResults.parse_results(raw, delim, context={"db": self.seq_dict})
+        raw = re.sub("Query_1", self.queries[0]["id"], self.raw_results)
+        results = AlignmentResults.parse_results(
+            raw, delim, context={"db": self.seq_dict}
+        )
 
         if self.__span_origin:
             for alignment in results.alignments:
-                alignment['meta']['span_origin'] = True
+                alignment["meta"]["span_origin"] = True
 
         if save_as_json:
             path = os.path.join(self.results_out_path + ".json")
@@ -410,7 +483,9 @@ class JSONBlast(Aligner):
         return self.results
 
     def find_perfect_matches(self, min_match, filter=None):
-        raise DeprecationWarning("This method is depreciated. Please use blastn with --task blastn-short")
+        raise DeprecationWarning(
+            "This method is depreciated. Please use blastn with --task blastn-short"
+        )
         """Finding perfect matches using python (i.e. not BLAST)"""
 
         # get the query sequence as a string
@@ -422,10 +497,10 @@ class JSONBlast(Aligner):
             q_rc_seq = reverse_complement(query_seq)
 
             for match in re.finditer(subj_seq, q_seq):
-                print(subj['name'])
+                print(subj["name"])
                 print(match)
                 pass
             for rc_match in re.finditer(subj_seq, q_rc_seq):
-                print(subj['name'])
+                print(subj["name"])
                 print(rc_match)
                 pass

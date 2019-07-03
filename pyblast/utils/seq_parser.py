@@ -13,8 +13,10 @@ from pyblast.utils.dna_bases import rc_dict
 
 def json_to_fasta_tempfile(jsondata, prefix="", id="name"):
     """Writes serialized sequence model data to a temporary fasta file"""
-    fd, temp_path = tempfile.mkstemp(prefix="query_{}__".format(prefix), suffix=".fasta")
-    with open(temp_path, 'w') as out:
+    fd, temp_path = tempfile.mkstemp(
+        prefix="query_{}__".format(prefix), suffix=".fasta"
+    )
+    with open(temp_path, "w") as out:
         out.write(json_to_fasta_data(jsondata, id=id))
         out.close()
     return temp_path
@@ -31,7 +33,7 @@ def json_to_fasta_data(jsondata, id="name"):
         return ">{id}\n{bases}\n".format(id=data[id], bases=data["bases"].upper())
 
     if type(jsondata) is list:
-        return '\n'.join([convert(x).strip() for x in seq])
+        return "\n".join([convert(x).strip() for x in seq])
     else:
         return convert(jsondata)
 
@@ -48,17 +50,19 @@ def fasta_to_json(fasta, id="name"):
     :rtype:
     """
     data = []
-    sequences = fasta.split('>')[1:]
+    sequences = fasta.split(">")[1:]
     for seq in sequences:
-        tokens = seq.split('\n')
+        tokens = seq.split("\n")
         header = tokens[0]
         seqs = tokens[1:]
-        cols = header.split('|')
-        data.append({
-            "{}".format(id): cols[0],
-            "bases": ''.join(seqs).strip(),
-            "circular": False
-        })
+        cols = header.split("|")
+        data.append(
+            {
+                "{}".format(id): cols[0],
+                "bases": "".join(seqs).strip(),
+                "circular": False,
+            }
+        )
     return dump_sequence_jsons(data)
 
 
@@ -68,14 +72,14 @@ def concat_fasta_to_tempfile(dir):
     fasta_files = glob(os.path.join(dir, "*.fsa"))
     fasta_files += glob(os.path.join(dir, "*.fasta"))
     for fsa in fasta_files:
-        with open(fsa, 'r') as f:
+        with open(fsa, "r") as f:
             seqs += fasta_to_json(f.read())
     return json_to_fasta_tempfile(seqs)
 
 
 def complement(seq):
     """Complement a DNA sequence"""
-    return ''.join([rc_dict[x] for x in seq])
+    return "".join([rc_dict[x] for x in seq])
 
 
 def reverse_complement(seq):
@@ -99,7 +103,9 @@ def dump_sequence_jsons(postloaded_data):
         logging.error(err.messages)
         if many:
             dumped = err.valid_data
-            dumped = [s[1] for s in enumerate(dumped) if s[0] not in err.messages.keys()]
+            dumped = [
+                s[1] for s in enumerate(dumped) if s[0] not in err.messages.keys()
+            ]
         else:
             raise err
     return dumped

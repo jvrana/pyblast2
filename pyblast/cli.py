@@ -20,10 +20,8 @@ def install(email, platform, path=None):
 
 
 def main():
-    return fire.Fire({
-        "install": install
-    })
+    return fire.Fire({"install": install})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

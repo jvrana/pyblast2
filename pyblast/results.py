@@ -2,7 +2,12 @@
 
 import re
 import json
-from pyblast.schema import QuerySchema, SubjectSchema, AlignmentSchema, AlignmentMetaSchema
+from pyblast.schema import (
+    QuerySchema,
+    SubjectSchema,
+    AlignmentSchema,
+    AlignmentMetaSchema,
+)
 
 
 def str_to_f_to_i(v):
@@ -35,29 +40,30 @@ class AlignmentResults(object):
     def _extract_metadata(r, delim):
         """Extracts information from the raw text file BLAST produces"""
         g = re.search(
-            '#\s*(?P<blast_ver>.+)\n' +
-            '# Query:\s*(?P<query>.*)\n' +
-            '# Database:\s*(?P<database>.+)\n' +
-            '(?:# Fields:\s*(?P<fields>.+))?',
-            r)
+            "#\s*(?P<blast_ver>.+)\n"
+            + "# Query:\s*(?P<query>.*)\n"
+            + "# Database:\s*(?P<database>.+)\n"
+            + "(?:# Fields:\s*(?P<fields>.+))?",
+            r,
+        )
         metadata = g.groupdict()
-        if metadata['fields'] is None:
+        if metadata["fields"] is None:
             return metadata
-        fields_array = re.split('\s*{}\s*'.format(delim), metadata['fields'])
-        metadata['fields'] = fields_array
+        fields_array = re.split("\s*{}\s*".format(delim), metadata["fields"])
+        metadata["fields"] = fields_array
         return metadata
 
     @staticmethod
     def _get_alignment_rows(r):
         """Split text into alignment rows"""
-        return re.findall('\n([^#].*)', r)
+        return re.findall("\n([^#].*)", r)
 
     @classmethod
     def _validate_matches(cls, raw_matches, fields):
         """Create a dictionary from the fields and rows"""
         match_dicts = []
         for m in raw_matches:
-            values = [str_to_f_to_i(v) for v in m.split('\t')]
+            values = [str_to_f_to_i(v) for v in m.split("\t")]
             match_dicts.append(dict(list(zip(fields, values))))
         return match_dicts
 
@@ -75,10 +81,10 @@ class AlignmentResults(object):
         """
 
         # print(results)
-        if raw_text.strip() == '':
+        if raw_text.strip() == "":
             return {}
         meta = cls._extract_metadata(raw_text, delim)
-        fields = meta['fields']
+        fields = meta["fields"]
         if fields is None:
             return [{}]
         alignment_rows = cls._get_alignment_rows(raw_text)
@@ -107,10 +113,12 @@ class AlignmentResults(object):
         subjects = subject_schema.load(data)
         metas = meta_schema.load(data)
 
-        serialized = alignment_schema.dump([
-            {"query": q, "subject": s, "meta": m} for
-            q, s, m in zip(queries, subjects, metas)
-        ])
+        serialized = alignment_schema.dump(
+            [
+                {"query": q, "subject": s, "meta": m}
+                for q, s, m in zip(queries, subjects, metas)
+            ]
+        )
         return serialized
 
     @classmethod
@@ -139,9 +147,9 @@ class AlignmentResults(object):
         :return:
         :rtype:
         """
-        no_gaps = lambda x: x['meta']['gaps'] == 0
-        no_gap_opens = lambda x: x['meta']['gaps_open'] == 0
-        identical = lambda x: x['meta']['identical'] == x['meta']['alignment_length']
+        no_gaps = lambda x: x["meta"]["gaps"] == 0
+        no_gap_opens = lambda x: x["meta"]["gaps_open"] == 0
+        identical = lambda x: x["meta"]["identical"] == x["meta"]["alignment_length"]
         perfect = lambda x: all([no_gaps(x), no_gap_opens(x), identical(x)])
         return self.__class__([r for r in self.alignments if perfect(r)])
 
@@ -152,9 +160,9 @@ class AlignmentResults(object):
         :return: perfect alignments
         :rtype:
         """
-        f = lambda x: x['meta']['alignment_length'] == x['subject']['length']
+        f = lambda x: x["meta"]["alignment_length"] == x["subject"]["length"]
         return self.__class__([r for r in self.alignments if f(r)])
 
     def dump_to_json(self, path):
-        with open(path, 'w') as out:
+        with open(path, "w") as out:
             json.dump(self.alignments, out)

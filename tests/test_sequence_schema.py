@@ -26,7 +26,7 @@ class TestSchema:
                 "start": 12,
                 "end": 9,
                 "strand": -1,
-            }
+            },
         ],
     }
 
@@ -35,10 +35,10 @@ class TestLoad:
     def test_sequence_load(self):
         schema = SequenceSchema()
         loaded = schema.load(TestSchema.preloaded_data)
-        loaded.pop('id', None)
+        loaded.pop("id", None)
         expected = {}
         expected.update(TestSchema.preloaded_data)
-        expected['bases'] = expected['bases']
+        expected["bases"] = expected["bases"]
         assert loaded == expected
 
     # def test_validation_error_wrong_size(self):
@@ -64,10 +64,10 @@ class TestLoad:
     def test_feature_load_no_id(self):
         schema = FeatureSchema()
         test_data = TestSchema.preloaded_data["features"][0]
-        old_id = test_data['id']
-        test_data.pop('id', None)
+        old_id = test_data["id"]
+        test_data.pop("id", None)
         loaded = schema.load(test_data)
-        loaded_id = loaded['id']
+        loaded_id = loaded["id"]
         expected = {
             "name": "anonymous feature",
             "type": "misc_feature",
@@ -83,7 +83,7 @@ class TestLoad:
     def test_feature_load_error_wrong_strand(self):
         schema = FeatureSchema()
         test_data = TestSchema.preloaded_data["features"][0]
-        test_data['strand'] = 0
+        test_data["strand"] = 0
         with pytest.raises(ValidationError):
             schema.load(test_data)
 

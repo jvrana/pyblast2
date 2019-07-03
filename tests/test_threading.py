@@ -4,8 +4,8 @@ import os
 
 from multiprocessing import Process
 
-def test_threading(new_blast):
 
+def test_threading(new_blast):
     def run_blast():
         b = new_blast()
         b.quick_blastn()
