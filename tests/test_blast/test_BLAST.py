@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from pyblast import BlastBase, Aligner
+from pyblast import BlastBase, TmpBlast
 
 
 def pytest_namespace(here):
@@ -82,7 +82,7 @@ class TestAligner:
         query_path = os.path.join(here, "data/test_data/query.fsa")
         db_name = "db"
 
-        a = Aligner(db_name, template_dictionary, query_path)
+        a = TmpBlast(db_name, template_dictionary, query_path)
         a.quick_blastn()
         return a
 
@@ -96,12 +96,12 @@ class TestAligner:
             assert res["subject"]["strand"] in ["plus", "minus"]
 
     def test_example(self):
-        a = Aligner.use_test_data()
+        a = TmpBlast.use_test_data()
         a.quick_blastn()
         print(a.results)
 
     # def test_get_metadata():
-    #     a = Aligner.use_test_data()
+    #     a = TmpBlast.use_test_data()
     #     a.quick_blastn()
     #     a.get_filename(a.input_sequences[0].id)
     #     a.get_is_circular(a.input_sequences[0].id)

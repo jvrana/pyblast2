@@ -1,9 +1,6 @@
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import FeatureLocation, SeqFeature
-from pyblast import SeqRecordBlast
-import re
-from uuid import uuid4
+from pyblast import BioBlast
 
 
 def test_basic_run():
@@ -16,7 +13,7 @@ def test_basic_run():
 
     # print(type(query))
     # print(type(subject))
-    blaster = SeqRecordBlast([subject], [query])
+    blaster = BioBlast([subject], [query])
     blaster.quick_blastn()
     alignments = blaster.alignments()
     print(alignments)

@@ -2,7 +2,6 @@ import json
 import requests
 import os
 from glob import glob
-from pyblast.utils import fasta_to_json
 import pytest
 
 query = """
@@ -63,8 +62,8 @@ def test_generate_subjects(here):
             json.dump(res.json()["data"]["tojson"]["parsedSequence"], out)
 
 
-@pytest.mark.skip(reason="only run once")
-def test_gen_primer_json(here):
-    with open(os.path.join(here, "data/test_data", "primerdb.fsa"), "r") as infile:
-        with open(os.path.join(here, "data/test_data", "primer.json"), "w") as outfile:
-            json.dump(fasta_to_json(infile.read()), outfile)
+# @pytest.mark.skip(reason="only run once")
+# def test_gen_primer_json(here):
+#     with open(os.path.join(here, "data/test_data", "primerdb.fsa"), "r") as infile:
+#         with open(os.path.join(here, "data/test_data", "primer.json"), "w") as outfile:
+#             json.dump(fasta_to_json(infile.read()), outfile)

@@ -1,6 +1,13 @@
 """utils"""
 
 from .cmd import run_cmd
-from .seq_parser import fasta_to_json, json_to_fasta_data
-from .seq_parser import json_to_fasta_tempfile, concat_fasta_to_tempfile
-from .seq_parser import reverse_complement
+from Bio.Alphabet import generic_dna
+from Bio.Seq import Seq
+
+
+def reverse_complement(seq_str):
+    return str(Seq(seq_str, generic_dna).reverse_complement())
+
+
+def complement(seq_str):
+    return str(Seq(seq_str, generic_dna).complement())

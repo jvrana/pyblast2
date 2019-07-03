@@ -5,7 +5,6 @@ testing expected bases for query and subject for JSON Blast
 import pytest
 import os
 from pyblast.blast import JSONBlast
-from pyblast.exceptions import PyBlastException
 from pyblast.utils import reverse_complement
 import json
 
