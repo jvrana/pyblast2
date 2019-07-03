@@ -7,7 +7,6 @@ from glob import glob
 
 from marshmallow import ValidationError
 
-from pyblast.schema import SequenceSchema
 from pyblast.utils.dna_bases import rc_dict
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -88,12 +87,6 @@ def complement(seq):
 def reverse_complement(seq):
     """Reverse complement a sequence"""
     return complement(seq)[::-1]
-
-
-def load_sequence_jsons(preloaded_data):
-    many = issubclass(preloaded_data.__class__, list)
-    schema = SequenceSchema(many=many)
-    return schema.load(preloaded_data)
 
 
 def dump_sequence_jsons(postloaded_data):

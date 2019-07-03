@@ -11,21 +11,15 @@ import re
 import tempfile
 from uuid import uuid4
 from pyblast.utils import run_cmd
-from pyblast.utils import json_to_fasta_tempfile, concat_fasta_to_tempfile
-from pyblast.results import AlignmentResults
-from pyblast.utils.seq_parser import dump_sequence_jsons, load_sequence_jsons
-from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
 from pyblast.blast_bin import BlastWrapper
-from marshmallow import ValidationError
-from copy import copy
 from Bio.SeqFeature import FeatureLocation, SeqFeature, CompoundLocation
-from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 import typing
-from itertools import chain
 from copy import deepcopy
+from Bio import SeqIO
+from glob import glob
 
 
 class SeqRecordValidationError(Exception):
@@ -258,6 +252,18 @@ class BlastBase(object):
 
     def __str__(self):
         return "{}".format(self.create_config())
+
+
+def concat_fasta_to_tempfile(dir):
+    fasta_files = glob(os.path.join(dir, "*.fsa"))
+    fasta_files += glob(os.path.join(dir, "*.fasta"))
+    records = []
+    for fsa in fasta_files:
+        records += list(SeqIO.parse(fsa, "fasta"))
+
+    fd, temp_path = tempfile.mkstemp(suffix=".fasta")
+    SeqIO.write(records, temp_path, "fasta")
+    return temp_path
 
 
 class Aligner(BlastBase):
