@@ -68,7 +68,7 @@ class TestPseudocircularize:
         query["circular"] = False
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
+        results = j.get_perfect()
         return results.alignments
 
     def test_sequence_size_doesnt_change(self, seqs):

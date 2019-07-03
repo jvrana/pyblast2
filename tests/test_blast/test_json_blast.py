@@ -107,7 +107,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "sequence_id": "1234",
+            "origin_sequence_id": "1234",
             "strand": "plus",
         }
 
@@ -119,8 +119,10 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "strand": "plus",
-            "sequence_id": "ABCDEFG",
+            "origin_sequence_id": "ABCDEFG",
         }
+        del results[0]["query"]["sequence_id"]
+        del results[0]["subject"]["sequence_id"]
 
         assert results[0]["query"] == expected_query
         assert results[0]["subject"] == expected_subject
@@ -159,7 +161,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "sequence_id": "1234",
+            "origin_sequence_id": "1234",
             "strand": "plus",
         }
 
@@ -171,8 +173,11 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "strand": "plus",
-            "sequence_id": "ABCDEFG",
+            "origin_sequence_id": "ABCDEFG",
         }
+
+        del results[0]["query"]["sequence_id"]
+        del results[0]["subject"]["sequence_id"]
 
         assert results[0]["query"] == expected_query
         assert results[0]["subject"] == expected_subject
@@ -231,7 +236,7 @@ class TestJSONBlast:
         )
         j.quick_blastn()
         results = j.results
-        assert results == ()
+        assert results == []
 
     def test_json_blast_with_objects_raises_pyblasterror(self):
         class Sequence(object):
@@ -290,7 +295,7 @@ class TestJSONBlastForExpectedSequences:
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
+        results = j.get_perfect()
         return results
 
     @pytest.fixture
@@ -299,7 +304,7 @@ class TestJSONBlastForExpectedSequences:
         subjects[0]["bases"] = reverse_complement(subjects[0]["bases"])
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
-        results = j.results.get_perfect()
+        results = j.get_perfect()
         return results
 
     def test_expected_query_sequence(self, alignments, frag):
@@ -316,8 +321,8 @@ class TestJSONBlastForExpectedSequences:
 
     def test_expected_length(self, alignments):
         for align in alignments:
-            assert align["meta"]["alignment_length"] == len(align["query"]["bases"])
-            assert align["meta"]["alignment_length"] == len(align["subject"]["bases"])
+            assert align["meta"]["alignment length"] == len(align["query"]["bases"])
+            assert align["meta"]["alignment length"] == len(align["subject"]["bases"])
             assert align["query"]["end"] - align["query"]["start"] + 1 == len(
                 align["query"]["bases"]
             )

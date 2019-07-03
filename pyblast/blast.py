@@ -412,11 +412,11 @@ class BlastParser(object):
 
         # print(results)
         if raw_text.strip() == "":
-            return {}
+            return []
         meta = cls._extract_metadata(raw_text, delim)
         fields = meta["fields"]
         if fields is None:
-            return [{}]
+            return []
         alignment_rows = cls._get_alignment_rows(raw_text)
         match_dicts = cls._validate_matches(alignment_rows, tuple(fields))
         data = list(cls.__clean_json(match_dicts))
@@ -580,7 +580,7 @@ class SeqRecordDB(object):
         r = self.get(key)
         if r:
             if Constants.PARENT in r.annotations:
-                if r.annotations[Constants.TRANSFORMATION] in blacklist:
+                if blacklist and r.annotations[Constants.TRANSFORMATION] in blacklist:
                     return r
                 else:
                     return self.get_origin(r.annotations[Constants.PARENT])
@@ -652,13 +652,14 @@ class SeqRecordBlast(Aligner):
 
         # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
         for v in parsed_results:
-            for x in ["query", "subject"]:
-                record = self.seq_db.get_origin(
-                    v[x]["sequence_id"], blacklist=[Constants.COPY_RECORD]
-                )
-                v[x]["circular"] = self.seq_db.is_circular(record)
-                v[x]["name"] = record.name
-                v[x]["origin_sequence_id"] = record.id
+            if v:
+                for x in ["query", "subject"]:
+                    if x not in v:
+                        raise Exception("On no")
+                    record = self.seq_db.get_origin(v[x]["sequence_id"])
+                    v[x]["circular"] = self.seq_db.is_circular(record)
+                    v[x]["name"] = record.name
+                    v[x]["origin_sequence_id"] = record.id
         self.results = parsed_results
         return self.results
 
