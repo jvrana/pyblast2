@@ -323,6 +323,10 @@ class Constants(object):
     TRANSFORMATION = "modification"
     OLD_KEY = "original_record_id"
     PSEUDOCIRCULAR = "pseudocircularized"
+    COPY_RECORD = "copy_record"
+
+    class NULL(object):
+        pass
 
 
 class BlastParser(object):
@@ -498,6 +502,9 @@ class SeqRecordDB(object):
         self.records = {}
         self.mapping = {}
 
+    def incr(self):
+        return str(uuid4())
+
     @classmethod
     def validate_records(cls, records):
         for r in records:
@@ -533,6 +540,12 @@ class SeqRecordDB(object):
         k = self.mapping.get(id(record), None)
         return k
 
+    def post_transform_hook(self, key, *args, **kwargs):
+        record = self.get(key)
+        record.annotations[Constants.OLD_KEY] = record.id
+        record.id = key
+        return record
+
     def transform(self, key, transform, transform_label):
         record = self.get(key)
         new_record = transform(record)
@@ -540,20 +553,37 @@ class SeqRecordDB(object):
         new_key = self.add_one(new_record)
         new_record.annotations[Constants.PARENT] = parent_key
         new_record.annotations[Constants.TRANSFORMATION] = transform_label
+        self.post_transform_hook(new_key)
         return new_key
 
     def add_with_transformation(self, record, transform, transform_label):
         key = self.add_one(record)
         return self.transform(key, transform, transform_label)
 
-    def get(self, key):
-        return self.records.get(key, None)
+    def add_many_with_transformations(self, records, transform, transform_label):
+        return [
+            self.add_with_transformation(r, transform, transform_label) for r in records
+        ]
 
-    def get_origin(self, key):
+    def get_many(self, keys, default=Constants.NULL):
+        records = []
+        for k in keys:
+            records.append(self.get(k, default=default))
+        return records
+
+    def get(self, key, default=Constants.NULL):
+        if default is not Constants.NULL:
+            return self.records.get(key, default)
+        return self.records[key]
+
+    def get_origin(self, key, blacklist=None):
         r = self.get(key)
         if r:
             if Constants.PARENT in r.annotations:
-                return self.get_origin(r.annotations[Constants.PARENT])
+                if r.annotations[Constants.TRANSFORMATION] in blacklist:
+                    return r
+                else:
+                    return self.get_origin(r.annotations[Constants.PARENT])
         return r
 
     def add_one(self, record, validate=True):
@@ -562,11 +592,8 @@ class SeqRecordDB(object):
         else:
             if validate:
                 self.validate_records([record])
-            key = str(uuid4())
+            key = self.incr()
             self.records[key] = record
-
-            record.annotations[Constants.OLD_KEY] = record.id
-            record.id = key
             self.mapping[id(record)] = key
             return key
 
@@ -588,18 +615,8 @@ class SeqRecordBlast(Aligner):
         **config
     ):
         self.seq_db = SeqRecordDB()
-        self.seq_db.add_many(subjects)
-        self.seq_db.add_many(queries)
-
-        def pseudocircularize(r):
-            r2 = r + r
-            r2.name = Constants.PSEUDOCIRCULAR + "__" + r.name
-            r2.id = str(uuid4())
-            return r2
-
-        for k, v in dict(self.seq_db.records).items():
-            if SeqRecordDB.is_circular(v):
-                self.seq_db.transform(k, pseudocircularize, Constants.PSEUDOCIRCULAR)
+        subjects = self.add_records(subjects)
+        queries = self.add_records(queries)
         self.subjects = subjects
         self.queries = queries
         self.__span_origin = span_origin
@@ -610,10 +627,38 @@ class SeqRecordBlast(Aligner):
             db_name=db_name, subject_path=subject_path, query_path=query_path, **config
         )
 
+    def add_records(self, records):
+        def copy_record(r):
+            return deepcopy(r)
+
+        def pseudocircularize(r):
+            r2 = r + r
+            r2.name = Constants.PSEUDOCIRCULAR + "__" + r.name
+            r2.id = str(uuid4())
+            return r2
+
+        circular = [r for r in records if self.seq_db.is_circular(r)]
+        linear = [r for r in records if not self.seq_db.is_circular(r)]
+        keys = self.seq_db.add_many_with_transformations(
+            circular, pseudocircularize, Constants.PSEUDOCIRCULAR
+        )
+        keys += self.seq_db.add_many_with_transformations(
+            linear, copy_record, Constants.COPY_RECORD
+        )
+        return self.seq_db.get_many(keys)
+
     def parse_results(self, delim=","):
         parsed_results = BlastParser.results_to_json(self.raw_results, delim=delim)
 
         # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
+        for v in parsed_results:
+            for x in ["query", "subject"]:
+                record = self.seq_db.get_origin(
+                    v[x]["sequence_id"], blacklist=[Constants.COPY_RECORD]
+                )
+                v[x]["circular"] = self.seq_db.is_circular(record)
+                v[x]["name"] = record.name
+                v[x]["origin_sequence_id"] = record.id
         self.results = parsed_results
         return self.results
 
@@ -621,9 +666,6 @@ class SeqRecordBlast(Aligner):
     def tmp_fasta(records):
         fd, tmp_path_handle = tempfile.mkstemp(suffix=".fasta")
         SeqIO.write(records, tmp_path_handle, format="fasta")
-        with open(tmp_path_handle, "r") as f:
-            lines = f.read()
-            print(lines)
         return tmp_path_handle
 
     def alignments(self):
