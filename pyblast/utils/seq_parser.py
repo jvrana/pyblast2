@@ -9,6 +9,9 @@ from marshmallow import ValidationError
 
 from pyblast.schema import SequenceSchema
 from pyblast.utils.dna_bases import rc_dict
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 
 
 def json_to_fasta_tempfile(jsondata, prefix="", id="name"):

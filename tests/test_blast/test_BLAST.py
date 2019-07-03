@@ -1,12 +1,12 @@
 import os
 import pytest
 
-from pyblast import Blast, Aligner
+from pyblast import BlastBase, Aligner
 
 
 def pytest_namespace(here):
     return {
-        "b": Blast(
+        "b": BlastBase(
             "db",
             os.path.join(here, "data/test_data/db.fsa"),
             os.path.join(here, "data/test_data/query.fsa"),
@@ -18,7 +18,7 @@ def pytest_namespace(here):
 
 @pytest.fixture
 def b(here):
-    return Blast(
+    return BlastBase(
         "db",
         os.path.join(here, "data/test_data/db.fsa"),
         os.path.join(here, "data/test_data/query.fsa"),
@@ -41,7 +41,7 @@ def test_parse_results(b):
     b.blastn()
     b.parse_results()
 
-    results = b.results.alignments
+    results = b.results
     res = results[0]
     assert "query" in res
     assert "subject" in res
@@ -52,26 +52,22 @@ def test_parse_results(b):
     assert "start" in query
     assert "end" in query
     assert "length" in query
-    assert query["name"] is None
-    assert query["circular"] is None
 
     subject = res["subject"]
     assert "sequence_id" in subject
     assert "start" in subject
     assert "end" in subject
     assert "length" in subject
-    assert subject["name"] is None
-    assert subject["circular"] is None
     assert subject["strand"] in ["plus", "minus"]
 
     meta = res["meta"]
     assert "score" in meta
     assert "evalue" in meta
-    assert "bit_score" in meta
+    assert "bit score" in meta
     assert "identical" in meta
-    assert "gaps_open" in meta
+    assert "gap opens" in meta
     assert "gaps" in meta
-    assert "alignment_length" in meta
+    assert "alignment length" in meta
 
 
 def test_quick_blastn(b):
@@ -93,16 +89,10 @@ class TestAligner:
     def test_query(self, aligner):
         results = aligner.results
 
-        for res in results.alignments:
-            assert res["query"]["circular"] is None
-            assert res["query"]["name"] is None
-
     def test_subject(self, aligner):
         results = aligner.results
         assert len(results)
-        for res in results.alignments:
-            assert res["subject"]["circular"] is None
-            assert res["subject"]["name"] is None
+        for res in results:
             assert res["subject"]["strand"] in ["plus", "minus"]
 
     def test_example(self):

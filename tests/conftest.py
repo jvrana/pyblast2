@@ -1,6 +1,6 @@
 import pytest
 import os
-from pyblast import Blast
+from pyblast import BlastBase
 
 
 @pytest.fixture(scope="module")
@@ -11,7 +11,7 @@ def here():
 @pytest.fixture(scope="module")
 def new_blast(here):
     def make_blast():
-        return Blast(
+        return BlastBase(
             "db",
             os.path.join(here, "data/test_data/db.fsa"),
             os.path.join(here, "data/test_data/query.fsa"),

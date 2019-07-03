@@ -1,4 +1,4 @@
-from pyblast import Blast
+from pyblast import BlastBase
 import pytest
 import os
 

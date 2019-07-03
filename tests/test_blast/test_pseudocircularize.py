@@ -76,10 +76,10 @@ class TestPseudocircularize:
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
 
-        assert len(j.subjects[0]["bases"]) == len(subjects[0]["bases"])
-        assert len(j.queries[0]["bases"]) == len(query["bases"])
-        assert j.results.alignments[0]["query"]["length"] == len(query["bases"])
-        assert j.results.alignments[0]["subject"]["length"] == len(subjects[0]["bases"])
+        assert len(j.subject_json[0]["bases"]) == len(subjects[0]["bases"])
+        assert len(j.query_json["bases"]) == len(query["bases"])
+        assert j.results[0]["query"]["length"] == len(query["bases"])
+        assert j.results[0]["subject"]["length"] == len(subjects[0]["bases"])
 
         j2 = JSONBlast(subjects, query, span_origin=True)
         j2.quick_blastn()

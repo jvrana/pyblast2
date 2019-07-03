@@ -163,6 +163,8 @@ class AlignmentResults(object):
         f = lambda x: x["meta"]["alignment_length"] == x["subject"]["length"]
         return self.__class__([r for r in self.alignments if f(r)])
 
-    def dump_to_json(self, path):
+    def to_json(self, path=None):
+        if not path:
+            return list(self.alignments)
         with open(path, "w") as out:
             json.dump(self.alignments, out)
