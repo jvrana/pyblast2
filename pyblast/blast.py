@@ -322,6 +322,7 @@ class Constants(object):
     LINEAR = "linear"
     TRANSFORMATION = "modification"
     OLD_KEY = "original_record_id"
+    PSEUDOCIRCULAR = "pseudocircularized"
 
 
 class BlastParser(object):
@@ -528,16 +529,6 @@ class SeqRecordDB(object):
             or r.annotations.get(Constants.LINEAR, True) is False
         )
 
-    @classmethod
-    def copy_records_iter(cls, records):
-        for r in records:
-            if cls.is_circular(r):
-                yield cls.new_record_metadata(
-                    r + r, r, name_prefix="pseudocircularized__"
-                )
-            else:
-                yield cls.new_record_metadata(deepcopy(r), r, name_prefix="blast__")
-
     def key(self, record):
         k = self.mapping.get(id(record), None)
         return k
@@ -602,13 +593,13 @@ class SeqRecordBlast(Aligner):
 
         def pseudocircularize(r):
             r2 = r + r
-            r2.name = "pseudocircular__" + r.name
+            r2.name = Constants.PSEUDOCIRCULAR + "__" + r.name
             r2.id = str(uuid4())
             return r2
 
         for k, v in dict(self.seq_db.records).items():
             if SeqRecordDB.is_circular(v):
-                self.seq_db.transform(k, pseudocircularize, "pseudocircularize")
+                self.seq_db.transform(k, pseudocircularize, Constants.PSEUDOCIRCULAR)
         self.subjects = subjects
         self.queries = queries
         self.__span_origin = span_origin
@@ -620,10 +611,10 @@ class SeqRecordBlast(Aligner):
         )
 
     def parse_results(self, delim=","):
-        self.results = BlastParser.results_to_json(self.raw_results, delim=delim)
+        parsed_results = BlastParser.results_to_json(self.raw_results, delim=delim)
 
-        # resolve iwth sequence dictionary
-
+        # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
+        self.results = parsed_results
         return self.results
 
     @staticmethod
