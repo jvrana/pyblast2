@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pyblast"
+name = "pyblastbio"
 version = "1.0.0a"
 description = ""
 authors = ["First Last <youemail@domain.com>"]
@@ -7,6 +7,9 @@ homepage = "https://www.github.com/jvrana/pyblast"
 repository = "https://www.github.com/jvrana/pyblast"
 documentation = "https://www.github.com/jvrana/pyblast"
 readme = 'README.md'
+packages = [
+    { include = "pyblast" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
