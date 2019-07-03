@@ -222,10 +222,10 @@ class BlastBase(object):
             unique_everseen(
                 results,
                 key=lambda x: (
-                    x["query"]["origin_sequence_id"],
+                    x["query"]["sequence_id"],
                     x["query"]["start"],
                     x["query"]["end"],
-                    x["subject"]["origin_sequence_id"],
+                    x["subject"]["sequence_id"],
                     x["subject"]["start"],
                     x["subject"]["end"],
                 ),
