@@ -1,11 +1,12 @@
 import pytest
-import os
-from pyblast import BlastBase
+from os.path import dirname, abspath, join
+from pyblast import BlastBase, BioBlast
+from pyblast.utils import load_genbank_glob
 
 
 @pytest.fixture(scope="module")
 def here():
-    return os.path.dirname(os.path.abspath(__file__))
+    return dirname(abspath(__file__))
 
 
 @pytest.fixture(scope="module")
@@ -13,10 +14,28 @@ def new_blast(here):
     def make_blast():
         return BlastBase(
             "db",
-            os.path.join(here, "data/test_data/db.fsa"),
-            os.path.join(here, "data/test_data/query.fsa"),
-            os.path.join(here, "data/blast_results"),
-            os.path.join(here, "data/blast_results/results.out"),
+            join(here, "data/test_data/db.fsa"),
+            join(here, "data/test_data/query.fsa"),
+            join(here, "data/blast_results"),
+            join(here, "data/blast_results/results.out"),
         )
+
+    return make_blast
+
+
+@pytest.fixture(scope="module")
+def new_bio_blast(here):
+    def make_blast():
+
+        subjects = load_genbank_glob(
+            join(here, "data/test_data/genbank/templates/*.gb")
+        )
+        queries = load_genbank_glob(
+            join(
+                here,
+                "data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr_pseudocircular.gb",
+            )
+        )
+        return BioBlast(subjects, queries)
 
     return make_blast

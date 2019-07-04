@@ -19,9 +19,9 @@ from Bio import SeqIO
 from .constants import Constants as C
 from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
-from .utils import glob_fasta_to_tmpfile, records_to_tmpfile
+from pyblast.utils import glob_fasta_to_tmpfile, records_to_tmpfile, clean_records
 from .seqdb import SeqRecordDB
-from more_itertools import unique_everseen, groupby_transform
+from more_itertools import unique_everseen
 
 
 class BlastBase(object):
@@ -334,6 +334,8 @@ class BioBlast(TmpBlast):
         )
 
     def add_records(self, records):
+        clean_records(records)
+
         def copy_record(r):
             return deepcopy(r)
 
@@ -422,9 +424,8 @@ class BioBlast(TmpBlast):
         return self.results
 
     def alignments(self):
-        results_json = BlastResultParser.results_to_json(self.raw_results)
         alignments = []
-        for align in results_json:
+        for align in self.results:
             alignments.append(
                 BlastResultParser.alignment_to_seqrecord(align, self.seq_db.records)
             )

@@ -2,7 +2,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from uuid import uuid4
 import re
-from .utils import new_feature_location
+from pyblast.utils import new_feature_location
 
 
 class BlastResultParser(object):
@@ -130,7 +130,10 @@ class BlastResultParser(object):
                     id="query alignment",
                 )
             ],
-            annotations=dict(align),
+            annotations={
+                "alignment": align,
+                "circular": query_record.annotations["circular"],
+            },
         )
         if align["subject"]["strand"] != "plus":
             strand = -1
@@ -154,7 +157,10 @@ class BlastResultParser(object):
                     id="subject alignment",
                 )
             ],
-            annotations=dict(align),
+            annotations={
+                "alignment": align,
+                "circular": subject_record.annotations["circular"],
+            },
         )
 
         return query_alignment, subject_alignment

@@ -2,7 +2,7 @@ from Bio.SeqFeature import SeqFeature
 from Bio.SeqRecord import SeqRecord
 from uuid import uuid4
 from Bio.Seq import Seq
-from .utils import new_feature_location
+from pyblast.utils import new_feature_location
 
 
 class JSONParser(object):
