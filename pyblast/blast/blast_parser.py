@@ -82,7 +82,7 @@ class BlastResultParser(object):
             yield {"query": query, "subject": subject, "meta": meta}
 
     @classmethod
-    def results_to_json(cls, raw_text, delim=","):
+    def raw_results_to_json(cls, raw_text, delim=","):
         """
         Converts raw BLAST text into a flatten dictionary
 
@@ -107,6 +107,32 @@ class BlastResultParser(object):
         return data
 
     @staticmethod
+    def alignment_to_feature(align: dict, type: str, id: str):
+        return SeqFeature(
+            location=new_feature_location(
+                align["start"] - 1,
+                align["end"],
+                strand=align["strand"],
+                length=align["length"],
+            ),
+            type=type,
+            id=id,
+        )
+
+    @classmethod
+    def alignment_to_seq_record(cls, align, name, id, seq_dict: dict):
+
+        origin_record = seq_dict[align["sequence_id"]]
+
+        new_record = SeqRecord(
+            id=id,
+            seq=origin_record.seq,
+            name=name,
+            features=[cls.alignment_to_feature(align, "alignment", id)],
+            annotations={},
+        )
+
+    @staticmethod
     def alignment_to_seqrecord(align: dict, seq_dict: dict):
 
         query_record = seq_dict[align["query"]["sequence_id"]]
@@ -121,7 +147,7 @@ class BlastResultParser(object):
             features=[
                 SeqFeature(
                     location=new_feature_location(
-                        align["query"]["start"],
+                        align["query"]["start"] - 1,
                         align["query"]["end"],
                         strand=1,
                         length=align["query"]["length"],
@@ -148,7 +174,7 @@ class BlastResultParser(object):
             features=[
                 SeqFeature(
                     location=new_feature_location(
-                        align["subject"]["start"],
+                        align["subject"]["start"] - 1,
                         align["subject"]["end"],
                         strand=strand,
                         length=align["subject"]["length"],

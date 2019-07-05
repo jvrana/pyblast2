@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 from glob import glob
+from termcolor import cprint, colored
 
 
 class BlastWrapper(object):
@@ -44,10 +45,7 @@ class BlastWrapper(object):
         os.environ["PATH"] += ":" + real_path
 
     def is_installed(self):
-        return shutil.which("makeblastdb") is not None
-
-    # def install(self, email, platform, dir):
-    #     return self.install_blast_using_ftp(email, platform, dir)
+        return shutil.which("makeblastdb")
 
     def install(self, email, platform):
         """
@@ -172,17 +170,24 @@ class BlastWrapper(object):
         return input_file
 
     def ask_to_install(self):
-        response = input(
-            "Blast not installed and so script cannot run. Would you like to install it now?\n"
-            + "Note that this will require an internet connection and your email to download blast "
-            "from NCBI: (y|n)"
+        msg = colored(
+            "Blast not installed and so script cannot run. Would you like to install it now?\n",
+            "red",
         )
+        msg += colored(
+            "Note that this will require an internet connection and your email to download blast "
+            + "from NCBI (y|n): ",
+            "green",
+        )
+
+        response = input(msg)
         if response == "y":
             email = input("email address: ")
             platform = input("platform ({}): ".format(BlastWrapper._valid_platforms()))
             self.install(email, platform)
         else:
-            raise Exception(
-                "Blast not installed. Please run 'pyblast install [EMAIL] [PLATFORM]' from the commandline"
-                " For help, type 'pyblast install' in the commandline."
+            cprint(
+                "User canceled. Blast not installed.\nPlease run 'pyblast install [EMAIL] [PLATFORM]' from the commandline."
+                + "\nFor help, type 'pyblast install -- --help' in the commandline.",
+                "red",
             )

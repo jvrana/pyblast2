@@ -7,6 +7,7 @@ class Constants(object):
     OLD_KEY = "original_record_id"
     PSEUDOCIRCULAR = "pseudocircularized"
     COPY_RECORD = "copy_record"
+    TOPOLOGY = "topology"
 
     class NULL(object):
-        pass
+        """A not NONE class."""

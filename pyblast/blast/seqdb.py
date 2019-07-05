@@ -18,10 +18,11 @@ class SeqRecordDB(object):
 
     @staticmethod
     def validate_circular(r):
-        if C.LINEAR not in r.annotations and C.CIRCULAR not in r.annotations:
+        valid_keys = [C.CIRCULAR, C.LINEAR, C.TOPOLOGY]
+        if all([k not in r.annotations for k in valid_keys]):
             raise SeqRecordValidationError(
-                "SeqRecord {} is missing a '{linear}' or '{circular}' annotation. This must be provided.".format(
-                    r, circular=C.CIRCULAR, linear=C.LINEAR
+                "SeqRecord {} is missing a any of the valid keys in its annotation: {keys}. This must be provided.".format(
+                    r, keys=valid_keys
                 )
             )
         if C.LINEAR in r.annotations and C.CIRCULAR in r.annotations:
@@ -37,6 +38,7 @@ class SeqRecordDB(object):
         return (
             r.annotations.get(C.CIRCULAR, False) is True
             or r.annotations.get(C.LINEAR, True) is False
+            or r.annotations.get(C.TOPOLOGY, "linear") == "circular"
         )
 
     def key(self, record):

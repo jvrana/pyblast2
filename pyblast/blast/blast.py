@@ -244,7 +244,7 @@ class BlastBase(object):
         :return:
         :rtype:
         """
-        results = BlastResultParser.results_to_json(self.raw_results, delim=delim)
+        results = BlastResultParser.raw_results_to_json(self.raw_results, delim=delim)
         results = self._unique_results(results)
         self.results = results
         return self.results
@@ -389,34 +389,21 @@ class BioBlast(TmpBlast):
     #
 
     def parse_results(self, delim=","):
-        parsed_results = BlastResultParser.results_to_json(
+        parsed_results = BlastResultParser.raw_results_to_json(
             self.raw_results, delim=delim
         )
 
-        # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
+        # # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
         for v in parsed_results:
             if v:
                 for x in ["query", "subject"]:
 
                     record = self.seq_db.get_origin(v[x]["sequence_id"])
                     is_circular = self.seq_db.is_circular(record)
-
                     v[x]["circular"] = is_circular
                     v[x]["name"] = record.name
                     v[x]["origin_sequence_id"] = record.id
                     v[x]["length"] = len(record.seq)
-
-                    if is_circular:
-                        s = v[x]["start"]
-                        e = v[x]["end"]
-                        l = v[x]["length"]
-                        if s > l:
-                            s -= l
-                        if e > l:
-                            e -= l
-                        v[x]["start"] = s
-                        v[x]["end"] = e
-
                 v["meta"]["span_origin"] = self.span_origin
 
         parsed_results = self._unique_results(parsed_results)

@@ -98,7 +98,7 @@ class TestAligner:
     def test_example(self):
         a = TmpBlast.use_test_data()
         a.quick_blastn()
-        print(a.results)
+        print(a.results[0])
 
     # def test_get_metadata():
     #     a = TmpBlast.use_test_data()

@@ -126,8 +126,6 @@ Alignments have the following format:
       "strand": "plus",
       "end": 4219,
       "name": null
-    },
-    ...
-]
-```
-
+    }
+]]
+`````

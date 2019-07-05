@@ -1,6 +1,7 @@
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from pyblast import BioBlast
+from lobio.models import Region, Context
 
 
 class Validator(object):
@@ -28,21 +29,39 @@ class Validator(object):
             region["start"], region["end"], region["length"], region["circular"]
         )
 
+    @staticmethod
+    def blast_result_to_region(data, gaps=0):
+        strand = data["strand"]
+        s, e = data["start"], data["end"]
+        e += gaps
+        if strand == -1:
+            s, e = e, s
+        r1 = Region(
+            s,
+            e,
+            Context(data["length"] + gaps, data.get("circular", False), start_index=1),
+            strand,
+        )
+        return r1
+
     @classmethod
     def validate_blaster_results(cls, blaster):
         errors = []
-        for r, alignment in zip(blaster.results, blaster.alignments()):
-            if not cls.location_length(alignment[0]) == cls.location_length(
-                alignment[1]
-            ):
-                errors.append(
-                    (
-                        "Alignments have different lengths: {}".format(alignment),
-                        alignment,
+        for r in blaster.results:
+            q = r["query"]
+            s = r["subject"]
+            try:
+                gaps = r["meta"]["gaps"]
+                r1 = cls.blast_result_to_region(q, 0)
+                r2 = cls.blast_result_to_region(s, gaps)
+                l1 = len(r1)
+                l2 = len(r2)
+                if not l1 == l2:
+                    errors.append(
+                        ("Regions have different lengths {} {}".format(l1, l2), q, s)
                     )
-                )
-            if not cls.region_length(r["query"]) == cls.region_length(r["subject"]):
-                errors.append(("Regions have different lengths: {}".format(r), r))
+            except Exception as e:
+                errors.append((str(e), q, s))
         assert not errors
 
 
@@ -60,6 +79,21 @@ def test_basic_run():
     blaster.quick_blastn()
     alignments = blaster.alignments()
     print(alignments)
+
+
+def test_perfect_match():
+
+    s = "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta"
+    r1 = SeqRecord(seq=Seq(s), annotations={"topology": "linear"})
+    r2 = SeqRecord(seq=Seq(s), annotations={"topology": "linear"})
+
+    blaster = BioBlast([r1], [r2])
+    blaster.quick_blastn()
+    result = blaster.results[0]
+    assert result["query"]["start"] == 1
+    assert result["query"]["end"] == len(s)
+    assert result["subject"]["start"] == 1
+    assert result["subject"]["end"] == len(s)
 
 
 def test_valid_results(new_bio_blast):
