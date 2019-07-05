@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyblastbio"
-version = "1.0.0a2"
+version = "1.0.0a3"
 description = ""
 authors = ["First Last <youemail@domain.com>"]
 homepage = "https://www.github.com/jvrana/pyblast"
@@ -25,6 +25,7 @@ pandoc = "^1.0"
 coveralls = "^1.8"
 pytest-cov = "^2.7"
 pylint = "^2.3"
+keats = "^0.2.8"
 
 [tool.poetry.scripts]
 upver = 'pyblast:_version.pull_version'
