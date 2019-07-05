@@ -1,7 +1,7 @@
 {
   "1.0.0a3": {
-    "description": "minor change to installation",
-    "date": "2019-07-05T11:12:30.982472",
+    "description": "updated package management and version",
+    "date": "2019-07-05T11:14:35.956014",
     "changes": [
       "added keats pkg management",
       "verison maintained in __version__.py"
