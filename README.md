@@ -33,7 +33,7 @@ file. _paths.txt is automatically updated when you run install_blast.py so there
 After installing and verifying the `blastn` command works from the cmd line,
 
 ```
-pip install pyblast
+pip install pyblastbio
 ```
 
 ## Status
