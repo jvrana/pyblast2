@@ -1,12 +1,18 @@
 # pyblast change log
+## 1.0.0a9
+
+**2019-07-07T10:01:53.735887**
+update to author
+
+
+
+
 ## 1.0.0a7
 
 **2019-07-07T09:54:47.373905**
-minor API changes
+accidental release; no changes
 
- - private methods changed from '__' to '_'
- - new 'Region.reindex' and 'Region.reset_starting_index' methods
- - list of regions under a context is now listed under 'Context.regions()'
+
 
 
 ## 1.0.0a6

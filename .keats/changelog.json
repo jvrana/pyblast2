@@ -1,4 +1,9 @@
 {
+  "1.0.0a7": {
+    "description": "accidental release; no changes",
+    "date": "2019-07-07T09:54:47.373905",
+    "changes": []
+  },
   "1.0.0a6": {
     "description": "change to parsed results in JSON",
     "date": "2019-07-07T08:03:56.710460",
@@ -26,13 +31,9 @@
       "verison maintained in __version__.py"
     ]
   },
-  "1.0.0a7": {
-    "description": "minor API changes",
-    "date": "2019-07-07T09:54:47.373905",
-    "changes": [
-      "private methods changed from '__' to '_'",
-      "new 'Region.reindex' and 'Region.reset_starting_index' methods",
-      "list of regions under a context is now listed under 'Context.regions()'"
-    ]
+  "1.0.0a9": {
+    "description": "update to author",
+    "date": "2019-07-07T10:01:53.735887",
+    "changes": []
   }
 }
