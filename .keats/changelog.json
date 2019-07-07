@@ -1,4 +1,9 @@
 {
+  "1.0.0a9": {
+    "description": "update to author",
+    "date": "2019-07-07T10:01:53.735887",
+    "changes": []
+  },
   "1.0.0a7": {
     "description": "accidental release; no changes",
     "date": "2019-07-07T09:54:47.373905",
@@ -31,9 +36,9 @@
       "verison maintained in __version__.py"
     ]
   },
-  "1.0.0a9": {
-    "description": "update to author",
-    "date": "2019-07-07T10:01:53.735887",
+  "1.0.0a10": {
+    "description": "updating requirements",
+    "date": "2019-07-07T13:46:30.972572",
     "changes": []
   }
 }
