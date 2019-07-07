@@ -1,4 +1,11 @@
 {
+  "1.0.0a6": {
+    "description": "change to parsed results in JSON",
+    "date": "2019-07-07T08:03:56.710460",
+    "changes": [
+      "Added origin_key and replaced origin_sequence_id with origin_record_id"
+    ]
+  },
   "1.0.0a5": {
     "description": "minor internal changes",
     "date": "2019-07-06T17:13:54.473706",
@@ -19,11 +26,13 @@
       "verison maintained in __version__.py"
     ]
   },
-  "1.0.0a6": {
-    "description": "change to parsed results in JSON",
-    "date": "2019-07-07T08:03:56.710460",
+  "1.0.0a7": {
+    "description": "minor API changes",
+    "date": "2019-07-07T09:54:47.373905",
     "changes": [
-      "Added origin_key and replaced origin_sequence_id with origin_record_id"
+      "private methods changed from '__' to '_'",
+      "new 'Region.reindex' and 'Region.reset_starting_index' methods",
+      "list of regions under a context is now listed under 'Context.regions()'"
     ]
   }
 }
