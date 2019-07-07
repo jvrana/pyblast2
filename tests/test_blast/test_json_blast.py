@@ -107,6 +107,7 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "origin_sequence_id": "1234",
+            "origin_sequence_length": 93,
             "strand": 1,
         }
 
@@ -119,6 +120,7 @@ class TestJSONBlast:
             "end": 93,
             "strand": 1,
             "origin_sequence_id": "ABCDEFG",
+            "origin_sequence_length": 93,
         }
         del results[0]["query"]["sequence_id"]
         del results[0]["subject"]["sequence_id"]
@@ -161,6 +163,7 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "origin_sequence_id": "1234",
+            "origin_sequence_length": 93,
             "strand": 1,
         }
 
@@ -173,6 +176,7 @@ class TestJSONBlast:
             "end": 93,
             "strand": 1,
             "origin_sequence_id": "ABCDEFG",
+            "origin_sequence_length": 93,
         }
 
         del results[0]["query"]["sequence_id"]

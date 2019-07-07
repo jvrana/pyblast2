@@ -1,15 +1,76 @@
 from .constants import Constants as C
 from uuid import uuid4
 from pyblast.exceptions import SeqRecordValidationError
+import networkx as nx
+from .utils import is_circular
 
 
-class SeqRecordDB(object):
+class GraphDB(object):
     def __init__(self):
-        self.records = {}
+        self.graph = nx.DiGraph()
         self.mapping = {}
 
-    def incr(self):
+    def new_key(self):
+        """Generate a new unique key"""
         return str(uuid4())
+
+    def key(self, object):
+        """Model id to key. To ensure uniqueness of the models being added."""
+        k = self.mapping.get(id(object), None)
+        return k
+
+    def get_many(self, keys, default=C.NULL):
+        """Get many objects from list of keys."""
+        records = []
+        for k in keys:
+            records.append(self.get(k, default=default))
+        return records
+
+    def get(self, key, default=C.NULL):
+        """Get object from a key"""
+        if default is not C.NULL:
+            if key not in self.graph:
+                return default
+            return self.graph.node[key]["object"]
+        return self.graph.node[key]["object"]
+
+    def add(self, object):
+        """Add an object"""
+        if self.key(object):
+            return self.key(object)
+        else:
+            key = self.new_key()
+            self.graph.add_node(key, object=object)
+            self.mapping[id(object)] = key
+            return key
+
+    def add_many(self, objects):
+        """Add many objects"""
+        keys = []
+        for o in objects:
+            keys.append(self.add(o))
+        return keys
+
+    def add_edge(self, k1, k2, **kwargs):
+        """Add an edge"""
+        return self.graph.add_edge(k1, k2, **kwargs)
+
+    def to_dict(self):
+        """Return key to object dictionary"""
+        d = {}
+        for key in self.graph:
+            d[key] = self.get(key)
+        return d
+
+
+class SeqRecordDB(GraphDB):
+    @staticmethod
+    def is_circular(records):
+        return is_circular(records)
+
+    @property
+    def records(self):
+        return self.to_dict()
 
     @classmethod
     def validate_records(cls, records):
@@ -33,36 +94,20 @@ class SeqRecordDB(object):
                     )
                 )
 
-    @staticmethod
-    def is_circular(r):
-        return (
-            r.annotations.get(C.CIRCULAR, False) is True
-            or r.annotations.get(C.LINEAR, True) is False
-            or r.annotations.get(C.TOPOLOGY, "linear") == "circular"
-        )
-
-    def key(self, record):
-        k = self.mapping.get(id(record), None)
-        return k
-
-    def post_transform_hook(self, key, *args, **kwargs):
-        record = self.get(key)
-        record.annotations[C.OLD_KEY] = record.id
-        record.id = key
-        return record
-
-    def transform(self, key, transform, transform_label):
-        record = self.get(key)
+    def transform(self, parent_key, transform, transform_label):
+        record = self.get(parent_key)
         new_record = transform(record)
-        parent_key = self.add_one(record)
-        new_key = self.add_one(new_record)
-        new_record.annotations[C.PARENT] = parent_key
-        new_record.annotations[C.TRANSFORMATION] = transform_label
-        self.post_transform_hook(new_key)
+        new_key = self.add(new_record)
+        self.add_edge(
+            parent_key,
+            new_key,
+            **{C.TRANSFORMATION: transform_label, C.PARENT: parent_key}
+        )
+        new_record.id = new_key
         return new_key
 
     def add_with_transformation(self, record, transform, transform_label):
-        key = self.add_one(record)
+        key = self.add(record)
         return self.transform(key, transform, transform_label)
 
     def add_many_with_transformations(self, records, transform, transform_label):
@@ -70,41 +115,20 @@ class SeqRecordDB(object):
             self.add_with_transformation(r, transform, transform_label) for r in records
         ]
 
-    def get_many(self, keys, default=C.NULL):
-        records = []
-        for k in keys:
-            records.append(self.get(k, default=default))
-        return records
-
-    def get(self, key, default=C.NULL):
-        if default is not C.NULL:
-            return self.records.get(key, default)
-        return self.records[key]
-
     def get_origin(self, key, blacklist=None):
-        r = self.get(key)
-        if r:
-            if C.PARENT in r.annotations:
-                if blacklist and r.annotations[C.TRANSFORMATION] in blacklist:
-                    return r
-                else:
-                    return self.get_origin(r.annotations[C.PARENT])
-        return r
+        tree = nx.bfs_tree(self.graph, key, reverse=True)
+        roots = [n for n, d in dict(tree.out_degree()).items() if d == 0]
+        record = self.get(roots[0])
+        return record
 
-    def add_one(self, record, validate=True):
+    def add(self, record, validate=True):
         if self.key(record):
             return self.key(record)
         else:
             if validate:
                 self.validate_records([record])
-            key = self.incr()
-            self.records[key] = record
-            self.mapping[id(record)] = key
-            return key
+            return super().add(record)
 
     def add_many(self, records):
         self.validate_records(records)
-        keys = []
-        for r in records:
-            keys.append(self.add_one(r, validate=False))
-        return keys
+        return super().add_many(records)

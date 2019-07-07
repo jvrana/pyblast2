@@ -403,7 +403,8 @@ class BioBlast(TmpBlast):
                     v[x]["circular"] = is_circular
                     v[x]["name"] = record.name
                     v[x]["origin_sequence_id"] = record.id
-                    v[x]["length"] = len(record.seq)
+                    v[x]["origin_sequence_length"] = len(record.seq)
+                    # v[x]["length"] = len(record.seq)
                 v["meta"]["span_origin"] = self.span_origin
 
         parsed_results = self._unique_results(parsed_results)

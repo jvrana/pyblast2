@@ -149,8 +149,8 @@ class TestPseudocircularize:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align["subject"]["length"] == len(subjects[0]["bases"])
-            assert align["query"]["length"] == len(query["bases"])
+            assert align["subject"]["length"] == len(subjects[0]["bases"]) * 2
+            assert align["query"]["length"] == len(query["bases"]) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [
@@ -304,8 +304,8 @@ class TestPseudocircularize_SwitchQueryAndSubject:
 
         # make sure size reflects the pseudocircularized sequences
         for align in alignments_span_origin_true:
-            assert align["subject"]["length"] == len(subjects[0]["bases"])
-            assert align["query"]["length"] == len(query["bases"])
+            assert align["subject"]["length"] == len(subjects[0]["bases"]) * 2
+            assert align["query"]["length"] == len(query["bases"]) * 2
 
         # assert full subject exists even if it spans over the origin
         alignment_lengths = [
