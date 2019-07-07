@@ -398,11 +398,14 @@ class BioBlast(TmpBlast):
             if v:
                 for x in ["query", "subject"]:
 
-                    record = self.seq_db.get_origin(v[x]["sequence_id"])
+
+                    origin_key = self.seq_db.get_origin_key(v[x]['sequence_id'])
+                    record = self.seq_db.get(origin_key)
                     is_circular = self.seq_db.is_circular(record)
                     v[x]["circular"] = is_circular
                     v[x]["name"] = record.name
-                    v[x]["origin_sequence_id"] = record.id
+                    v[x]["origin_key"] = origin_key
+                    v[x]['origin_record_id'] = record.id
                     v[x]["origin_sequence_length"] = len(record.seq)
                     # v[x]["length"] = len(record.seq)
                 v["meta"]["span_origin"] = self.span_origin

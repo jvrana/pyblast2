@@ -106,7 +106,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "origin_sequence_id": "1234",
+            "origin_record_id": "1234",
             "origin_sequence_length": 93,
             "strand": 1,
         }
@@ -119,11 +119,13 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "strand": 1,
-            "origin_sequence_id": "ABCDEFG",
+            "origin_record_id": "ABCDEFG",
             "origin_sequence_length": 93,
         }
         del results[0]["query"]["sequence_id"]
-        del results[0]["subject"]["sequence_id"]
+        del results[0]["subject"]["sequence_id"]        
+        del results[0]["query"]["origin_key"]
+        del results[0]["subject"]["origin_key"]
 
         assert results[0]["query"] == expected_query
         assert results[0]["subject"] == expected_subject
@@ -162,7 +164,7 @@ class TestJSONBlast:
             "length": 93,
             "start": 1,
             "end": 93,
-            "origin_sequence_id": "1234",
+            "origin_record_id": "1234",
             "origin_sequence_length": 93,
             "strand": 1,
         }
@@ -175,12 +177,14 @@ class TestJSONBlast:
             "start": 1,
             "end": 93,
             "strand": 1,
-            "origin_sequence_id": "ABCDEFG",
+            "origin_record_id": "ABCDEFG",
             "origin_sequence_length": 93,
         }
 
         del results[0]["query"]["sequence_id"]
         del results[0]["subject"]["sequence_id"]
+        del results[0]["query"]["origin_key"]
+        del results[0]["subject"]["origin_key"]
 
         assert results[0]["query"] == expected_query
         assert results[0]["subject"] == expected_subject

@@ -115,11 +115,13 @@ class SeqRecordDB(GraphDB):
             self.add_with_transformation(r, transform, transform_label) for r in records
         ]
 
-    def get_origin(self, key, blacklist=None):
+    def get_origin_key(self, key):
         tree = nx.bfs_tree(self.graph, key, reverse=True)
         roots = [n for n, d in dict(tree.out_degree()).items() if d == 0]
-        record = self.get(roots[0])
-        return record
+        return roots[0]
+
+    def get_origin(self, key):
+        return self.get(self.get_origin_key(key))
 
     def add(self, record, validate=True):
         if self.key(record):
