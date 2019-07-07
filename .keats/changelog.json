@@ -1,4 +1,9 @@
 {
+  "1.0.0a11": {
+    "description": "compatibility with py36 and py37",
+    "date": "2019-07-07T14:16:00.682425",
+    "changes": []
+  },
   "1.0.0a10": {
     "description": "updating requirements",
     "date": "2019-07-07T13:46:30.972572",
@@ -41,9 +46,9 @@
       "verison maintained in __version__.py"
     ]
   },
-  "1.0.0a11": {
-    "description": "compatibility with py36 and py37",
-    "date": "2019-07-07T14:16:00.682425",
+  "0.1.0": {
+    "description": "first official release",
+    "date": "2019-07-07T14:20:19.928158",
     "changes": []
   }
 }
