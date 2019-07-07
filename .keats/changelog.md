@@ -1,4 +1,12 @@
 # pyblast change log
+## 1.0.0a6
+
+**2019-07-07T08:03:56.710460**
+change to parsed results in JSON
+
+ - Added origin_key and replaced origin_sequence_id with origin_record_id
+
+
 ## 1.0.0a5
 
 **2019-07-06T17:13:54.473706**

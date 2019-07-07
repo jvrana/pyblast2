@@ -123,7 +123,7 @@ class TestJSONBlast:
             "origin_sequence_length": 93,
         }
         del results[0]["query"]["sequence_id"]
-        del results[0]["subject"]["sequence_id"]        
+        del results[0]["subject"]["sequence_id"]
         del results[0]["query"]["origin_key"]
         del results[0]["subject"]["origin_key"]
 
