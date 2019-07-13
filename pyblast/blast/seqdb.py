@@ -1,8 +1,8 @@
-from .constants import Constants as C
+from pyblast.constants import Constants as C
 from uuid import uuid4
 from pyblast.exceptions import SeqRecordValidationError
 import networkx as nx
-from .utils import is_circular
+from pyblast.utils import is_circular
 
 
 class GraphDB(object):

@@ -16,7 +16,7 @@ from Bio.SeqRecord import SeqRecord
 import typing
 from copy import deepcopy
 from Bio import SeqIO
-from .constants import Constants as C
+from pyblast.constants import Constants as C
 from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
 from pyblast.utils import glob_fasta_to_tmpfile, records_to_tmpfile, clean_records
@@ -64,7 +64,7 @@ class BlastBase(object):
         db_output_directory,
         results_out_path,
         output_formatter=None,
-        **config
+        **additional_config
     ):
         """
         A Blast initializer for running blast searches.
@@ -89,13 +89,13 @@ class BlastBase(object):
 
         self.query_path = query_path
         self.subject_path = subject_path
+        self._config = {}
 
         # build the configuration
         if output_formatter is None:
             self.outfmt = BlastBase.outfmt
-        self.config = {"outfmt": '"{0}"'.format(" ".join(self.outfmt))}
-        if config is not None:
-            self.config.update(config)
+        else:
+            self.outfmt = output_formatter
 
         # path to the directory holding the blast database
         self.db_output_directory = os.path.abspath(db_output_directory)
@@ -114,6 +114,15 @@ class BlastBase(object):
 
         # the path to the saved results
         self.results_out_path = os.path.abspath(results_out_path)
+
+    @property
+    def config(self):
+        out_config = {"outfmt": '"{0}"'.format(" ".join(self.outfmt))}
+        out_config.update(self._config)
+        return out_config
+
+    def update_config(self, config):
+        self._config.update(config)
 
     def validate_files(self):
         """

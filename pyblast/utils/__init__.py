@@ -8,6 +8,7 @@ from os.path import join
 from Bio import SeqIO
 import tempfile
 from Bio.SeqFeature import FeatureLocation, CompoundLocation
+from pyblast.constants import Constants as C
 
 
 def reverse_complement(seq_str):
@@ -51,10 +52,19 @@ def glob_fasta_to_tmpfile(dir):
     return records_to_tmpfile(records)
 
 
-def load_genbank_glob(path):
+def load_glob(path, format, recursive=False):
     records = []
-    for f in glob(path):
-        records += list(SeqIO.parse(f, format="genbank"))
+    for f in glob(path, recursive=recursive):
+        records += list(SeqIO.parse(f, format=format))
+    return records
+
+
+def load_fasta_glob(path, recursive=False):
+    return load_glob(path, "fasta", recursive=recursive)
+
+
+def load_genbank_glob(path, recursive=False):
+    records = load_glob(path, "genbank", recursive=recursive)
     for r in records:
         if "topology" in r.annotations and r.annotations["topology"] == "circular":
             r.annotations["circular"] = True
@@ -66,3 +76,35 @@ def load_genbank_glob(path):
 def clean_records(records):
     for r in records:
         r.features = [f for f in r.features if f.location is not None]
+
+
+def is_circular(r):
+    annotations = {k.lower(): v for k, v in r.annotations.items()}
+    return (
+        annotations.get(C.CIRCULAR.lower(), False) is True
+        or annotations.get(C.LINEAR.lower(), True) is False
+        or annotations.get(C.TOPOLOGY.lower(), C.LINEAR).lower() == C.CIRCULAR.lower()
+    )
+
+
+def make_linear(records):
+    for r in records:
+        if C.CIRCULAR in r.annotations:
+            r.annotations[C.CIRCULAR] = False
+        elif C.LINEAR in r.annotations:
+            r.annotations[C.LINEAR] = True
+        else:
+            r.annotations[C.TOPOLOGY] = C.LINEAR
+
+    return records
+
+
+def make_circular(records):
+    for r in records:
+        if C.CIRCULAR in r.annotations:
+            r.annotations[C.CIRCULAR] = True
+        elif C.LINEAR in r.annotations:
+            r.annotations[C.LINEAR] = False
+        else:
+            r.annotations[C.TOPOLOGY] = C.CIRCULAR
+    return records

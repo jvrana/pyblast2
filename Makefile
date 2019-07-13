@@ -37,7 +37,8 @@ docs:
 
 
 format:
-	poetry run upver
+	poetry run keats version up
+	poetry run keats changelog up
 	poetry run black pyblast tests
 
 

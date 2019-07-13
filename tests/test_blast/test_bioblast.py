@@ -100,3 +100,10 @@ def test_valid_results(new_bio_blast):
     blast = new_bio_blast()
     blast.quick_blastn()
     Validator.validate_blaster_results(blast)
+
+
+def test_short_blastn(new_primer_blast):
+    blast = new_primer_blast()
+    blast.quick_blastn()
+
+    blast.results
