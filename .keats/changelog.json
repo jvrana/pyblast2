@@ -1,0 +1,10 @@
+{
+  "0.1.2": {
+    "description": "features",
+    "date": "2019-07-13T14:13:09.896478",
+    "changes": [
+      "tests for short blastn",
+      "new fasta utility functions"
+    ]
+  }
+}
