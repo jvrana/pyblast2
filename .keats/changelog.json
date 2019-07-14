@@ -1,4 +1,9 @@
 {
+  "0.1.5": {
+    "description": "update pkg requirements",
+    "date": "2019-07-14T11:31:30.535249",
+    "changes": []
+  },
   "0.1.4": {
     "description": "updated lobio requirement",
     "date": "2019-07-14T11:25:15.007238",
