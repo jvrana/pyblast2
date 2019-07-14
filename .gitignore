@@ -694,3 +694,4 @@ tests/data/test_data/seqio_plasmids/concatenated/concat.json
 *.pyc
 /pyblast/blast_bin/bin/
 *.iml
+*.nin
