@@ -445,7 +445,9 @@ class BioBlast(TmpBlast):
 class JSONBlast(BioBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, span_origin=True, seq_db=None, **config):
+    def __init__(
+        self, subject_json, query_json, span_origin=True, seq_db=None, **config
+    ):
         """
         Initialize JSONBlast
 

@@ -1,4 +1,11 @@
 {
+  "0.2.0": {
+    "description": "added seq_db sharing for BioBlast and JSONBlast",
+    "date": "2019-07-14T12:44:19.114456",
+    "changes": [
+      "seq_db option for __init__ of BioBlast and JSONBlast"
+    ]
+  },
   "0.1.5": {
     "description": "update pkg requirements",
     "date": "2019-07-14T11:31:30.535249",
