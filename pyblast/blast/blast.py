@@ -325,16 +325,27 @@ class BioBlast(TmpBlast):
         self,
         subjects: typing.Sequence[SeqRecord],
         queries: typing.Sequence[SeqRecord],
+        seq_db=None,
         span_origin=True,
         **config
     ):
+        """
+        If a seq_db is provided, it is assumed subjects and queries already exist in the seq_db.
+
+        :param subjects:
+        :param queries:
+        :param seq_db:
+        :param span_origin:
+        :param config:
+        """
 
         self.span_origin = span_origin
-        self.seq_db = SeqRecordDB()
-        subjects = self.add_records(subjects)
-        queries = self.add_records(queries)
-        self.subjects = subjects
-        self.queries = queries
+        if seq_db is None:
+            self.seq_db = SeqRecordDB()
+            subjects = self.add_records(subjects)
+            queries = self.add_records(queries)
+        else:
+            self.seq_db = seq_db
         db_name = str(uuid4())
         subject_path = records_to_tmpfile(subjects)
         query_path = records_to_tmpfile(queries)
@@ -434,7 +445,7 @@ class BioBlast(TmpBlast):
 class JSONBlast(BioBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
 
-    def __init__(self, subject_json, query_json, span_origin=True, **config):
+    def __init__(self, subject_json, query_json, span_origin=True, seq_db=None, **config):
         """
         Initialize JSONBlast
 
@@ -453,7 +464,7 @@ class JSONBlast(BioBlast):
         qrecords = JSONParser.JSON_to_SeqRecords(query_json)
         self.subject_json = subject_json
         self.query_json = query_json
-        super().__init__(srecords, qrecords, span_origin=span_origin)
+        super().__init__(srecords, qrecords, seq_db=seq_db, span_origin=span_origin)
 
     @classmethod
     def use_test_data(cls):

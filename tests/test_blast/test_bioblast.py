@@ -107,3 +107,9 @@ def test_short_blastn(new_primer_blast):
     blast.quick_blastn()
 
     blast.results
+
+
+def test_blast_with_circular(new_circular_bio_blast):
+    blast = new_circular_bio_blast()
+    blast.quick_blastn()
+    blast.results
