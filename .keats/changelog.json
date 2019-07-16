@@ -1,4 +1,11 @@
 {
+  "0.2.2": {
+    "description": "updated pkg deps",
+    "date": "2019-07-16T09:18:03.569377",
+    "changes": [
+      "lobio bumped to 0.4.0"
+    ]
+  },
   "0.2.0": {
     "description": "added seq_db sharing for BioBlast and JSONBlast",
     "date": "2019-07-14T12:44:19.114456",
