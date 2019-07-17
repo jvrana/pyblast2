@@ -171,7 +171,7 @@ class BlastWrapper(object):
 
     def ask_to_install(self):
         msg = colored(
-            "Blast not installed and so script cannot run. Would you like to install it now?\n",
+            "Blast not installed and so script cannot run. If you have BLAST installed, be sure to add it to your $PATH. Otherwise you can install it now. Would you like to install it now?\n",
             "red",
         )
         msg += colored(

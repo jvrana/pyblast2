@@ -1,4 +1,11 @@
 {
+  "0.2.5": {
+    "description": "minor change",
+    "date": "2019-07-17T07:17:59.657293",
+    "changes": [
+      "better installation description"
+    ]
+  },
   "0.2.4": {
     "description": "repackaged",
     "date": "2019-07-16T15:49:37.922743",
