@@ -353,6 +353,7 @@ class BioBlast(TmpBlast):
             db_name=db_name, subject_path=subject_path, query_path=query_path, **config
         )
 
+    # TODO: document how this works
     def add_records(self, records):
         clean_records(records)
 
