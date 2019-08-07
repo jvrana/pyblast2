@@ -1,4 +1,11 @@
 {
+  "0.2.6": {
+    "description": "removed unnecessary dep",
+    "date": "2019-08-07T16:49:46.556781",
+    "changes": [
+      "remove 'lobio' as dep"
+    ]
+  },
   "0.2.5": {
     "description": "minor change",
     "date": "2019-07-17T07:17:59.657293",
