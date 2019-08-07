@@ -1,11 +1,9 @@
-import pytest
 from pyblast.blast.seqdb import SeqRecordDB
-from lobio import SeqUtils
 from Bio.SeqRecord import SeqRecord
 
 
 def random_record():
-    r = SeqRecord(SeqUtils.random_dna(10), annotations={"topology": "circular"})
+    r = SeqRecord("ACGTCGTATGTATGTATTGATGATG", annotations={"topology": "circular"})
     return r
 
 
