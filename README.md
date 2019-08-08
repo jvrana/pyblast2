@@ -214,7 +214,3 @@ records1 = load_genbank_glob("~/mydesigns/*.gb", force_unique_ids=True)
 records2 = make_linear(load_fasta_glob("~/mydesigns/*.fasta"), force_unique_ids=True)
 
 ```
-
-###
-
-
