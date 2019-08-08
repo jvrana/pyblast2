@@ -1,4 +1,14 @@
 {
+  "0.2.7": {
+    "description": "new features",
+    "date": "2019-08-07T18:31:35.844372",
+    "changes": [
+      "added BioBlastFactory",
+      "removed TmpBlast and BlastBase from main import route. These are accessible via `pyblast.blast.TmpBlast` etc.",
+      "records are now forced to have unique record ids",
+      "`force_unique_record_id` method provided in `pyblast.utils`"
+    ]
+  },
   "0.2.6": {
     "description": "removed unnecessary dep",
     "date": "2019-08-07T16:49:46.556781",
