@@ -4,7 +4,7 @@ python:
 install:
 - pip install poetry
 - poetry install
-- poetry run python blast_bin/install_blast.py EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
+- poetry run pyblast install EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
 -
 after_install:
