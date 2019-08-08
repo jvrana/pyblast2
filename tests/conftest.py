@@ -33,10 +33,13 @@ def new_blast(here):
 def new_primer_blast(here):
     def make_blast():
 
-        subjects = load_fasta_glob(join(here, "data/test_data/primers/primers.fasta"))
+        subjects = load_fasta_glob(
+            join(here, "data/test_data/primers/primers.fasta"), force_unique_ids=True
+        )
         subjects = make_linear(subjects)
         queries = load_genbank_glob(
-            join(here, "data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb")
+            join(here, "data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb"),
+            force_unique_ids=True,
         )
         return BioBlast(subjects, queries)
 
@@ -48,10 +51,11 @@ def new_circular_bio_blast(here):
     def make_blast():
 
         subjects = load_genbank_glob(
-            join(here, "data/test_data/genbank/templates/*.gb")
+            join(here, "data/test_data/genbank/templates/*.gb"), force_unique_ids=True
         )
         queries = load_genbank_glob(
-            join(here, "data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb")
+            join(here, "data/test_data/genbank/designs/pmodkan-ho-pact1-z4-er-vpr.gb"),
+            force_unique_ids=True,
         )
         queries = make_circular(queries)
         assert is_circular(queries[0])

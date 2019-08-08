@@ -1,4 +1,18 @@
 # pyblastbio change log
+## 0.2.6
+**2019-08-07T16:49:46.556781**
+removed unnecessary dep
+
+ - remove 'lobio' as dep
+
+
+## 0.2.5
+**2019-07-17T07:17:59.657293**
+minor change
+
+ - better installation description
+
+
 ## 0.2.4
 **2019-07-16T15:49:37.922743**
 repackaged

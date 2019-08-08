@@ -6,20 +6,39 @@ from Bio.Seq import Seq
 from glob import glob
 from os.path import join
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 import tempfile
 from Bio.SeqFeature import FeatureLocation, CompoundLocation
 from pyblast.constants import Constants as C
+from typing import List, Sequence
+from uuid import uuid4
 
 
-def reverse_complement(seq_str):
+def reverse_complement(seq_str: str) -> str:
+    """
+    Return reverse complement of nucleotide sequence
+
+    :param seq_str:
+    :type seq_str:
+    :return:
+    :rtype:
+    """
     return str(Seq(seq_str, generic_dna).reverse_complement())
 
 
-def complement(seq_str):
+def complement(seq_str: str) -> str:
+    """
+    Return the complement of the nucleotide sequence.
+
+    :param seq_str:
+    :type seq_str:
+    :return:
+    :rtype:
+    """
     return str(Seq(seq_str, generic_dna).complement())
 
 
-def new_feature_location(start, end, length, strand):
+def new_feature_location(start: int, end: int, length: int, strand: int):
     """Makes a FeatureLocation. If necessary, makes CompoundLocation."""
     if start > end:
         if length is None:
@@ -37,13 +56,29 @@ def new_feature_location(start, end, length, strand):
     return location
 
 
-def records_to_tmpfile(records):
+def records_to_tmpfile(records: Sequence[SeqRecord]) -> str:
+    """
+    Write SeqRecords to a temporary file.
+
+    :param records: list of SeqRecords
+    :type records: list
+    :return: temporary file path
+    :rtype: str
+    """
     fd, tmp_path_handle = tempfile.mkstemp(suffix=".fasta")
     SeqIO.write(records, tmp_path_handle, format="fasta")
     return tmp_path_handle
 
 
-def glob_fasta_to_tmpfile(dir):
+def glob_fasta_to_tmpfile(dir: str) -> str:
+    """
+    Concatenate all fasta files into a temporary fasta file.
+
+    :param dir: directory containing fasta files
+    :type dir: str
+    :return: the temporary filename
+    :rtype: str
+    """
     fasta_files = glob(join(dir, "*.fsa"))
     fasta_files += glob(join(dir, "*.fasta"))
     records = []
@@ -52,34 +87,133 @@ def glob_fasta_to_tmpfile(dir):
     return records_to_tmpfile(records)
 
 
-def load_glob(path, format, recursive=False):
-    records = []
-    for f in glob(path, recursive=recursive):
-        records += list(SeqIO.parse(f, format=format))
-    return records
-
-
-def load_fasta_glob(path, recursive=False):
-    return load_glob(path, "fasta", recursive=recursive)
-
-
-def load_genbank_glob(path, recursive=False):
-    records = load_glob(path, "genbank", recursive=recursive)
+def _grouped_by_id(records):
+    """
+    Return a dictionary of records grouped by their record_id
+    :param records:
+    :type records:
+    :return:
+    :rtype:
+    """
+    rec_id_dict = {}
     for r in records:
-        if "topology" in r.annotations and r.annotations["topology"] == "circular":
-            r.annotations["circular"] = True
-        else:
-            r.annotations["circular"] = False
+        rec_id_dict.setdefault(r.id, list()).append(r)
+
+
+def force_unique_record_ids(records, use_uuid=False):
+    """
+    Force unique ids for all records in the list
+
+    :param records: list of SeqRecords
+    :type records: list
+    :param use_uuid: If True, will append a unique identifier to the front of the record id. Else, enumerate the records.
+    :type use_uuid: bool
+    :return: the records
+    :rtype: list
+    """
+    rec_id_dict = {}
+    for r in records:
+        rec_id_dict.setdefault(r.id, list()).append(r)
+    for k, v in rec_id_dict.items():
+        if len(v) > 1:
+            for i, r in enumerate(v):
+                if use_uuid:
+                    i = str(uuid4())
+                r.id = "({})__{}".format(i, r.id)
     return records
 
 
-def clean_records(records):
+def load_glob(
+    path: str, format: str, recursive=False, force_unique_ids=False
+) -> List[SeqRecord]:
+    """
+    Load SeqRecords from a glob-like path.
+
+    :param path: glob-like filepath
+    :type path: str
+    :param format: Fileformat. e.g. 'genbank', 'fasta'
+    :type format: basestring
+    :param recursive: whether to search recusively in the glob path.
+    :type recursive: bool
+    :param force_unique_ids: If True, force records to have unique ids
+    :type force_unique_ids: bool
+    :return: the list of SeqRecords
+    :rtype: list
+    """
+    records = []
+    filenames = glob(path, recursive=recursive)
+    for f in filenames:
+        new_records = list(SeqIO.parse(f, format=format))
+        for rec in new_records:
+            rec.from_file = f
+            records.append(rec)
+
+    if force_unique_ids:
+        force_unique_record_ids(records)
+    return records
+
+
+def load_fasta_glob(path, recursive=False, force_unique_ids=False):
+    """
+    Load SeqRecords from a glob-like path containing fasta files.
+
+    :param path: glob-like filepath
+    :type path: str
+    :param recursive: whether to search recusively in the glob path.
+    :type recursive: bool
+    :param force_unique_ids: If True, force records to have unique ids
+    :type force_unique_ids: bool
+    :return: the list of SeqRecords
+    :rtype: list
+    """
+    return load_glob(
+        path, "fasta", recursive=recursive, force_unique_ids=force_unique_ids
+    )
+
+
+def load_genbank_glob(path, recursive=False, force_unique_ids=False):
+    """
+    Load SeqRecords from a glob-like path containing genbank files.
+
+    :param path: glob-like filepath
+    :type path: str
+    :param recursive: whether to search recusively in the glob path.
+    :type recursive: bool
+    :param force_unique_ids: If True, force records to have unique ids
+    :type force_unique_ids: bool
+    :return: the list of SeqRecords
+    :rtype: list
+    """
+    records = load_glob(
+        path, "genbank", recursive=recursive, force_unique_ids=force_unique_ids
+    )
+    for r in records:
+        if C.TOPOLOGY in r.annotations and r.annotations[C.TOPOLOGY] == C.CIRCULAR:
+            r.annotations[C.CIRCULAR] = True
+        else:
+            r.annotations[C.CIRCULAR] = False
+    return records
+
+
+def clean_records(records: Sequence[SeqRecord]) -> None:
+    """
+    Remove features for records that have no location.
+    """
     for r in records:
         r.features = [f for f in r.features if f.location is not None]
 
 
-def is_circular(r):
-    annotations = {k.lower(): v for k, v in r.annotations.items()}
+def is_circular(record: SeqRecord) -> bool:
+    """
+    Returns whether a "topology" annotation was found in the SeqRecord and
+    whether this topolgy indicates that the sequence is circular.
+
+    :param record: the SeqRecord
+    :type record: SeqRecord
+    :return: whether the SeqRecord is circular
+    :rtype: bool
+    """
+    annotations = {k.lower(): v for k, v in record.annotations.items()}
     return (
         annotations.get(C.CIRCULAR.lower(), False) is True
         or annotations.get(C.LINEAR.lower(), True) is False
@@ -87,7 +221,16 @@ def is_circular(r):
     )
 
 
-def make_linear(records):
+def make_linear(records: Sequence[SeqRecord]) -> Sequence[SeqRecord]:
+    """
+    Annotates the SeqRecords as linear by adding the 'topology' annotation and
+    setting it to 'linear'
+
+    :param records:
+    :type records:
+    :return: the records
+    :rtype: list
+    """
     for r in records:
         if C.CIRCULAR in r.annotations:
             r.annotations[C.CIRCULAR] = False
@@ -95,11 +238,19 @@ def make_linear(records):
             r.annotations[C.LINEAR] = True
         else:
             r.annotations[C.TOPOLOGY] = C.LINEAR
-
     return records
 
 
-def make_circular(records):
+def make_circular(records: Sequence[SeqRecord]) -> Sequence[SeqRecord]:
+    """
+    Annotates the SeqRecords as linear by adding the 'topology' annotation and
+    setting it to 'linear'
+
+    :param records:
+    :type records:
+    :return: the records
+    :rtype: list
+    """
     for r in records:
         if C.CIRCULAR in r.annotations:
             r.annotations[C.CIRCULAR] = True

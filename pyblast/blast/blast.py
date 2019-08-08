@@ -19,7 +19,12 @@ from Bio import SeqIO
 from pyblast.constants import Constants as C
 from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
-from pyblast.utils import glob_fasta_to_tmpfile, records_to_tmpfile, clean_records
+from pyblast.utils import (
+    glob_fasta_to_tmpfile,
+    records_to_tmpfile,
+    clean_records,
+    force_unique_record_ids,
+)
 from .seqdb import SeqRecordDB
 from more_itertools import unique_everseen
 
@@ -327,21 +332,29 @@ class BioBlast(TmpBlast):
         queries: typing.Sequence[SeqRecord],
         seq_db=None,
         span_origin=True,
+        force_unique_ids=False,
         **config
     ):
         """
-        If a seq_db is provided, it is assumed subjects and queries already exist in the seq_db.
+        Initialize a new BioBlast.
 
-        :param subjects:
-        :param queries:
-        :param seq_db:
-        :param span_origin:
-        :param config:
+        :param subjects: list of SeqRecords to use as subjects. Subjects get aligned to the queries.
+        :type subjects: list
+        :param queries: list of SeqRecords to use as queries. Subjects get aligned to the queries.
+        :type queries: list
+        :param seq_db: optional SeqRecordDB to use
+        :type seq_db: SeqRecordDB
+        :param span_origin: if False, will treat all sequences as linear (default: True)
+        :type span_origin: bool
+        :param force_unique_ids: if True, will force any records with the same record_id to be unique.
+        :type force_unique_ids: bool
+        :param config: additional blast config
+        :type config: dict
         """
-        if not subjects:
-            raise ValueError("Subjects is empty.")
-        if not queries:
-            raise ValueError("Queries is empty.")
+        if force_unique_ids:
+            force_unique_record_ids(subjects)
+            force_unique_record_ids(queries)
+        self._check_records(subjects, queries)
         self.span_origin = span_origin
         if seq_db is None:
             self.seq_db = SeqRecordDB()
@@ -356,8 +369,59 @@ class BioBlast(TmpBlast):
             db_name=db_name, subject_path=subject_path, query_path=query_path, **config
         )
 
-    # TODO: document how this works
-    def add_records(self, records):
+    def _check_records(self, subjects, queries):
+        self._check_empty_records(queries, subjects)
+        self._check_duplicate_records(queries, subjects)
+
+    def _check_duplicate_records(self, queries, subjects):
+        # Check SeqRecords have unique record_ids
+        subject_rec_ids = {}
+        for s in subjects:
+            subject_rec_ids.setdefault(s.id, list()).append(s)
+        query_rec_ids = {}
+        for s in queries:
+            query_rec_ids.setdefault(s.id, list()).append(s)
+        duplicate_subjects = {k: v for k, v in subject_rec_ids.items() if len(v) > 1}
+        duplicate_queries = {k: v for k, v in query_rec_ids.items() if len(v) > 1}
+        suggestion = (
+            "This may be due to clipping of the record_id that occurs when saving or loading"
+            " certain file formats. Use `{}` or if using `pyblast.utils.load_glob` set the"
+            "`force_unique_ids=True`.".format(force_unique_record_ids.__name__)
+        )
+        if duplicate_subjects:
+            raise PyBlastException(
+                "One or more subjects have the same record_id:\n{}.\n{}".format(
+                    list(duplicate_subjects.keys()), suggestion
+                )
+            )
+        if duplicate_queries:
+            raise PyBlastException(
+                "One or more queries have the smae record_id:\n{}\n{}".format(
+                    list(duplicate_queries.keys()), suggestion
+                )
+            )
+
+    def _check_empty_records(self, queries, subjects):
+        # Check SeqRecords exist
+        if not subjects:
+            raise ValueError("Subjects is empty.")
+        if not queries:
+            raise ValueError("Queries is empty.")
+
+    def add_records(self, records: typing.Sequence[SeqRecord]) -> typing.List[str]:
+        """
+        Adds records to the local sequence database (SeqRecordDb). If `self.span_origin=True`,
+        then in addition to adding the original SequenceRecord to the database, sequences will
+        be pseudocircularized (concatenated with itself) if they are detected to be circular (via the 'topology'
+        annotation') so that Blast can properly align sequences over the origin. Only sequences that were linear or
+        the pseudociruclarized sequences are used in the alignment. After running blast and obtaining results, span
+        indices are automatically corrected to account for the original pseudocircularization.
+
+        :param records: list of SeqRecords annotated with 'topology' being 'linear' or 'circular'
+        :type records: list
+        :return: list of keys to use in the alignment procedure
+        :rtype: list
+        """
         clean_records(records)
 
         def copy_record(r):
@@ -413,6 +477,58 @@ class BioBlast(TmpBlast):
     #
 
     def parse_results(self, delim=","):
+        """
+        Parses the blast output to a digestable JSON output of the following format. Results
+        can be found in `self.results` or returned from this function.
+
+        ..code-block::
+
+            [
+                {
+                  "query": {
+                    "start": 1,
+                    "end": 4219,
+                    "bases": "TTTAGTATATAT...",
+                    "strand": 1,
+                    "length": 18816,
+                    "sequence_id": "pMODKan-HO-pACT1-Z4-"
+                  },
+                  "subject": {
+                    "start": 1,
+                    "end": 4219,
+                    "bases": "TCGCGCGTTTCGGTGATGACGG...",
+                    "strand": 1,
+                    "length": 7883,
+                    "sequence_id": "pMODKan-HO-pACT1-ZEV4"
+                  },
+                  "meta": {
+                    "query acc.": "pMODKan-HO-pACT1-Z4-",
+                    "subject acc.": "pMODKan-HO-pACT1-ZEV4",
+                    "score": 4219,
+                    "evalue": 0,
+                    "bit score": 7792,
+                    "alignment length": 4219,
+                    "identical": 4219,
+                    "gap opens": 0,
+                    "gaps": 0,
+                    "query length": 18816,
+                    "q. start": 1,
+                    "q. end": 4219,
+                    "subject length": 7883,
+                    "s. start": 1,
+                    "s. end": 4219,
+                    "subject strand": "plus",
+                    "query seq": "TTTAGTATATAT...",
+                    "subject seq": "TCGCGCGTTTCGGTGATGACGG..."
+                  }
+                }
+            ]
+
+        :param delim:
+        :type delim:
+        :return:
+        :rtype:
+        """
         parsed_results = BlastResultParser.raw_results_to_json(
             self.raw_results, delim=delim
         )

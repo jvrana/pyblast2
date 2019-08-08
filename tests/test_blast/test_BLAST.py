@@ -1,6 +1,6 @@
 import os
 import pytest
-
+import json
 from pyblast import BlastBase, TmpBlast
 
 
@@ -98,7 +98,7 @@ class TestAligner:
     def test_example(self):
         a = TmpBlast.use_test_data()
         a.quick_blastn()
-        print(a.results[0])
+        print(json.dumps(a.results[0], indent=2))
 
     # def test_get_metadata():
     #     a = TmpBlast.use_test_data()

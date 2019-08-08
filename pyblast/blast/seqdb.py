@@ -82,7 +82,8 @@ class SeqRecordDB(GraphDB):
         valid_keys = [C.CIRCULAR, C.LINEAR, C.TOPOLOGY]
         if all([k not in r.annotations for k in valid_keys]):
             raise SeqRecordValidationError(
-                "SeqRecord {} is missing a any of the valid keys in its annotation: {keys}. This must be provided.".format(
+                "SeqRecord {} is missing a any of the valid keys in its annotation: {keys}. This must be provided.\n"
+                "`Use pyblast.utils.make_circular` or `pyblast.utils.make_linear` to annotate SeqRecords".format(
                     r, keys=valid_keys
                 )
             )
