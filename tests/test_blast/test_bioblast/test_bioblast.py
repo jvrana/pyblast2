@@ -27,7 +27,7 @@ def test_basic_run():
     # print(type(subject))
     blaster = BioBlast([subject], [query])
     blaster.quick_blastn()
-    alignments = blaster.alignments()
+    alignments = blaster.results
     print(alignments)
 
 

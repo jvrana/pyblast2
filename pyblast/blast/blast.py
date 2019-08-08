@@ -593,14 +593,6 @@ class BioBlast(TmpBlast):
         self.results = parsed_results
         return self.results
 
-    def alignments(self):
-        alignments = []
-        for align in self.results:
-            alignments.append(
-                BlastResultParser.alignment_to_seqrecord(align, self.seq_db.records)
-            )
-        return alignments
-
 
 class JSONBlast(BioBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
