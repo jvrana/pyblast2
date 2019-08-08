@@ -1,4 +1,11 @@
 {
+  "0.2.8": {
+    "description": "bug fix",
+    "date": "2019-08-08T08:27:05.972192",
+    "changes": [
+      "filters out self alignments (alignments with same origin_key and identical end points)"
+    ]
+  },
   "0.2.7": {
     "description": "new features",
     "date": "2019-08-07T22:52:21.935282",
