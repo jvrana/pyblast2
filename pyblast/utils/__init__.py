@@ -12,6 +12,7 @@ from Bio.SeqFeature import FeatureLocation, CompoundLocation
 from pyblast.constants import Constants as C
 from typing import List, Sequence
 from uuid import uuid4
+from .span import Span, SpanError
 
 
 def reverse_complement(seq_str: str) -> str:

@@ -127,6 +127,7 @@ class SeqRecordDB(GraphDB):
             new_key,
             **{C.TRANSFORMATION: transform_label, C.PARENT: parent_key}
         )
+        new_record._transform = transform_label
         new_record.id = new_key
         return new_key
 

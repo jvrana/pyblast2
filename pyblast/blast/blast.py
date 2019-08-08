@@ -27,6 +27,7 @@ from pyblast.utils import (
 )
 from .seqdb import SeqRecordDB
 from more_itertools import unique_everseen
+from pyblast.utils import Span
 
 
 class BlastBase(object):
@@ -451,7 +452,8 @@ class BioBlast(TmpBlast):
                 circular, copy_record, C.PSEUDOCIRCULAR
             )
         keys += seq_db.add_many_with_transformations(linear, copy_record, C.COPY_RECORD)
-        return keys, seq_db.get_many(keys)
+        transformed_records = seq_db.get_many(keys)
+        return keys, transformed_records
 
     # def _merge_results(self, results):
     #
@@ -551,6 +553,25 @@ class BioBlast(TmpBlast):
                     v[x]["origin_key"] = origin_key
                     v[x]["origin_record_id"] = record.id
                     v[x]["origin_sequence_length"] = len(record.seq)
+
+                    s, e = v[x]["start"], v[x]["end"]
+                    if e - s < 0:
+                        raise ValueError("End cannot be less than start")
+                    elif e - s >= len(record.seq):
+                        v[x]["start"] = 1
+                        v[x]["end"] = 0
+                    elif is_circular:
+                        span = Span(
+                            s,
+                            e + 1,
+                            len(record.seq),
+                            cyclic=is_circular,
+                            index=1,
+                            allow_wrap=True,
+                        )
+                        v[x]["start"] = span.a
+                        v[x]["end"] = span.b - 1
+
                     # v[x]["length"] = len(record.seq)
                 v["meta"]["span_origin"] = self.span_origin
 
