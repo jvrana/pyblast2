@@ -10,14 +10,15 @@
 |   **master**    | [![travis build](https://img.shields.io/travis/jvrana/pyblast/master.svg)](https://travis-ci.org/jvrana/pyblast/master) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master) |
 | **development** | [![travis build](https://img.shields.io/travis/jvrana/pyblast/development.svg)](https://travis-ci.org/jvrana/pyblast/development) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=development)](https://coveralls.io/github/jvrana/pyblast?branch=development) |
 
-**this repo is not longer active**
-
 # pyblast
 
-This is a wrapper for other applications to run blast searches on SeqRecord objects and JSON objects.
+This is a wrapper for other applications to run blast searches on SeqRecord objects and JSON objects. Intended to
+be used in small python applications.
+
 Features include:
-* Blast self installation
+* Automatic BLAST parsing to JSON
 * Alignment to circular queries, using either linear or circular subjects
+* Blast self installation
 
 # Installation
 
@@ -214,5 +215,6 @@ records2 = make_linear(load_fasta_glob("~/mydesigns/*.fasta"), force_unique_ids=
 
 ```
 
+###
 
 
