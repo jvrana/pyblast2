@@ -338,7 +338,10 @@ class BioBlast(TmpBlast):
         :param span_origin:
         :param config:
         """
-
+        if not subjects:
+            raise ValueError("Subjects is empty.")
+        if not queries:
+            raise ValueError("Queries is empty.")
         self.span_origin = span_origin
         if seq_db is None:
             self.seq_db = SeqRecordDB()
