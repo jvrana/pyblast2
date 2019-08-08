@@ -1,4 +1,15 @@
 # pyblastbio change log
+## 0.2.7
+**2019-08-07T19:14:27.645353**
+new features
+
+ - added BioBlastFactory
+ - removed TmpBlast and BlastBase from main import route. These are accessible via `pyblast.blast.TmpBlast` etc.
+ - records are now forced to have unique record ids
+ - `force_unique_record_id` method provided in `pyblast.utils`
+ - SeqRecordDB can only apply one type of transformation once per record key
+
+
 ## 0.2.6
 **2019-08-07T16:49:46.556781**
 removed unnecessary dep

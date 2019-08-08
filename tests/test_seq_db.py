@@ -98,7 +98,7 @@ def test_add_same_transformation():
     keys = db.add_many_with_transformations(
         records, pseudocircularize, C.PSEUDOCIRCULAR
     )
-
+    assert len(set(keys)) == 1
     assert len(db) == 2
 
 
@@ -128,5 +128,5 @@ def test_add_multiple_transformations():
     keys = db.add_many_with_transformations(
         records, pseudocircularize, C.PSEUDOCIRCULAR
     )
-
+    assert len(keys) == 2
     assert len(db) == 4

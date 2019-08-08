@@ -70,7 +70,7 @@ class GraphDB(Sized):
 class SeqRecordDB(GraphDB):
     def __init__(self):
         super().__init__()
-        self.transforms = {}
+        self._transformations = {}
 
     @staticmethod
     def is_circular(records):
@@ -78,6 +78,7 @@ class SeqRecordDB(GraphDB):
 
     @property
     def records(self):
+        """Return all records"""
         return self.to_dict()
 
     @classmethod
@@ -87,6 +88,8 @@ class SeqRecordDB(GraphDB):
 
     @staticmethod
     def validate_circular(r):
+        """Ensure the record has a 'topology' of the expected type ['circular', 'linear']"""
+
         valid_keys = [C.CIRCULAR, C.LINEAR, C.TOPOLOGY]
         if all([k not in r.annotations for k in valid_keys]):
             raise SeqRecordValidationError(
@@ -104,6 +107,18 @@ class SeqRecordDB(GraphDB):
                 )
 
     def transform(self, parent_key, transform, transform_label):
+        """
+        Transform a record.
+
+        :param parent_key:
+        :type parent_key:
+        :param transform:
+        :type transform:
+        :param transform_label:
+        :type transform_label:
+        :return:
+        :rtype:
+        """
         record = self.get(parent_key)
         new_record = transform(record)
         new_key = self.add(new_record)
@@ -116,29 +131,67 @@ class SeqRecordDB(GraphDB):
         return new_key
 
     def add_with_transformation(self, record, transform, transform_label):
+        """
+        Add a record and its transformation to the database. If the original
+        record exists in the database, then that record is used. If the original
+        record has had the same type of transformation applied, no new records are
+        added and the previously transformed key is returned. Else, the `transform` function
+        is applied and the new record is added, with a trace back to the original record.
+
+        :param record: the record to apply a transformation
+        :type record: SeqRecord
+        :param transform: the transformation function that takes in a single argument, the record
+        :type transform: callable
+        :param transform_label: the transformation label of the transform function
+        :type transform_label: str
+        :return: the new key that refers to the transformed record
+        :rtype: str
+        """
         key = self.add(record)
         transform_key = (key, transform_label)
-        if transform_key in self.transforms:
-            return self.transforms[transform_key]
+        if transform_key in self._transformations:
+            return self._transformations[transform_key]
         else:
             new_key = self.transform(key, transform, transform_label)
-            self.transforms[transform_key] = new_key
+            self._transformations[transform_key] = new_key
             return new_key
 
     def add_many_with_transformations(self, records, transform, transform_label):
+        """
+        Transform many records. See `add_with_transformation` for usage.
+        """
         return [
             self.add_with_transformation(r, transform, transform_label) for r in records
         ]
 
     def get_origin_key(self, key):
+        """
+        Trace the record at 'key' back to its origin through
+         its transformation trace and return the origin's key.
+
+        :param key: the key of the record
+        :type key: str
+        :return: the original record key
+        :rtype: str
+        """
         tree = nx.bfs_tree(self.graph, key, reverse=True)
         roots = [n for n, d in dict(tree.out_degree()).items() if d == 0]
         return roots[0]
 
     def get_origin(self, key):
+        """
+        Trace the record at 'key' back to its origin through
+         its transformation trace and return the origin record.
+
+        :param key: the key of the record
+        :type key: str
+        :return: the original record
+        :rtype: SeqRecord
+        """
         return self.get(self.get_origin_key(key))
 
     def add(self, record, validate=True):
+        """Add a record"""
         if self.key(record):
             return self.key(record)
         else:
@@ -147,5 +200,6 @@ class SeqRecordDB(GraphDB):
             return super().add(record)
 
     def add_many(self, records):
+        """Add many records"""
         self.validate_records(records)
         return super().add_many(records)
