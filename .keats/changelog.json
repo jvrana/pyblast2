@@ -9,7 +9,8 @@
       "`force_unique_record_id` method provided in `pyblast.utils`",
       "SeqRecordDB can only apply one type of transformation once per record key",
       "fixed bugs associated with circular subjects and queries",
-      "Start and ends now return indices adjusted back to origin record if record was pseudocircularized"
+      "Start and ends now return indices adjusted back to origin record if record was pseudocircularized",
+      "Remove 'alignments' as SeqFeatures are incompatible with circular sequences."
     ]
   },
   "0.2.6": {
