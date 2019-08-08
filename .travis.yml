@@ -2,6 +2,7 @@ language: python
 python:
 - '3.6'
 install:
+- pip install poetry
 - poetry install
 - poetry run python blast_bin/install_blast.py EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
