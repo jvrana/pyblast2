@@ -28,6 +28,7 @@ from pyblast.utils import (
 from .seqdb import SeqRecordDB
 from more_itertools import unique_everseen
 from pyblast.utils import Span
+from warnings import warn
 
 
 class BlastBase(object):
@@ -555,20 +556,33 @@ class BioBlast(TmpBlast):
                     v[x]["origin_sequence_length"] = len(record.seq)
 
                     s, e = v[x]["start"], v[x]["end"]
+                    reverse = v[x]["strand"] != 1
+                    if reverse:
+                        s, e = e, s
                     if e - s < 0:
                         raise ValueError("End cannot be less than start")
                     elif e - s >= len(record.seq):
-                        v[x]["start"] = 1
-                        v[x]["end"] = 0
+                        if not reverse:
+                            v[x]["start"] = 1
+                            v[x]["end"] = 0
+                        else:
+                            v[x]["start"] = 0
+                            v[x]["end"] = 1
+                        warn(
+                            "A circular {} {} overlapped the origins".format(
+                                x, origin_key
+                            )
+                        )
                     elif is_circular:
                         span = Span(
                             s,
-                            e + 1,
+                            e,
                             len(record.seq),
                             cyclic=is_circular,
                             index=1,
                             allow_wrap=True,
                         )
+                        l = len(span)
                         v[x]["start"] = span.a
                         v[x]["end"] = span.b - 1
 

@@ -150,29 +150,3 @@ def test_self_blast(here):
     bioblast = BioBlast(queries, queries)
     results = bioblast.quick_blastn()
     print(json.dumps(results[0], indent=2))
-
-
-# TODO: move these types of test to a new file
-# TODO: ensure proper start and end for queries and subjects for circular and linear plasmids and rc
-def test_circular_over_query_origin():
-    seq = "AAGGTCGGGCAGGAAGAGGGCCTATTTCCCATGATTCCTTCATATTTGCATATACGATACAAGGCTGTTAGAGAGATAATTAGAATTAATTTGACTGTAAACACAAAGATATTAGTACAAAATACGTGACGTAGAAAGTAATAATTTCTTGGGTAGTTTGCAGTTTTAAAATTATGTTTTAAAATGGACTATCATATGCTTACCGTAACTTGAAAGTATTTCGATTTCTTGGCTTTATATATCTTGTGGAAAGGACG"
-
-    queries = [SeqRecord(Seq(seq))]
-
-    subjects = [SeqRecord(Seq(seq[-100:] + seq[:100]))]
-
-    assert str(subjects[0].seq) in seq + seq
-
-    bioblast = BioBlast(make_linear(subjects), make_circular(queries))
-    assert len(bioblast.seq_db) == 4
-    results = bioblast.quick_blastn()
-    query_ends = []
-    subject_ends = []
-
-    for r in results:
-        query_ends.append((r["query"]["start"], r["query"]["end"]))
-        subject_ends.append((r["subject"]["start"], r["subject"]["end"]))
-    print(bioblast.raw_results)
-
-    subject_lengths = [x[1] - x[0] for x in subject_ends]
-    assert len(subjects[0].seq) in subject_lengths

@@ -1,13 +1,15 @@
 {
   "0.2.7": {
     "description": "new features",
-    "date": "2019-08-07T19:14:27.645353",
+    "date": "2019-08-07T22:40:46.880369",
     "changes": [
       "added BioBlastFactory",
       "removed TmpBlast and BlastBase from main import route. These are accessible via `pyblast.blast.TmpBlast` etc.",
       "records are now forced to have unique record ids",
       "`force_unique_record_id` method provided in `pyblast.utils`",
-      "SeqRecordDB can only apply one type of transformation once per record key"
+      "SeqRecordDB can only apply one type of transformation once per record key",
+      "fixed bugs associated with circular subjects and queries",
+      "Start and ends now return indices adjusted back to origin record if record was pseudocircularized"
     ]
   },
   "0.2.6": {
