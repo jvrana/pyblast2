@@ -1,6 +1,7 @@
 import pytest
 from os.path import dirname, abspath, join
-from pyblast import BlastBase, BioBlast
+from pyblast import BioBlast
+from pyblast.blast import BlastBase
 from pyblast.utils import (
     load_genbank_glob,
     load_fasta_glob,

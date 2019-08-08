@@ -1,4 +1,4 @@
-from pyblast import BioBlast
+from pyblast.blast import BioBlast
 from pyblast.blast.seqdb import SeqRecordDB
 from pyblast.utils import clean_records
 from uuid import uuid4
