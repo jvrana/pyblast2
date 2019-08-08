@@ -3,14 +3,14 @@ python:
 - '3.6'
 install:
 - pip install poetry
-#- poetry install
-#- poetry run pyblast install EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
+- poetry install
+- poetry run pyblast install EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
 -
 after_install:
 - pandoc --from=markdown --to=rst --output=README README.md
 script:
-- make testwithcoverage
+- poetry run py.test --cov=pyblast --cov-report term-missing
 after_success:
 - coveralls
 deploy:
