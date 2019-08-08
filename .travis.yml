@@ -3,8 +3,8 @@ python:
 - '3.6'
 install:
 - pip install poetry
-- poetry install
-- poetry run pyblast install EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
+#- poetry install
+#- poetry run pyblast install EMAIL=MY_EMAIL PLATFORM="'linux(X64 chip)'"
 before_install:
 -
 after_install:
