@@ -233,7 +233,7 @@ class BlastBase(object):
         )
         return self.db
 
-    def _unique_results(self, results):
+    def _filter_unique_results(self, results):
         return list(
             unique_everseen(
                 results,
@@ -248,6 +248,34 @@ class BlastBase(object):
             )
         )
 
+    def _filter_remove_same_results(self, results):
+        """
+        Removes alignments that aligned to themselves.
+
+        :param results:
+        :type results:
+        :return:
+        :rtype:
+        """
+        new_results = []
+        for r in results:
+            query = r["query"]
+            subj = r["subject"]
+            k1 = query["origin_key"]
+            k2 = subj["origin_key"]
+            qends = (query["start"], query["end"])
+            sends = (subj["start"], subj["end"])
+            if k1 == k2 and qends == sends:
+                continue
+            else:
+                new_results.append(r)
+        return new_results
+
+    def _filter_results(self, results):
+        results = self._filter_unique_results(results)
+        results = self._filter_remove_same_results(results)
+        return results
+
     def parse_results(self, delim=","):
         """
         Parses the raw blast result to a JSON
@@ -261,7 +289,7 @@ class BlastBase(object):
         :rtype:
         """
         results = BlastResultParser.raw_results_to_json(self.raw_results, delim=delim)
-        results = self._unique_results(results)
+        results = self._filter_results(results)
         self.results = results
         return self.results
 
@@ -589,7 +617,7 @@ class BioBlast(TmpBlast):
                     # v[x]["length"] = len(record.seq)
                 v["meta"]["span_origin"] = self.span_origin
 
-        parsed_results = self._unique_results(parsed_results)
+        parsed_results = self._filter_results(parsed_results)
         self.results = parsed_results
         return self.results
 

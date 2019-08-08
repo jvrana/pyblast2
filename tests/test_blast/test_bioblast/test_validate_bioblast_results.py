@@ -1,10 +1,10 @@
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import random
-from pyblast.utils import make_linear, make_circular
+from pyblast.utils import make_linear, make_circular, force_unique_record_ids
 from pyblast import BioBlast
 import pytest
-from copy import deepcopy
+import json
 
 
 def random_sequence(length):
@@ -211,3 +211,26 @@ class TestCircular:
         result = results[0]
 
         compare_result(results[0], 1, 0, 1, 0)
+
+
+def test_interaction_network():
+    """We expect self alignments to be removed from the results."""
+    records = [None, None, None, None]
+
+    records[0] = rand_record(500)
+    records[1] = rand_record(100) + records[0][:-100] + rand_record(1000)
+    records[2] = rand_record(200) + records[1][:700] + rand_record(500)
+    records[3] = records[2][-500:] + rand_record(500)
+
+    force_unique_record_ids(records)
+
+    queries = make_linear(records)
+
+    bioblast = BioBlast(queries, queries)
+    results = bioblast.quick_blastn()
+    assert results
+    for r in results:
+        k1 = r["query"]["origin_key"]
+        k2 = r["subject"]["origin_key"]
+        print(k1, k2)
+        assert not k1 == k2
