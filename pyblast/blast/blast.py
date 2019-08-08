@@ -358,8 +358,12 @@ class BioBlast(TmpBlast):
         self.span_origin = span_origin
         if seq_db is None:
             self.seq_db = SeqRecordDB()
-            subjects = self.add_records(subjects)
-            queries = self.add_records(queries)
+            _, subjects = self.add_records(
+                subjects, seq_db=self.seq_db, span_origin=self.span_origin
+            )
+            _, queries = self.add_records(
+                queries, seq_db=self.seq_db, span_origin=self.span_origin
+            )
         else:
             self.seq_db = seq_db
         db_name = str(uuid4())
@@ -408,7 +412,10 @@ class BioBlast(TmpBlast):
         if not queries:
             raise ValueError("Queries is empty.")
 
-    def add_records(self, records: typing.Sequence[SeqRecord]) -> typing.List[str]:
+    @classmethod
+    def add_records(
+        cls, records: typing.Sequence[SeqRecord], seq_db: SeqRecordDB, span_origin=True
+    ) -> typing.List[str]:
         """
         Adds records to the local sequence database (SeqRecordDb). If `self.span_origin=True`,
         then in addition to adding the original SequenceRecord to the database, sequences will
@@ -433,20 +440,18 @@ class BioBlast(TmpBlast):
             r2.id = str(uuid4())
             return r2
 
-        circular = [r for r in records if self.seq_db.is_circular(r)]
-        linear = [r for r in records if not self.seq_db.is_circular(r)]
-        if self.span_origin:
-            keys = self.seq_db.add_many_with_transformations(
+        circular = [r for r in records if seq_db.is_circular(r)]
+        linear = [r for r in records if not seq_db.is_circular(r)]
+        if span_origin:
+            keys = seq_db.add_many_with_transformations(
                 circular, pseudocircularize, C.PSEUDOCIRCULAR
             )
         else:
-            keys = self.seq_db.add_many_with_transformations(
+            keys = seq_db.add_many_with_transformations(
                 circular, copy_record, C.PSEUDOCIRCULAR
             )
-        keys += self.seq_db.add_many_with_transformations(
-            linear, copy_record, C.COPY_RECORD
-        )
-        return self.seq_db.get_many(keys)
+        keys += seq_db.add_many_with_transformations(linear, copy_record, C.COPY_RECORD)
+        return keys, seq_db.get_many(keys)
 
     # def _merge_results(self, results):
     #

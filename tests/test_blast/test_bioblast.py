@@ -7,6 +7,7 @@ from Bio.SeqRecord import SeqRecord
 from pyblast import BioBlast
 from pyblast.exceptions import PyBlastException
 from pyblast.utils import make_linear, load_genbank_glob, force_unique_record_ids
+import json
 
 
 def test_basic_run():
@@ -129,3 +130,18 @@ def test_unnamed_queries(here):
         recids.add(recid)
     print("n_records: {}".format(len(results)))
     assert len(recids) == len(queries)
+
+
+def test_self_blast(here):
+    subjects = load_genbank_glob(
+        join(here, "data/test_data/genbank/templates/*.gb"), force_unique_ids=True
+    )
+    queries = [
+        SeqRecord(Seq(str(subjects[0][:1000].seq))),
+        # SeqRecord(Seq(str(subjects[1][:1000]))),
+    ]
+    force_unique_record_ids(make_linear(queries))
+
+    bioblast = BioBlast(queries, queries)
+    results = bioblast.quick_blastn()
+    print(json.dumps(results[0], indent=2))

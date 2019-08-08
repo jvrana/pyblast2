@@ -25,7 +25,7 @@ class BioBlastFactory(object):
         blast2 = factory("primers", "queries")
     """
 
-    def __init__(self, seq_db=None):
+    def __init__(self, seq_db=None, span_origin=True):
         """
         Initialize a new BioBlastFactory.
 
@@ -36,7 +36,7 @@ class BioBlastFactory(object):
             self.db = SeqRecordDB()
         else:
             self.db = seq_db
-
+        self.span_origin = span_origin
         self.record_groups = {}
 
     def __setitem__(self, record_group_name: str, records: List[SeqRecordDB]):
@@ -62,25 +62,9 @@ class BioBlastFactory(object):
         :rtype:
         """
         clean_records(records)
-
-        def copy_record(r):
-            return deepcopy(r)
-
-        def pseudocircularize(r):
-            r2 = r + r
-            r2.name = C.PSEUDOCIRCULAR + "__" + r.name
-            r2.id = str(uuid4())
-            return r2
-
-        circular = [r for r in records if self.db.is_circular(r)]
-        linear = [r for r in records if not self.db.is_circular(r)]
-        keys = self.db.add_many_with_transformations(
-            circular, pseudocircularize, C.PSEUDOCIRCULAR
+        keys, records = BioBlast.add_records(
+            records, self.db, span_origin=self.span_origin
         )
-        keys += self.db.add_many_with_transformations(
-            linear, copy_record, C.COPY_RECORD
-        )
-        records = self.db.get_many(keys)
         if record_group_name:
             self.record_groups[record_group_name] = records
         return records
@@ -102,4 +86,10 @@ class BioBlastFactory(object):
             subjects = self.record_groups[subject_key]
         if isinstance(query_key, str):
             queries = self.record_groups[query_key]
-        return BioBlast(subjects=subjects, queries=queries, seq_db=self.db, **config)
+        return BioBlast(
+            subjects=subjects,
+            queries=queries,
+            seq_db=self.db,
+            span_origin=self.span_origin,
+            **config
+        )

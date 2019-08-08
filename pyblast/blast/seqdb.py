@@ -3,9 +3,10 @@ from uuid import uuid4
 from pyblast.exceptions import SeqRecordValidationError
 import networkx as nx
 from pyblast.utils import is_circular
+from collections.abc import Sized
 
 
-class GraphDB(object):
+class GraphDB(Sized):
     def __init__(self):
         self.graph = nx.DiGraph()
         self.mapping = {}
@@ -62,8 +63,15 @@ class GraphDB(object):
             d[key] = self.get(key)
         return d
 
+    def __len__(self):
+        return len(self.to_dict())
+
 
 class SeqRecordDB(GraphDB):
+    def __init__(self):
+        super().__init__()
+        self.transforms = {}
+
     @staticmethod
     def is_circular(records):
         return is_circular(records)
@@ -109,7 +117,13 @@ class SeqRecordDB(GraphDB):
 
     def add_with_transformation(self, record, transform, transform_label):
         key = self.add(record)
-        return self.transform(key, transform, transform_label)
+        transform_key = (key, transform_label)
+        if transform_key in self.transforms:
+            return self.transforms[transform_key]
+        else:
+            new_key = self.transform(key, transform, transform_label)
+            self.transforms[transform_key] = new_key
+            return new_key
 
     def add_many_with_transformations(self, records, transform, transform_label):
         return [
