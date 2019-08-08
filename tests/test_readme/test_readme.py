@@ -31,16 +31,14 @@ def test_example2():
     from Bio.Seq import Seq
     import json
 
-    seq = (
-        "ACGTTGTAGTGTAGTTGATGATGATGTCTGTGTCGTGTGATGTGCTGTAGTGTTTAGGGGCGGCGCGGAGTATGCTG"
-    )
+    seq = "ACGTTGTAGTGTAGTTGATGATGATGTCTGTGTCGTGTGATGTGCTAGGGGTTGATGTGAGTAGTTAGTGGTAGTGTTTAGGGGCGGCGCGGAGTATGCTG"
     queries = [SeqRecord(Seq(seq))]
 
     subjects = [SeqRecord(Seq(seq[-20:] + seq[:30]))]
 
     # pyblast requires a 'topology' annotation on the SeqRecords.
     # we can make records circular or linear using `make_linear` or `make_circular` methods
-    subjects = make_circular(subjects)
+    subjects = make_linear(subjects)
     queries = make_circular(queries)
 
     blast = BioBlast(subjects, queries)
