@@ -29,11 +29,11 @@ class Span(Container, Iterable, Sized):
                     "End {} must be in [{}, {}]".format(b, index, index + l)
                 )
         if a - index >= l or a - index < 0:
-            self.a = self.t(a)
+            self.a = self.t(a - index)
         else:
             self.a = a
         if b - index > l or b - index < 0:
-            self.b = self.t(b)
+            self.b = self.t(b - index)
         else:
             self.b = b
 

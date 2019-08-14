@@ -465,3 +465,24 @@ def test_connecting_span_linear_no_span():
     s2 = Span(0, 10, 100, False)
     s3 = s1.connecting_span(s2)
     assert s3 is None
+
+class TestAllowWrap:
+
+    @pytest.mark.parametrize('delta', range(20))
+    @pytest.mark.parametrize('index', [0, 1, 2])
+    def test_allow_wrap(self, delta, index):
+        s = Span(90+delta, 98+delta, 100, cyclic=True, index=index, allow_wrap=True)
+        assert len(s) == 8
+
+
+    @pytest.mark.parametrize('index', [0, 1, 2])
+    def test_simple_len(self, index):
+        s = Span(90, 10, 100, cyclic=True, index=index)
+
+        assert len(s) == 20
+        print(s.t(100))
+
+    @pytest.mark.parametrize('index', [0, 1, 2])
+    def test_simple_len_allow_wrap(self, index):
+        s = Span(90, 110, 100, cyclic=True, index=index, allow_wrap=True)
+        assert len(s) == 20

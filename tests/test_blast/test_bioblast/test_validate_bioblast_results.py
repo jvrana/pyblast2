@@ -2,7 +2,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import random
 from pyblast.utils import make_linear, make_circular, force_unique_record_ids
-from pyblast import BioBlast
+from pyblast import BioBlast, BioBlastFactory
 import pytest
 import json
 
@@ -66,6 +66,19 @@ def test_perfect_alignment():
     assert len(results) == 1
     compare_result(results[0], 1, len(record), 1, len(record))
 
+def test_simple_alignment():
+    record = rand_record(1000)
+    queries = [record[:]]
+    subjects = [record[10:-10]]
+
+    queries = make_linear(queries)
+    subjects = make_linear(subjects)
+
+    bioblast = BioBlast(subjects, queries)
+    results = bioblast.quick_blastn()
+    assert len(results) == 1
+    compare_result(results[0], 11, len(record)-10, 1, len(record) - 10 - 10)
+
 
 def test_align_Ns():
     record = rand_record(1000)
@@ -122,7 +135,7 @@ def test_reverse_alignment_simple():
 
     record = rand_record(1000)
     query = record
-    subject = record.reverse_complement()
+    subject = record[10:990].reverse_complement()
 
     subjects = make_linear([subject])
     queries = make_linear([query])
@@ -132,7 +145,38 @@ def test_reverse_alignment_simple():
     for k, v in bioblast.seq_db.records.items():
         print(k)
         print(v)
-    print(results)
+    print(json.dumps(results, indent=2))
+    assert results[0]['query']['start'] == 10 + 1
+    assert results[0]['query']['end'] == 990
+    assert results[0]['subject']['start'] == 980
+    assert results[0]['subject']['end'] == 1
+
+
+def test_reverse_alignment_simple():
+
+    record = rand_record(1000)
+    query = record
+    subject = record[10:-10].reverse_complement()
+
+    subjects = make_linear([subject])
+    queries = make_linear([query])
+
+    factory = BioBlastFactory()
+    factory.add_records(subjects, 'subjects')
+    factory.add_records(queries, 'queries')
+
+    bioblast = factory('subjects', 'queries')
+
+    results = bioblast.quick_blastn()
+    for k, v in bioblast.seq_db.records.items():
+        print(k)
+        print(v)
+    print(json.dumps(results, indent=2))
+    assert results[0]['subject']['strand'] == -1
+    assert results[0]['subject']['start'] == 980
+    assert results[0]['subject']['end'] == 1
+    assert results[0]['query']['start'] == 11
+    assert results[0]['query']['end'] == 990
 
 
 class TestCircular:
@@ -161,7 +205,7 @@ class TestCircular:
         expected_seq = str(subjects[0].seq)
         assert result_seq == expected_seq
 
-        compare_result(results[0], 901, 100, 1, 200)
+        compare_result(results[0], 1000 - 100 + 1, 100, 1, 200)
 
     def test_circular_over_query_revcomp(self):
 
