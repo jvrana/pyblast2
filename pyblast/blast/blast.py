@@ -248,32 +248,8 @@ class BlastBase(object):
             )
         )
 
-    def _filter_remove_same_results(self, results):
-        """
-        Removes alignments that aligned to themselves.
-
-        :param results:
-        :type results:
-        :return:
-        :rtype:
-        """
-        new_results = []
-        for r in results:
-            query = r["query"]
-            subj = r["subject"]
-            k1 = query["origin_key"]
-            k2 = subj["origin_key"]
-            qends = (query["start"], query["end"])
-            sends = (subj["start"], subj["end"])
-            if k1 == k2 and qends == sends:
-                continue
-            else:
-                new_results.append(r)
-        return new_results
-
     def _filter_results(self, results):
         results = self._filter_unique_results(results)
-        results = self._filter_remove_same_results(results)
         return results
 
     def parse_results(self, delim=","):
@@ -441,6 +417,35 @@ class BioBlast(TmpBlast):
             raise ValueError("Subjects is empty.")
         if not queries:
             raise ValueError("Queries is empty.")
+
+
+    def _filter_remove_same_results(self, results):
+        """
+        Removes alignments that aligned to themselves.
+
+        :param results:
+        :type results:
+        :return:
+        :rtype:
+        """
+        new_results = []
+        for r in results:
+            query = r["query"]
+            subj = r["subject"]
+            k1 = query["origin_key"]
+            k2 = subj["origin_key"]
+            qends = (query["start"], query["end"])
+            sends = (subj["start"], subj["end"])
+            if k1 == k2 and qends == sends:
+                continue
+            else:
+                new_results.append(r)
+        return new_results
+
+    def _filter_results(self, results):
+        results = self._filter_unique_results(results)
+        results = self._filter_remove_same_results(results)
+        return results
 
     @classmethod
     def add_records(
