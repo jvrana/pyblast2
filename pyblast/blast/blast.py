@@ -418,7 +418,6 @@ class BioBlast(TmpBlast):
         if not queries:
             raise ValueError("Queries is empty.")
 
-
     def _filter_remove_same_results(self, results):
         """
         Removes alignments that aligned to themselves.
