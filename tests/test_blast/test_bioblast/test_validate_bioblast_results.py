@@ -118,6 +118,23 @@ def test_partial_alignment_reverse_complement(left_spacer, ij):
     compare_result(results[0], ij[0] + 1, ij[1], len(subjects[0].seq), left_spacer + 1)
 
 
+def test_reverse_alignment_simple():
+
+    record = rand_record(1000)
+    query = record
+    subject = record.reverse_complement()
+
+    subjects = make_linear([subject])
+    queries = make_linear([query])
+
+    bioblast = BioBlast(subjects, queries)
+    results = bioblast.quick_blastn()
+    for k, v in bioblast.seq_db.records.items():
+        print(k)
+        print(v)
+    print(results)
+
+
 class TestCircular:
     def test_circular_over_query(self):
 

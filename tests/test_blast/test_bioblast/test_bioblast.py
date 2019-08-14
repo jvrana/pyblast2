@@ -149,4 +149,4 @@ def test_self_blast(here):
 
     bioblast = BioBlast(queries, queries)
     results = bioblast.quick_blastn()
-    print(json.dumps(results[0], indent=2))
+    assert not results
