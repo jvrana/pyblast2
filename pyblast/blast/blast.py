@@ -618,7 +618,7 @@ class BioBlast(TmpBlast):
                         v[x]["start"] = span.a
                         v[x]["end"] = span.b
                         if reverse:
-                            v[x]['start'], v[x]['end'] = v[x]['end'], v[x]['start']
+                            v[x]["start"], v[x]["end"] = v[x]["end"], v[x]["start"]
                 v["meta"]["span_origin"] = self.span_origin
 
         parsed_results = self._filter_results(parsed_results)

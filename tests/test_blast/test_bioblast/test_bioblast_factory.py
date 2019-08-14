@@ -44,7 +44,6 @@ def test_validate_rc(here):
 
     results = blaster.quick_blastn()
 
-    assert results[0]['subject']['strand'] == -1
-    assert results[0]['query']['strand'] == 1
-    assert results[0]['subject']['start'] == len(queries[0])
-
+    assert results[0]["subject"]["strand"] == -1
+    assert results[0]["query"]["strand"] == 1
+    assert results[0]["subject"]["start"] == len(queries[0])

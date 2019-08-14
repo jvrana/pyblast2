@@ -66,6 +66,7 @@ def test_perfect_alignment():
     assert len(results) == 1
     compare_result(results[0], 1, len(record), 1, len(record))
 
+
 def test_simple_alignment():
     record = rand_record(1000)
     queries = [record[:]]
@@ -77,7 +78,7 @@ def test_simple_alignment():
     bioblast = BioBlast(subjects, queries)
     results = bioblast.quick_blastn()
     assert len(results) == 1
-    compare_result(results[0], 11, len(record)-10, 1, len(record) - 10 - 10)
+    compare_result(results[0], 11, len(record) - 10, 1, len(record) - 10 - 10)
 
 
 def test_align_Ns():
@@ -146,10 +147,10 @@ def test_reverse_alignment_simple():
         print(k)
         print(v)
     print(json.dumps(results, indent=2))
-    assert results[0]['query']['start'] == 10 + 1
-    assert results[0]['query']['end'] == 990
-    assert results[0]['subject']['start'] == 980
-    assert results[0]['subject']['end'] == 1
+    assert results[0]["query"]["start"] == 10 + 1
+    assert results[0]["query"]["end"] == 990
+    assert results[0]["subject"]["start"] == 980
+    assert results[0]["subject"]["end"] == 1
 
 
 def test_reverse_alignment_simple():
@@ -162,21 +163,21 @@ def test_reverse_alignment_simple():
     queries = make_linear([query])
 
     factory = BioBlastFactory()
-    factory.add_records(subjects, 'subjects')
-    factory.add_records(queries, 'queries')
+    factory.add_records(subjects, "subjects")
+    factory.add_records(queries, "queries")
 
-    bioblast = factory('subjects', 'queries')
+    bioblast = factory("subjects", "queries")
 
     results = bioblast.quick_blastn()
     for k, v in bioblast.seq_db.records.items():
         print(k)
         print(v)
     print(json.dumps(results, indent=2))
-    assert results[0]['subject']['strand'] == -1
-    assert results[0]['subject']['start'] == 980
-    assert results[0]['subject']['end'] == 1
-    assert results[0]['query']['start'] == 11
-    assert results[0]['query']['end'] == 990
+    assert results[0]["subject"]["strand"] == -1
+    assert results[0]["subject"]["start"] == 980
+    assert results[0]["subject"]["end"] == 1
+    assert results[0]["query"]["start"] == 11
+    assert results[0]["query"]["end"] == 990
 
 
 class TestCircular:

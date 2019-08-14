@@ -1,4 +1,12 @@
 {
+  "0.2.10": {
+    "description": "serious bug fixes",
+    "date": "2019-08-13T20:17:29.764489",
+    "changes": [
+      "indices of alignments over spans now fixed (off-by-one error)",
+      "reversed alignments over spans now properly return their start and ending positions"
+    ]
+  },
   "0.2.9": {
     "description": "bug fixes",
     "date": "2019-08-13T19:01:18.755123",
