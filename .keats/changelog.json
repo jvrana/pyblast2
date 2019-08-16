@@ -1,4 +1,11 @@
 {
+  "0.2.11": {
+    "description": "non-api changing",
+    "date": "2019-08-16T15:09:55.078414",
+    "changes": [
+      "removed CMD print statement"
+    ]
+  },
   "0.2.10": {
     "description": "serious bug fixes",
     "date": "2019-08-13T20:17:29.764489",
