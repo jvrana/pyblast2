@@ -6,7 +6,6 @@ from subprocess import check_output, STDOUT, CalledProcessError
 
 def run_cmd_str(cmd_str):
     """Runs a command from a string"""
-    print("CMD: " + cmd_str)
     args = shlex.split(cmd_str)
     try:
         output = check_output(args, stderr=STDOUT)
