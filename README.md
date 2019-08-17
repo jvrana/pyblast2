@@ -180,7 +180,7 @@ from pyblast import BioBlastFactory
 
 # initialize a new factory
 factory = BioBlastFactory()
-
+s
 # add records accessible by keyword
 factory.add_records(records1, "primers")
 factory.add_records(records2, "templates")
