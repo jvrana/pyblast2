@@ -1,4 +1,11 @@
 {
+  "0.2.12": {
+    "description": "bug fixes to span",
+    "date": "2019-08-17T14:46:07.468458",
+    "changes": [
+      "subspan throws appropriate errors for invalid indices"
+    ]
+  },
   "0.2.11": {
     "description": "non-api changing",
     "date": "2019-08-16T15:09:55.078414",

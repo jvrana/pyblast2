@@ -1,6 +1,42 @@
 # pyblastbio change log
+## 0.2.12
+**2019-08-17T14:45:12.520776**
+bug fixes to span
+
+ - subspan throws appropriate errors for invalid indices
+
+
+## 0.2.11
+**2019-08-16T15:09:55.078414**
+non-api changing
+
+ - removed CMD print statement
+
+
+## 0.2.10
+**2019-08-13T20:17:29.764489**
+serious bug fixes
+
+ - indices of alignments over spans now fixed (off-by-one error)
+ - reversed alignments over spans now properly return their start and ending positions
+
+
+## 0.2.9
+**2019-08-13T19:01:18.755123**
+bug fixes
+
+
+
+
+## 0.2.8
+**2019-08-08T08:27:05.972192**
+bug fix
+
+ - filters out self alignments (alignments with same origin_key and identical end points)
+
+
 ## 0.2.7
-**2019-08-07T19:14:27.645353**
+**2019-08-07T22:52:21.935282**
 new features
 
  - added BioBlastFactory
@@ -8,6 +44,9 @@ new features
  - records are now forced to have unique record ids
  - `force_unique_record_id` method provided in `pyblast.utils`
  - SeqRecordDB can only apply one type of transformation once per record key
+ - fixed bugs associated with circular subjects and queries
+ - Start and ends now return indices adjusted back to origin record if record was pseudocircularized
+ - Remove 'alignments' as SeqFeatures are incompatible with circular sequences.
 
 
 ## 0.2.6
