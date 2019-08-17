@@ -485,3 +485,31 @@ class TestAllowWrap:
     def test_simple_len_allow_wrap(self, index):
         s = Span(90, 110, 100, cyclic=True, index=index, allow_wrap=True)
         assert len(s) == 20
+
+
+class TestSub(object):
+    @pytest.mark.parametrize("x", [(100, 1000), (101, 1000), (100, 999)])
+    def test_valid_sub(self, x):
+        s = Span(100, 1000, 10000, True)
+        s2 = s.sub(x[0], x[1])
+        assert s2.a == x[0]
+        assert s2.b == x[1]
+
+    @pytest.mark.parametrize("x", [(99, 1000), (100, 1001), (99, 1001)])
+    def test_invalid_ranges(self, x):
+        s = Span(100, 1000, 10000, True)
+        with pytest.raises(IndexError):
+            s.sub(x[0], x[1])
+
+    @pytest.mark.parametrize("x", [(900, 100), (901, 100), (900, 99)])
+    def test_valid_subs_over_origin(self, x):
+        s = Span(900, 100, 1000, True)
+        s2 = s.sub(x[0], x[1])
+        assert s2.a == x[0]
+        assert s2.b == x[1]
+
+    @pytest.mark.parametrize("x", [(80, 50), (899, 100), (900, 101)])
+    def test_invalid_subs_over_origin(self, x):
+        s = Span(900, 100, 1000, True)
+        with pytest.raises(IndexError):
+            s.sub(x[0], x[1])

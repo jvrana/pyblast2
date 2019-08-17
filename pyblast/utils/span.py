@@ -50,6 +50,11 @@ class Span(Container, Iterable, Sized):
                 )
         return (p % self.context_length) + self.bounds()[0]
 
+    @staticmethod
+    def _ranges_str(ranges):
+        s = ",".join("[{}, {})".format(*r) for r in ranges)
+        return "[" + s + "]"
+
     def ranges(self):
         """
         Return ranges of valid positions.
@@ -89,17 +94,23 @@ class Span(Container, Iterable, Sized):
             raise ValueError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
-        if a not in self:
+        valid_ranges = [list(x) for x in self.ranges()]
+
+        valid_ranges[0][0] = max(self.t(a), self.a)
+        valid_ranges[-1][1] = min(self.t(b) + 1, self.b + 1)
+
+        if not self._pos_in_ranges(a, valid_ranges):
             raise IndexError(
-                "Cannot make subspan. Start {} is not contained in {}".format(a, self)
+                "Start {} must be in {}".format(a, self._ranges_str(valid_ranges))
             )
-        if self.t(b - 1) not in self:
+        if not self._pos_in_ranges(b, valid_ranges):
             raise IndexError(
-                "Cannot make subspan. End {} is not contained in {}".format(
-                    self.t(b - 1), self
-                )
+                "End {} must be in {}".format(b, self._ranges_str(valid_ranges))
             )
-        return self.new(a, b)
+        subregion = self.new(a, b)
+        if len(subregion) > len(self):
+            raise IndexError("Cannot make subspan. S")
+        return subregion
 
     def same_context(self, other):
         return (
@@ -224,11 +235,15 @@ class Span(Container, Iterable, Sized):
     def __ne__(self, other):
         return not (self.__eq__(other))
 
-    def contains_pos(self, other):
-        for r in self.ranges():
-            if r[0] <= other < r[1]:
+    @classmethod
+    def _pos_in_ranges(cls, pos, ranges):
+        for r in ranges:
+            if r[0] <= pos < r[1]:
                 return True
         return False
+
+    def contains_pos(self, pos):
+        return self._pos_in_ranges(pos, self.ranges())
 
     def contains_span(self, other):
         if not self.same_context(other):

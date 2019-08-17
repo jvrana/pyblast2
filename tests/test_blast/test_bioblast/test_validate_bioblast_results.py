@@ -1,10 +1,12 @@
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
-import random
-from pyblast.utils import make_linear, make_circular, force_unique_record_ids
-from pyblast import BioBlast, BioBlastFactory
-import pytest
 import json
+import random
+
+import pytest
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+from pyblast import BioBlast, BioBlastFactory
+from pyblast.utils import make_linear, make_circular, force_unique_record_ids
 
 
 def random_sequence(length):
@@ -133,7 +135,6 @@ def test_partial_alignment_reverse_complement(left_spacer, ij):
 
 
 def test_reverse_alignment_simple():
-
     record = rand_record(1000)
     query = record
     subject = record[10:990].reverse_complement()
@@ -154,7 +155,6 @@ def test_reverse_alignment_simple():
 
 
 def test_reverse_alignment_simple():
-
     record = rand_record(1000)
     query = record
     subject = record[10:-10].reverse_complement()
@@ -182,7 +182,6 @@ def test_reverse_alignment_simple():
 
 class TestCircular:
     def test_circular_over_query(self):
-
         record = rand_record(1000)
         queries = [record]
         subjects = [record[-100:] + record[:100]]
@@ -209,7 +208,6 @@ class TestCircular:
         compare_result(results[0], 1000 - 100 + 1, 100, 1, 200)
 
     def test_circular_over_query_revcomp(self):
-
         record = rand_record(1000)
         queries = [record]
         subjects = [record[-100:] + record[:100]]
@@ -237,7 +235,6 @@ class TestCircular:
         compare_result(results[0], 901, 100, 200, 1)
 
     def test_circular_over_subject(self):
-
         record = rand_record(1000)
         queries = [record]
         subjects = [record[200:300] + ns(500) + record[100:200]]
@@ -290,6 +287,58 @@ def test_interaction_network():
 
     bioblast = BioBlast(queries, queries)
     results = bioblast.quick_blastn()
+    assert results
+    for r in results:
+        k1 = r["query"]["origin_key"]
+        k2 = r["subject"]["origin_key"]
+        print(k1, k2)
+        assert not k1 == k2
+
+
+def test_interaction_network_from_factory():
+    """We expect self alignments to be removed from the results."""
+    records = [None, None, None, None]
+
+    records[0] = rand_record(500)
+    records[1] = rand_record(100) + records[0][:-100] + rand_record(1000)
+    records[2] = rand_record(200) + records[1][:700] + rand_record(500)
+    records[3] = records[2][-500:] + rand_record(500)
+
+    force_unique_record_ids(records)
+
+    queries = make_linear(records)
+
+    factory = BioBlastFactory()
+    factory.add_records(queries, "queries")
+    bioblast = factory("queries", "queries")
+
+    results = bioblast.quick_blastn()
+    assert results
+    for r in results:
+        k1 = r["query"]["origin_key"]
+        k2 = r["subject"]["origin_key"]
+        print(k1, k2)
+        assert not k1 == k2
+
+
+def test_interaction_network_from_data(here):
+    from pyblast.utils import load_genbank_glob
+    from os.path import join
+
+    queries = load_genbank_glob(
+        join(here, "data/test_data/genbank/designs/*.gb"), force_unique_ids=True
+    )
+
+    templates = make_linear(queries[:1])
+    queries = make_linear([templates[0].reverse_complement()])
+
+    factory = BioBlastFactory()
+    factory.add_records(queries, "queries")
+    factory.add_records(templates, "templates")
+
+    blaster = factory("templates", "templates")
+
+    results = blaster.quick_blastn()
     assert results
     for r in results:
         k1 = r["query"]["origin_key"]
