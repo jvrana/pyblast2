@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyblastbio"
-version = "0.2.10"
+version = "0.2.11"
 description = ""
 authors = ["Justin Vrana <justin.vrana@gmail.com>"]
 homepage = "https://www.github.com/jvrana/pyblast"
