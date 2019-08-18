@@ -519,6 +519,13 @@ class TestSub(object):
         assert s2.a == start
         assert s2.b == end
 
+    @pytest.mark.parametrize("x", [1432, 1433, 4788, 4799])
+    def test_valid_sub_same_indices(self, x):
+        s = Span(1432, 4779, 4799, cyclic=True)
+        s2 = s.sub(x, x)
+        assert s2.a == x
+        assert s2.b == x
+
     @pytest.mark.parametrize("x", [(99, 1000), (100, 1001), (99, 1001)])
     def test_invalid_ranges(self, x):
         s = Span(100, 1000, 10000, cyclic=True)
