@@ -489,15 +489,39 @@ class TestAllowWrap:
 
 class TestSub(object):
     @pytest.mark.parametrize("x", [(100, 1000), (101, 1000), (100, 999)])
-    def test_valid_sub(self, x):
-        s = Span(100, 1000, 10000, True)
+    def test_valid_sub1(self, x):
+        s = Span(100, 1000, 10000, cyclic=True)
         s2 = s.sub(x[0], x[1])
         assert s2.a == x[0]
         assert s2.b == x[1]
 
+    @pytest.mark.parametrize("x", [(100, 10000), (101, 10000), (100, 9999)])
+    def test_valid_sub2(self, x):
+        s = Span(100, 10000, 10000, cyclic=True)
+        s2 = s.sub(x[0], x[1])
+        assert s2.a == x[0]
+        assert s2.b == x[1]
+
+    @pytest.mark.parametrize("x", [(0, 9000), (1, 9000), (1, 8999)])
+    def test_valid_sub3(self, x):
+        s = Span(0, 9000, 10000, cyclic=True)
+        s2 = s.sub(x[0], x[1])
+        assert s2.a == x[0]
+        assert s2.b == x[1]
+
+    @pytest.mark.parametrize("x", [(0, 900, 1000), (900, 100, 1000)])
+    @pytest.mark.parametrize("delta", [(0, 0), (1, 0), (0, 1), (1, 1)])
+    def test_valid_sub4(self, x, delta):
+        s = Span(x[0], x[1], x[2], cyclic=True)
+        start = s.a + delta[0]
+        end = s.b - delta[1]
+        s2 = s.sub(start, end)
+        assert s2.a == start
+        assert s2.b == end
+
     @pytest.mark.parametrize("x", [(99, 1000), (100, 1001), (99, 1001)])
     def test_invalid_ranges(self, x):
-        s = Span(100, 1000, 10000, True)
+        s = Span(100, 1000, 10000, cyclic=True)
         with pytest.raises(IndexError):
             s.sub(x[0], x[1])
 
@@ -523,3 +547,12 @@ class TestSub(object):
         s = Span(5000, 4999, 10000, cyclic=True, allow_wrap=True)
         with pytest.raises(IndexError):
             s.sub(4998, 5001)
+
+    @pytest.mark.parametrize("x", [(0, 900, 1000), (900, 100, 1000)])
+    @pytest.mark.parametrize("delta", [(-11, 0), (0, -1), (-1, -1)])
+    def test_invalid_span_over_regions(self, x, delta):
+        s = Span(x[0], x[1], x[2], cyclic=True)
+        start = s.a + delta[0]
+        end = s.b - delta[1]
+        with pytest.raises(IndexError):
+            s.sub(start, end)

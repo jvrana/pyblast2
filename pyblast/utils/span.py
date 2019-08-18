@@ -96,16 +96,16 @@ class Span(Container, Iterable, Sized):
             )
         valid_ranges = [list(x) for x in self.ranges()]
 
-        valid_ranges[0][0] = max(self.t(a), self.a)
-        valid_ranges[-1][1] = min(self.t(b) + 1, self.b + 1)
+        valid_ranges[0][0] = max(a, self.a)
+        valid_ranges[-1][1] = min(b + 1, self.b + 1)
 
         if not self._pos_in_ranges(a, valid_ranges[:1]):
             raise IndexError(
-                "Start {} must be in {}".format(a, self._ranges_str(valid_ranges))
+                "Start {} must be in {}".format(a, self._ranges_str(valid_ranges[:1]))
             )
         if not self._pos_in_ranges(b, valid_ranges[-1:]):
             raise IndexError(
-                "End {} must be in {}".format(b, self._ranges_str(valid_ranges))
+                "End {} must be in {}".format(b, self._ranges_str(valid_ranges[-1:]))
             )
         subregion = self.new(a, b)
         if len(subregion) > len(self):
