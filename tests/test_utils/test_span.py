@@ -513,3 +513,13 @@ class TestSub(object):
         s = Span(900, 100, 1000, True)
         with pytest.raises(IndexError):
             s.sub(x[0], x[1])
+
+    def test_invalid_span(self):
+        s = Span(5947, 4219, 10000, cyclic=True, allow_wrap=True)
+        with pytest.raises(IndexError):
+            s.sub(28, 5980)
+
+    def test_invalid_span2(self):
+        s = Span(5000, 4999, 10000, cyclic=True, allow_wrap=True)
+        with pytest.raises(IndexError):
+            s.sub(4998, 5001)
