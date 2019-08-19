@@ -88,24 +88,38 @@ class Span(Container, Iterable, Sized):
         :return:
         :rtype:
         """
-        if a == b:
-            return self.new(a, b)
+        # if a == b:
+        #     return self.new(a, b)
         if b is not None and a > b and not self.cyclic:
             raise ValueError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
+
         valid_ranges = [list(x) for x in self.ranges()]
 
         valid_ranges[0][0] = max(a, self.a)
         valid_ranges[-1][1] = min(b + 1, self.b + 1)
+        assert len(valid_ranges) <= 2
 
-        if not self._pos_in_ranges(a, valid_ranges[:1]):
+        def in_range(pos, ranges):
+            for i, r in enumerate(ranges):
+                if r[0] <= pos < r[1]:
+                    return (True, i)
+            return (False, None)
+
+        start_in_range, start_range = in_range(a, valid_ranges)
+
+        if not start_in_range:
             raise IndexError(
-                "Start {} must be in {}".format(a, self._ranges_str(valid_ranges[:1]))
+                "Start {} must be in {}".format(a, self._ranges_str(valid_ranges))
             )
-        if not self._pos_in_ranges(b, valid_ranges[-1:]):
+
+        valid_end_range = valid_ranges[start_range:]
+        end_in_range, end_range = in_range(b, valid_end_range)
+
+        if not end_in_range:
             raise IndexError(
-                "End {} must be in {}".format(b, self._ranges_str(valid_ranges[-1:]))
+                "End {} must be in {}".format(b, self._ranges_str(valid_end_range))
             )
         subregion = self.new(a, b)
         if len(subregion) > len(self):
@@ -344,3 +358,8 @@ class Span(Container, Iterable, Sized):
             self.cyclic,
             self.index,
         )
+
+
+class EmptySpan(Span):
+    def ranges(self):
+        return [(self.bounds()[0], self.bounds()[0])]

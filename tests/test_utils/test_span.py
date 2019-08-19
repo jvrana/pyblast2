@@ -519,12 +519,21 @@ class TestSub(object):
         assert s2.a == start
         assert s2.b == end
 
-    @pytest.mark.parametrize("x", [1432, 1433, 4788, 4799])
-    def test_valid_sub_same_indices(self, x):
-        s = Span(1432, 4779, 4799, cyclic=True)
+    @pytest.mark.parametrize("cyclic", [True, False])
+    @pytest.mark.parametrize("x", [1432, 1433, 4778, 4779])
+    def test_valid_sub_same_indices(self, x, cyclic):
+        s = Span(1432, 4779, 4799, cyclic=cyclic)
         s2 = s.sub(x, x)
+        assert len(s2) == 0
         assert s2.a == x
         assert s2.b == x
+
+    @pytest.mark.parametrize("cyclic", [True, False])
+    @pytest.mark.parametrize("x", [1431, 4780])
+    def test_invalid_sub_same_indices(self, x, cyclic):
+        s = Span(1432, 4779, 4799, cyclic=cyclic)
+        with pytest.raises(IndexError):
+            s2 = s.sub(x, x)
 
     @pytest.mark.parametrize("x", [(99, 1000), (100, 1001), (99, 1001)])
     def test_invalid_ranges(self, x):
@@ -532,14 +541,16 @@ class TestSub(object):
         with pytest.raises(IndexError):
             s.sub(x[0], x[1])
 
-    @pytest.mark.parametrize("x", [(900, 100), (901, 100), (900, 99)])
+    @pytest.mark.parametrize(
+        "x", [(900, 100), (901, 100), (900, 99), (901, 920), (50, 80)]
+    )
     def test_valid_subs_over_origin(self, x):
         s = Span(900, 100, 1000, True)
         s2 = s.sub(x[0], x[1])
         assert s2.a == x[0]
         assert s2.b == x[1]
 
-    @pytest.mark.parametrize("x", [(80, 50), (899, 100), (900, 101)])
+    @pytest.mark.parametrize("x", [(80, 50), (899, 100), (900, 101), (20, 920)])
     def test_invalid_subs_over_origin(self, x):
         s = Span(900, 100, 1000, True)
         with pytest.raises(IndexError):
