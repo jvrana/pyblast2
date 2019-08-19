@@ -1,4 +1,11 @@
 {
+  "0.2.15": {
+    "description": "bug fixes",
+    "date": "2019-08-19T11:49:45.194774",
+    "changes": [
+      "fixes .sub index bugs"
+    ]
+  },
   "0.2.14": {
     "description": "bug fixes",
     "date": "2019-08-18T08:31:01.427353",
