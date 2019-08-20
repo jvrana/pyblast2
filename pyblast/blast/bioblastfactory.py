@@ -61,7 +61,9 @@ class BioBlastFactory(object):
         :return:
         :rtype:
         """
-        self.logger.info("Adding {} records to '{}'".format(len(records), record_group_name))
+        self.logger.info(
+            "Adding {} records to '{}'".format(len(records), record_group_name)
+        )
         clean_records(records)
         keys, records = BioBlast.add_records(
             records, self.db, span_origin=self.span_origin
@@ -105,6 +107,5 @@ class BioBlastFactory(object):
             queries=queries,
             seq_db=self.db,
             span_origin=self.span_origin,
-            config=config
+            config=config,
         )
-
