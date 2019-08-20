@@ -83,7 +83,7 @@ class BioBlastFactory(object):
         :return:
         :rtype:
         """
-        self.info("new Blast({}, {})".format(subject_key, query_key))
+        self.logger.info("new Blast({}, {})".format(subject_key, query_key))
         if isinstance(subject_key, str):
             subjects = self.record_groups[subject_key]
         else:

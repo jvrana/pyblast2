@@ -354,10 +354,12 @@ class TestPseudocirculariseWithLongSeqs:
             subjects,
             query,
             span_origin=True,
-            gapopen=3,
-            gapextend=3,
-            penalty=-5,
-            reward=1,
+            config=dict(
+                gapopen=3,
+                gapextend=3,
+                penalty=-5,
+                reward=1,
+            )
         )
         j.quick_blastn()
         results = j.get_perfect()
