@@ -1,11 +1,9 @@
 from pyblast.blast import BioBlast
 from pyblast.blast.seqdb import SeqRecordDB
 from pyblast.utils import clean_records
-from uuid import uuid4
-from copy import deepcopy
-from pyblast.blast.blast import C
 from typing import List
 from Bio.SeqRecord import SeqRecord
+from pyblast.log import logger
 
 
 class BioBlastFactory(object):
@@ -25,7 +23,7 @@ class BioBlastFactory(object):
         blast2 = factory("primers", "queries")
     """
 
-    def __init__(self, seq_db=None, span_origin=True):
+    def __init__(self, seq_db=None, span_origin=True, config=None):
         """
         Initialize a new BioBlastFactory.
 
@@ -38,6 +36,8 @@ class BioBlastFactory(object):
             self.db = seq_db
         self.span_origin = span_origin
         self.record_groups = {}
+        self.logger = logger(self)
+        self.config = config
 
     def __setitem__(self, record_group_name: str, records: List[SeqRecordDB]):
         """
@@ -61,15 +61,16 @@ class BioBlastFactory(object):
         :return:
         :rtype:
         """
+        self.logger.info("Adding {} records to '{}'".format(len(records), record_group_name))
         clean_records(records)
         keys, records = BioBlast.add_records(
             records, self.db, span_origin=self.span_origin
         )
         if record_group_name:
             self.record_groups[record_group_name] = records
-        return records
+        return keys, records
 
-    def __call__(self, subject_key, query_key, **config):
+    def __call__(self, subject_key, query_key, config=None):
         """
         Create a new BioBlast instance with the factory's SeqRecordDB.
         
@@ -82,14 +83,28 @@ class BioBlastFactory(object):
         :return:
         :rtype:
         """
+        self.info("new Blast({}, {})".format(subject_key, query_key))
         if isinstance(subject_key, str):
             subjects = self.record_groups[subject_key]
+        else:
+            subjects = []
+            for key in subject_key:
+                subjects += self.record_groups[key]
         if isinstance(query_key, str):
             queries = self.record_groups[query_key]
+        else:
+            queries = []
+            for key in query_key:
+                queries += self.record_groups[key]
+        if config is None:
+            config = {}
+        if self.config:
+            config.update(self.config)
         return BioBlast(
             subjects=subjects,
             queries=queries,
             seq_db=self.db,
             span_origin=self.span_origin,
-            **config
+            config=config
         )
+

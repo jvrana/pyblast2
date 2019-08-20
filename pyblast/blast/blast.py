@@ -71,7 +71,7 @@ class BlastBase(object):
         db_output_directory,
         results_out_path,
         output_formatter=None,
-        **additional_config
+        config=None
     ):
         """
         A Blast initializer for running blast searches.
@@ -96,7 +96,11 @@ class BlastBase(object):
 
         self.query_path = query_path
         self.subject_path = subject_path
-        self._config = {}
+
+        # setup config
+        if config is None:
+            config = {}
+        self._config = dict(config)
 
         # build the configuration
         if output_formatter is None:
@@ -282,7 +286,7 @@ class TmpBlast(BlastBase):
     "quick_blastn" for returning results as a python object.
     """
 
-    def __init__(self, db_name, subject_path, query_path, **config):
+    def __init__(self, db_name, subject_path, query_path, config=None):
         """
         TmpBlast: A Blast object that stores the database files in a hidden temporary directory.
         :param db_name: Name for database file structure. This name will be appended to all db files that blast creates.
@@ -304,7 +308,7 @@ class TmpBlast(BlastBase):
             query_path=query_path,
             db_output_directory=db_output_directory,
             results_out_path=out,
-            **config
+            config=config
         )
 
         self.fields = self.fields + (
@@ -339,7 +343,7 @@ class BioBlast(TmpBlast):
         seq_db=None,
         span_origin=True,
         force_unique_ids=False,
-        **config
+        config=None,
     ):
         """
         Initialize a new BioBlast.
@@ -376,7 +380,7 @@ class BioBlast(TmpBlast):
         subject_path = records_to_tmpfile(subjects)
         query_path = records_to_tmpfile(queries)
         super().__init__(
-            db_name=db_name, subject_path=subject_path, query_path=query_path, **config
+            db_name=db_name, subject_path=subject_path, query_path=query_path, config=config
         )
 
     def _check_records(self, subjects, queries):
@@ -630,7 +634,7 @@ class JSONBlast(BioBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
 
     def __init__(
-        self, subject_json, query_json, span_origin=True, seq_db=None, **config
+        self, subject_json, query_json, span_origin=True, seq_db=None, config=None
     ):
         """
         Initialize JSONBlast
@@ -650,7 +654,7 @@ class JSONBlast(BioBlast):
         qrecords = JSONParser.JSON_to_SeqRecords(query_json)
         self.subject_json = subject_json
         self.query_json = query_json
-        super().__init__(srecords, qrecords, seq_db=seq_db, span_origin=span_origin)
+        super().__init__(srecords, qrecords, seq_db=seq_db, span_origin=span_origin, config=config)
 
     @classmethod
     def use_test_data(cls):
