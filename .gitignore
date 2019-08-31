@@ -685,7 +685,7 @@ MigrationBackup/
 tests/.cache/
 *.nin
 *.nhr
-tests/data/blast_results/**/*
+tests/data/blast_results/
 tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
 tests/data/test_data/seqio_plasmids/concatenated/concat.json
 .cache/v/cache/lastfailed
