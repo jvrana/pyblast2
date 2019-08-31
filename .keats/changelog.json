@@ -1,4 +1,14 @@
 {
+  "0.2.16": {
+    "description": "api changes",
+    "date": "2019-08-20T14:00:31.145337",
+    "changes": [
+      "adding records to bioblastfactory returns (keys, records)",
+      "bioblastfactory now holds config, which is instantiated in the blast when new instance is created",
+      "blast.__init__ uses config as argument instead of **kwargs",
+      "BioBlastFactory.add_records returns (keys, records) instead of just records"
+    ]
+  },
   "0.2.15": {
     "description": "bug fixes",
     "date": "2019-08-19T11:49:45.194774",
