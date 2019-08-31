@@ -683,11 +683,13 @@ MigrationBackup/
 /blast_bin/ncbi-blast*
 *.tar.gz
 tests/.cache/
-#tests/data/blast_results/
+*.nhr
+*.nin
+*.nsq
+*.out
 tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
 tests/data/test_data/seqio_plasmids/concatenated/concat.json
 .cache/v/cache/lastfailed
 *.xml
-**/__pycache__
 *.pyc
 /pyblast/blast_bin/bin/
