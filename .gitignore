@@ -679,6 +679,8 @@ healthchecksdb
 MigrationBackup/
 
 
+*.xml
+*.pyc
 
 /blast_bin/ncbi-blast*
 *.tar.gz
@@ -687,9 +689,5 @@ tests/.cache/
 *.nin
 *.nsq
 *.out
-tests/data/test_data/seqio_plasmids/concatenated/concat.fasta
-tests/data/test_data/seqio_plasmids/concatenated/concat.json
 .cache/v/cache/lastfailed
-*.xml
-*.pyc
 /pyblast/blast_bin/bin/
