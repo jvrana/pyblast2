@@ -16,7 +16,7 @@ def pytest_namespace(here):
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def b(here):
     return BlastBase(
         "db",
@@ -33,12 +33,12 @@ def test_makedb(b):
 
 def test_blasn(b):
     b.makedb()
-    b.blastn()
+    b._run_blastn()
 
 
 def test_parse_results(b):
     b.makedb()
-    b.blastn()
+    b._run_blastn()
     b.parse_results()
 
     results = b.results

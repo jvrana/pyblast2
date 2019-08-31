@@ -1,5 +1,5 @@
 from pyblast import BioBlastFactory
-from pyblast.utils import load_genbank_glob, load_fasta_glob, make_circular, make_linear
+from pyblast.utils import load_genbank_glob, load_fasta_glob, make_linear
 from os.path import join
 
 

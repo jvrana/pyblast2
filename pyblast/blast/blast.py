@@ -8,6 +8,7 @@ BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
 import json
 import os
 import tempfile
+import shutil
 from uuid import uuid4
 from pyblast.utils import run_cmd
 from pyblast.exceptions import PyBlastException
@@ -86,13 +87,16 @@ class BlastBase(object):
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
 
+        # name of the database
+        self.db_name = None
+        self.db_output_directory = None
+        self.results_out_path = None
+        self.set_paths(db_name, db_output_directory, results_out_path)
+
         # add executable to the system path
         blast_wrapper = BlastWrapper()
         if not blast_wrapper.is_installed():
             blast_wrapper.ask_to_install()
-
-        # name of the database
-        self.name = db_name
 
         self.query_path = query_path
         self.subject_path = subject_path
@@ -104,12 +108,6 @@ class BlastBase(object):
         else:
             self.outfmt = output_formatter
 
-        # path to the directory holding the blast database
-        self.db_output_directory = os.path.abspath(db_output_directory)
-
-        # path to the blast database
-        self.db = os.path.join(db_output_directory, db_name)
-
         # list of expected fields in the result
         self.fields = ()
 
@@ -117,10 +115,22 @@ class BlastBase(object):
         self.raw_results = None
 
         # the parsed results as a dictionary
-        self.results = None  #
+        self.results = None
 
-        # the path to the saved results
-        self.results_out_path = os.path.abspath(results_out_path)
+    def set_paths(self, db_name, db_out_dir, results_out_path):
+        self.db_name = db_name
+        if db_out_dir:
+            self.db_output_directory = os.path.abspath(db_out_dir)
+        else:
+            self.db_output_directory = db_out_dir
+        if results_out_path:
+            self.results_out_path = os.path.abspath(results_out_path)
+        else:
+            self.results_out_path = results_out_path
+
+    @property
+    def db(self):
+        return os.path.join(self.db_output_directory, self.db_name)
 
     @property
     def config(self):
@@ -173,22 +183,32 @@ class BlastBase(object):
         config_dict.update(self.config)
         return config_dict
 
+    def blastn(self):
+        """Alias of 'quick_blastn'"""
+        self.quick_blastn()
+
     def quick_blastn(self):
         """Produce database, run blastn protocol, & parse results """
         self.makedb()
-        self.blastn()
+        self._run_blastn()
+        self.closedb()
         return self.parse_results()
+
+    def blastn_short(self):
+        """Alias of 'quick_blastn_short'"""
+        self.quick_blastn_short()
 
     def quick_blastn_short(self):
         """Produce database, run blastn short protocol, & parse results """
         self.makedb()
-        self.blastn_short()
+        self._run_blastn_short()
+        self.closedb()
         return self.parse_results()
 
-    def blastn(self):
+    def _run_blastn(self):
         return self._run("blastn")
 
-    def blastn_short(self):
+    def _run_blastn_short(self):
         return self._run("blastn", task="blastn-short")
 
     def _run(self, cmd, **config_opts):
@@ -227,11 +247,14 @@ class BlastBase(object):
         self.run_cmd(
             "makeblastdb",
             dbtype="nucl",
-            title=self.name,
+            title=self.db_name,
             out=self.db,
             **{"in": self.subject_path}
         )
         return self.db
+
+    def closedb(self):
+        pass
 
     def _filter_unique_results(self, results):
         return list(
@@ -291,19 +314,14 @@ class TmpBlast(BlastBase):
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
-
-        db_output_directory = tempfile.mkdtemp()
-        fv, out = tempfile.mkstemp(dir=db_output_directory)
-
-        if os.path.isdir(subject_path):
-            subject_path = glob_fasta_to_tmpfile(subject_path)
+        self.subject_records_path = subject_path
 
         super(TmpBlast, self).__init__(
             db_name=db_name,
-            subject_path=subject_path,
+            subject_path=None,
             query_path=query_path,
-            db_output_directory=db_output_directory,
-            results_out_path=out,
+            db_output_directory=None,
+            results_out_path=None,
             **config
         )
 
@@ -316,6 +334,21 @@ class TmpBlast(BlastBase):
             "query_circular",
         )
 
+    def makedb(self, **kwargs):
+        db_output_directory = tempfile.mkdtemp()
+        _, out = tempfile.mkstemp(dir=db_output_directory)
+
+        if os.path.isdir(self.subject_records_path):
+            self.subject_path = glob_fasta_to_tmpfile(self.subject_records_path)
+        else:
+            self.subject_path = self.subject_records_path
+        self.set_paths(self.db_name, db_output_directory, out)
+        super(TmpBlast, self).makedb(**kwargs)
+
+    def closedb(self):
+        os.remove(self.results_out_path)
+        shutil.rmtree(self.db_output_directory)
+
     @classmethod
     def use_test_data(cls):
         """Create a Blast instance using predefined data located in tests"""
@@ -326,9 +359,6 @@ class TmpBlast(BlastBase):
             os.path.join(dir_path, "..", "..", "tests/data/test_data/db.fsa"),
             os.path.join(dir_path, "..", "..", "tests/data/test_data/query.fsa"),
         )
-
-    def makedb(self):
-        super(TmpBlast, self).makedb()
 
 
 class BioBlast(TmpBlast):
@@ -487,34 +517,6 @@ class BioBlast(TmpBlast):
         keys += seq_db.add_many_with_transformations(linear, copy_record, C.COPY_RECORD)
         transformed_records = seq_db.get_many(keys)
         return keys, transformed_records
-
-    # def _merge_results(self, results):
-    #
-    #     def mergable(d1, d2):
-    #         if d1['end'] == d1['length']:
-    #             if d1['circular']:
-    #                 return True
-    #             else:
-    #                 return False
-    #         elif d1['end'] + 1 == d2['start']:
-    #             return True
-    #         return False
-    #
-    #     def alignment_mergable(v1, v2):
-    #         return all([mergable(v1[x], v2[x]) for x in ['query', 'subject']])
-
-    # sorted_by_query_ends = sorted(results, key=lambda x: x['query']['end'])
-    # grouped_by_qs = groupby_transform(results,
-    #                                   keyfunc=lambda x: x['query']['sequence_id'] + "__" + x['subject']['sequence_id'])
-    # for _, group in grouped_by_qs:
-    #     grouped_by_query_starts = dict(groupby_transform(group, keyfunc=lambda x: x['query']['start']))
-    #     for v1 in group:
-    #         e = v1['query']['end']
-    #         if e == v1['query']['length']:
-    #             qs = grouped_by_query_starts.get(0, list())
-    #             for v2 in grouped_by_query_starts.get(0, list()):
-    #                 if alignment_mergable(v1, v2):
-    #
 
     def parse_results(self, delim=","):
         """
