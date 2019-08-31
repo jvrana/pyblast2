@@ -326,7 +326,7 @@ class TmpBlast(BlastBase):
             query_path=query_path,
             db_output_directory=None,
             results_out_path=None,
-            **config
+            config=config,
         )
 
         self.fields = self.fields + (
