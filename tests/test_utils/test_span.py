@@ -574,3 +574,12 @@ class TestSub(object):
         end = s.b - delta[1]
         with pytest.raises(IndexError):
             s.sub(start, end)
+
+    def test_span_over_region_twice(self):
+
+        s1 = Span(2000, 3000, 3000, cyclic=True, allow_wrap=True)
+        s2 = Span(5000, 6000, 3000, cyclic=True, allow_wrap=True)
+        assert s1.a == 2000
+        assert s1.b == 3000
+        assert s2.a == 2000
+        assert s2.b == 3000

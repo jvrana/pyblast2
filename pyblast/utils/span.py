@@ -28,12 +28,14 @@ class Span(Container, Iterable, Sized):
                 raise IndexError(
                     "End {} must be in [{}, {}]".format(b, index, index + l)
                 )
-        if a - index >= l or a - index < 0:
-            self.a = self.t(a - index)
+        _a = a - index
+        _b = b - index
+        if _a >= l or _a < 0:
+            self.a = self.t(_a)
         else:
             self.a = a
-        if b - index > l or b - index < 0:
-            self.b = self.t(b - index)
+        if _b > l or _b < 0:
+            self.b = self.t(_b - 1) + 1
         else:
             self.b = b
 
