@@ -1,7 +1,14 @@
 {
+  "0.3.2": {
+    "description": "bug fixes",
+    "date": "2019-09-01T19:42:57.784247",
+    "changes": [
+      "fixes initializion bug that would improperly set Span.b if b wrapped around origin"
+    ]
+  },
   "0.3.1": {
-    "description": "",
-    "date": "2019-08-31T07:54:24.138286",
+    "description": "poetry bump",
+    "date": "2019-09-01T19:42:09.566888",
     "changes": []
   },
   "0.2.17": {
