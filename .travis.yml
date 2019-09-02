@@ -4,7 +4,7 @@ python:
 install:
 - pip install poetry
 - poetry install
-- poetry run pyblast install $MY_EMAIL 'linux(X64 chip)'
+- poetry run pyblast install $EMAIL 'linux(X64 chip)'
 before_install:
 -
 after_install:

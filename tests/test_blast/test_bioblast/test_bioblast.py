@@ -6,13 +6,7 @@ from Bio.SeqRecord import SeqRecord
 
 from pyblast import BioBlast
 from pyblast.exceptions import PyBlastException
-from pyblast.utils import (
-    make_linear,
-    load_genbank_glob,
-    force_unique_record_ids,
-    make_circular,
-)
-import json
+from pyblast.utils import make_linear, load_genbank_glob, force_unique_record_ids
 
 
 def test_basic_run():
@@ -26,6 +20,21 @@ def test_basic_run():
     # print(type(query))
     # print(type(subject))
     blaster = BioBlast([subject], [query])
+    blaster.quick_blastn()
+    alignments = blaster.results
+    print(alignments)
+
+
+def test_run_bioblast_twice():
+    junk1 = "atgctatgctgatgctgctgtgctgatgctgatgtgtattgctgtatcgcgcgagttagc"
+    junk2 = "g" * 30
+    frag = "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta"
+
+    query = SeqRecord(seq=Seq(frag), annotations={"circular": False})
+    subject = SeqRecord(seq=Seq(junk1 + frag + junk2), annotations={"circular": False})
+
+    blaster = BioBlast([subject], [query])
+    blaster.quick_blastn()
     blaster.quick_blastn()
     alignments = blaster.results
     print(alignments)
