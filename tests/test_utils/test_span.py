@@ -57,6 +57,19 @@ class TestInit:
         print(Span(0, 10, 9, True, allow_wrap=True))
 
 
+@pytest.mark.parametrize(
+    ('a', 'b', 'does_span'), [
+        (100, 800, False),
+        (0, 100, False),
+        (500, 1000, False),
+        (800, 100, True),
+    ]
+)
+def test_spans_origin(a, b, does_span):
+    s = Span(a, b, 1000, True)
+    assert s.spans_origin() == does_span
+
+
 def test_len_linear():
     s = Span(5, 20, 100, False)
     assert len(s) == 15
