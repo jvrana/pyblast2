@@ -1,4 +1,11 @@
 {
+  "0.3.3": {
+    "description": "bug fix",
+    "date": "2019-09-03T08:27:06.737215",
+    "changes": [
+      "fixes Span.spans_origin bug"
+    ]
+  },
   "0.3.2": {
     "description": "bug fixes",
     "date": "2019-09-01T19:42:57.784247",
