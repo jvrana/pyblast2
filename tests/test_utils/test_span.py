@@ -476,6 +476,40 @@ def test_connecting_span_linear_no_span():
     assert s3 is None
 
 
+class TestEmptySpan:
+    @pytest.mark.parametrize("cyclic", [True, False])
+    @pytest.mark.parametrize("index", [0, 1])
+    @pytest.mark.parametrize("x", [2000, 2999])
+    def test_empty_span(self, cyclic, index, x):
+        s = Span(x, x, 3000, cyclic=cyclic, index=0)
+        assert len(s) == 0
+        assert s.a == x
+        assert s.b == x
+
+    @pytest.mark.parametrize("cyclic", [True, False])
+    @pytest.mark.parametrize("index", [0, 1])
+    @pytest.mark.parametrize("x", [2000, 2999])
+    def test_empty_span_new(self, cyclic, index, x):
+        s = Span(1, 2, 3000, cyclic=cyclic, index=0)
+        s = s.new(x, x)
+        assert len(s) == 0
+        assert s.a == x
+        assert s.b == x
+
+    @pytest.mark.parametrize("x", [2000, 2999, 3000, 3001, 0, 1])
+    @pytest.mark.parametrize("index", [0, 1])
+    def test_empty_span_new_cyclic(self, index, x):
+        s = Span(1, 10, 3000, cyclic=True)
+        s2 = s.new(x, x, allow_wrap=True)
+        if x >= 3000:
+            r = x - 3000
+        else:
+            r = x
+        assert len(s2) == 0
+        assert s2.a == r
+        assert s2.b == r
+
+
 class TestAllowWrap:
     @pytest.mark.parametrize("delta", range(20))
     @pytest.mark.parametrize("index", [0, 1, 2])

@@ -18,6 +18,8 @@ class Span(Container, Iterable, Sized):
         self.index = index
         self.context_length = l
         self.cyclic = cyclic
+
+        # check bounds
         if not cyclic or not allow_wrap:
             bounds = self.bounds()
             if not bounds[0] <= a < bounds[1]:
@@ -28,6 +30,13 @@ class Span(Container, Iterable, Sized):
                 raise IndexError(
                     "End {} must be in [{}, {}]".format(b, index, index + l)
                 )
+
+        # empty edge case
+        if a == b and a == l + index:
+            self.a = self.b = index
+            return
+
+        # set indices
         _a = a - index
         _b = b - index
         if _a >= l or _a < 0:
