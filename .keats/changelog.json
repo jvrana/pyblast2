@@ -1,4 +1,11 @@
 {
+  "0.3.4": {
+    "description": "bug fixes",
+    "date": "2019-09-03T20:54:34.990067",
+    "changes": [
+      "correct edge case bug in Sspan.new(L, L) when span length is L and span is cyclic (previously would return the entire span, now return span(0, 0, L))"
+    ]
+  },
   "0.3.3": {
     "description": "bug fix",
     "date": "2019-09-03T08:27:06.737215",
