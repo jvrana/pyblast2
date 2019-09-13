@@ -1,15 +1,24 @@
 from pyblast.blast import BlastBase
 import pytest
 import os
+import time
 
-from multiprocessing import Process
+from multiprocessing import Pool
 
 
-def test_threading(new_blast):
-    def run_blast():
-        b = new_blast()
-        b.quick_blastn()
-        return b
+def run(params):
+    blast = params
+    blast.makedb()
+    blast.quick_blastn()
 
-    p = Process(target=run_blast)
-    p.start()
+
+def test_threading(new_circular_bio_blast, new_primer_blast):
+
+    blasts = [new_circular_bio_blast() for _ in range(10)]
+    for b in blasts:
+        b.makedb()
+    # for b in blasts:
+    #     b.quick_blastn()
+
+    with Pool(processes=10) as pool:
+        pool.map(run, blasts)
