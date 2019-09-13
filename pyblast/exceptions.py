@@ -1,5 +1,8 @@
+class PyBlastWarning(Warning):
+    """A generic warning for pyblastbio"""
+
 class PyBlastException(Exception):
-    """A generic exception for pyBlast"""
+    """A generic exception for pyblastbio"""
 
 
 class SeqRecordValidationError(Exception):
