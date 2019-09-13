@@ -69,7 +69,8 @@ class BioBlastFactory(object):
             records, self.db, span_origin=self.span_origin
         )
         if record_group_name:
-            self.record_groups[record_group_name] = records
+            self.record_groups.setdefault(record_group_name, list())
+            self.record_groups[record_group_name] += records
         return keys, records
 
     def __call__(self, subject_key, query_key, config=None):
@@ -91,13 +92,19 @@ class BioBlastFactory(object):
         else:
             subjects = []
             for key in subject_key:
-                subjects += self.record_groups[key]
+                if issubclass(type(key), SeqRecord):
+                    subjects += key
+                else:
+                    subjects += self.record_groups[key]
         if isinstance(query_key, str):
             queries = self.record_groups[query_key]
         else:
             queries = []
             for key in query_key:
-                queries += self.record_groups[key]
+                if issubclass(type(key), SeqRecord):
+                    queries += key
+                else:
+                    queries += self.record_groups[key]
         if config is None:
             config = {}
         if self.config:
