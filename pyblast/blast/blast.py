@@ -611,6 +611,7 @@ class BioBlast(TmpBlast):
                         else:
                             v[x]["start"] = 0
                             v[x]["end"] = 1
+                        # TODO: why is this even a warning?
                         warn(PyBlastWarning(
                             "A circular {} {} overlapped the origins".format(
                                 x, origin_key
