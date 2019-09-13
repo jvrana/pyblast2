@@ -67,14 +67,14 @@ class BlastBase(object):
     blast_config = {"outfmt": '"{0}"'.format(" ".join(outfmt))}
 
     def __init__(
-            self,
-            db_name,
-            subject_path,
-            query_path,
-            db_output_directory,
-            results_out_path,
-            output_formatter=None,
-            config=None,
+        self,
+        db_name,
+        subject_path,
+        query_path,
+        db_output_directory,
+        results_out_path,
+        output_formatter=None,
+        config=None,
     ):
         """
         A Blast initializer for running blast searches.
@@ -369,13 +369,13 @@ class TmpBlast(BlastBase):
 
 class BioBlast(TmpBlast):
     def __init__(
-            self,
-            subjects: typing.Sequence[SeqRecord],
-            queries: typing.Sequence[SeqRecord],
-            seq_db=None,
-            span_origin=True,
-            force_unique_ids=False,
-            config=None,
+        self,
+        subjects: typing.Sequence[SeqRecord],
+        queries: typing.Sequence[SeqRecord],
+        seq_db=None,
+        span_origin=True,
+        force_unique_ids=False,
+        config=None,
     ):
         """
         Initialize a new BioBlast.
@@ -487,7 +487,7 @@ class BioBlast(TmpBlast):
 
     @classmethod
     def add_records(
-            cls, records: typing.Sequence[SeqRecord], seq_db: SeqRecordDB, span_origin=True
+        cls, records: typing.Sequence[SeqRecord], seq_db: SeqRecordDB, span_origin=True
     ) -> typing.List[str]:
         """
         Adds records to the local sequence database (SeqRecordDb). If `self.span_origin=True`,
@@ -612,10 +612,12 @@ class BioBlast(TmpBlast):
                             v[x]["start"] = 0
                             v[x]["end"] = 1
                         # TODO: why is this even a warning?
-                        warn(PyBlastWarning(
-                            "A circular {} {} overlapped the origins".format(
-                                x, origin_key
-                            ))
+                        warn(
+                            PyBlastWarning(
+                                "A circular {} {} overlapped the origins".format(
+                                    x, origin_key
+                                )
+                            )
                         )
                     elif is_circular:
                         span = Span(
@@ -642,7 +644,7 @@ class JSONBlast(BioBlast):
     """Object that runs blast starting from JSON inputs and outputs"""
 
     def __init__(
-            self, subject_json, query_json, span_origin=True, seq_db=None, config=None
+        self, subject_json, query_json, span_origin=True, seq_db=None, config=None
     ):
         """
         Initialize JSONBlast
@@ -671,12 +673,12 @@ class JSONBlast(BioBlast):
         """Create a Blast instance using predefined data located in tests"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
         with open(
-                os.path.join(dir_path, "..", "..", "tests/data/test_data/templates.json"),
-                "r",
+            os.path.join(dir_path, "..", "..", "tests/data/test_data/templates.json"),
+            "r",
         ) as f:
             subject = json.load(f)
         with open(
-                os.path.join(dir_path, "..", "..", "tests/data/test_data/query.json"), "r"
+            os.path.join(dir_path, "..", "..", "tests/data/test_data/query.json"), "r"
         ) as f:
             query = json.load(f)
         return cls(subject_json=subject, query_json=query)

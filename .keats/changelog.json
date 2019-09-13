@@ -1,4 +1,11 @@
 {
+  "0.3.6": {
+    "description": "update deps",
+    "date": "2019-09-13T07:55:06.099602",
+    "changes": [
+      "loggable-jdv updated to ^0.1.4 which fixes bug with raising exceptions"
+    ]
+  },
   "0.3.5": {
     "description": "update deps",
     "date": "2019-09-12T11:14:01.715031",

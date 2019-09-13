@@ -1,6 +1,7 @@
 class PyBlastWarning(Warning):
     """A generic warning for pyblastbio"""
 
+
 class PyBlastException(Exception):
     """A generic exception for pyblastbio"""
 
