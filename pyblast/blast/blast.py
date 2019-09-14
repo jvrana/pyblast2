@@ -227,11 +227,13 @@ class BlastBase(object):
         return self.raw_results
 
     # Wrapper for the util.run_cmd
-    def run_cmd(self, cmd, **kwargs):
+    @staticmethod
+    def run_cmd(cmd, **kwargs):
         """Wrapper for utils.run_cmd"""
         run_cmd(cmd, **kwargs)
 
-    def _fasta_details(self, path):
+    @staticmethod
+    def _fasta_details(path):
         seqs = list(SeqIO.parse(path, format="fasta"))
         tot_bps = sum([len(s) for s in seqs])
         return {"num_sequence": len(seqs), "total_bps": tot_bps}
@@ -262,7 +264,8 @@ class BlastBase(object):
     def closedb(self):
         pass
 
-    def _filter_unique_results(self, results):
+    @staticmethod
+    def _filter_unique_results(results):
         return list(
             unique_everseen(
                 results,
@@ -285,9 +288,6 @@ class BlastBase(object):
         """
         Parses the raw blast result to a JSON
 
-        :param save_as_json: whether to save the JSON. Results will be saved in same directory and name as
-        results_out_path but with a .json extension.
-        :type save_as_json: bool
         :param delim: delimiter to parse
         :type delim: str
         :return:
@@ -370,8 +370,8 @@ class TmpBlast(BlastBase):
 class BioBlast(TmpBlast):
     def __init__(
         self,
-        subjects: typing.Sequence[SeqRecord],
-        queries: typing.Sequence[SeqRecord],
+        subjects: typing.List[SeqRecord],
+        queries: typing.List[SeqRecord],
         seq_db=None,
         span_origin=True,
         force_unique_ids=False,
@@ -422,7 +422,8 @@ class BioBlast(TmpBlast):
         self._check_empty_records(queries, subjects)
         self._check_duplicate_records(queries, subjects)
 
-    def _check_duplicate_records(self, queries, subjects):
+    @staticmethod
+    def _check_duplicate_records(queries, subjects):
         # Check SeqRecords have unique record_ids
         subject_rec_ids = {}
         for s in subjects:
@@ -450,14 +451,16 @@ class BioBlast(TmpBlast):
                 )
             )
 
-    def _check_empty_records(self, queries, subjects):
+    @staticmethod
+    def _check_empty_records(queries, subjects):
         # Check SeqRecords exist
         if not subjects:
             raise ValueError("Subjects is empty.")
         if not queries:
             raise ValueError("Queries is empty.")
 
-    def _filter_remove_same_results(self, results):
+    @staticmethod
+    def _filter_remove_same_results(results):
         """
         Removes alignments that aligned to themselves.
 
@@ -487,8 +490,8 @@ class BioBlast(TmpBlast):
 
     @classmethod
     def add_records(
-        cls, records: typing.Sequence[SeqRecord], seq_db: SeqRecordDB, span_origin=True
-    ) -> typing.List[str]:
+        cls, records: typing.List[SeqRecord], seq_db: SeqRecordDB, span_origin=True
+    ) -> typing.Tuple[typing.List[str], typing.List[SeqRecord]]:
         """
         Adds records to the local sequence database (SeqRecordDb). If `self.span_origin=True`,
         then in addition to adding the original SequenceRecord to the database, sequences will
@@ -499,6 +502,10 @@ class BioBlast(TmpBlast):
 
         :param records: list of SeqRecords annotated with 'topology' being 'linear' or 'circular'
         :type records: list
+        :param seq_db: optional SeqRecordDB to use
+        :type seq_db: SeqRecordDB
+        :param span_origin: whether to search the sequence as a circular plasmid
+        :type span_origin: bool
         :return: list of keys to use in the alignment procedure
         :rtype: list
         """
@@ -628,7 +635,6 @@ class BioBlast(TmpBlast):
                             index=1,
                             allow_wrap=True,
                         )
-                        l = len(span)
                         v[x]["start"] = span.a
                         v[x]["end"] = span.b
                         if reverse:
@@ -653,10 +659,10 @@ class JSONBlast(BioBlast):
         :type subject_json: list of dict, mapping, or Object
         :param query_json: query sequence as serialized json
         :type query_json: dict, mapping, or Object
-        :param preloaded: whether the data is preloaded into the SequenceSchema or not. Practially, this means the "bases"
-        for the sequence if refered to as "sequence" in serialized data and as "bases" after data is loaded (preloaded=True)
         :param span_origin: default False. If True, circular sequences will be pseudocircularized for alignment over the origin
         :type span_origin: boolean
+        :param seq_db: optional SeqRecordDB to use
+        :type seq_db: SeqRecordDB
         :param config: optional arguments
         :type config: dict
         """

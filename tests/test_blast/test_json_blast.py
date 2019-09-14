@@ -6,6 +6,7 @@ import pytest
 import os
 from pyblast.blast import JSONBlast
 from pyblast.utils import reverse_complement
+from pyblast.exceptions import PyBlastException
 import json
 
 
@@ -263,8 +264,8 @@ class TestJSONBlast:
 
         subject = copy(query)
 
-        with pytest.raises(Exception):
-            j = JSONBlast([subject], query, preloaded=False)
+        with pytest.raises(PyBlastException):
+            j = JSONBlast([subject], [query])
             j.quick_blastn()
             assert len(j.results) == 1
 

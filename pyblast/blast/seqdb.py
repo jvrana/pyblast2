@@ -11,13 +11,14 @@ class GraphDB(Sized):
         self.graph = nx.DiGraph()
         self.mapping = {}
 
-    def new_key(self):
+    @staticmethod
+    def new_key():
         """Generate a new unique key"""
         return str(uuid4())
 
-    def key(self, object):
+    def key(self, obj):
         """Model id to key. To ensure uniqueness of the models being added."""
-        k = self.mapping.get(id(object), None)
+        k = self.mapping.get(id(obj), None)
         return k
 
     def get_many(self, keys, default=C.NULL):
@@ -35,14 +36,14 @@ class GraphDB(Sized):
             return self.graph.node[key]["object"]
         return self.graph.node[key]["object"]
 
-    def add(self, object):
+    def add(self, obj):
         """Add an object"""
-        if self.key(object):
-            return self.key(object)
+        if self.key(obj):
+            return self.key(obj)
         else:
             key = self.new_key()
-            self.graph.add_node(key, object=object)
-            self.mapping[id(object)] = key
+            self.graph.add_node(key, object=obj)
+            self.mapping[id(obj)] = key
             return key
 
     def add_many(self, objects):

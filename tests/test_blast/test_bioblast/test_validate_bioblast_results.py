@@ -17,8 +17,8 @@ def random_sequence(length):
     return seq
 
 
-def ns(len):
-    return SeqRecord(Seq("N" * len))
+def ns(nbases):
+    return SeqRecord(Seq("N" * nbases))
 
 
 def to_record(seq, linear=True):
@@ -30,8 +30,8 @@ def to_record(seq, linear=True):
     return record
 
 
-def rand_record(len, linear=True):
-    return to_record(random_sequence(len), linear=linear)
+def rand_record(nbases, linear=True):
+    return to_record(random_sequence(nbases), linear=linear)
 
 
 def compare_result(result, qs, qe, ss, se):
@@ -85,9 +85,9 @@ def test_simple_alignment():
 
 def test_align_Ns():
     record = rand_record(1000)
-    ns = SeqRecord(Seq("N" * 500))
+    nseq = SeqRecord(Seq("N" * 500))
     queries = [record[:]]
-    subjects = [ns + record + ns]
+    subjects = [nseq + record + nseq]
 
     queries = make_linear(queries)
     subjects = make_linear(subjects)
@@ -154,7 +154,7 @@ def test_reverse_alignment_simple():
     assert results[0]["subject"]["end"] == 1
 
 
-def test_reverse_alignment_simple():
+def test_reverse_alignment_simple2():
     record = rand_record(1000)
     query = record
     subject = record[10:-10].reverse_complement()
@@ -186,8 +186,6 @@ class TestCircular:
         queries = [record]
         subjects = [record[-100:] + record[:100]]
 
-        l = len(subjects[0])
-
         queries = make_circular(queries)
         subjects = make_linear(subjects)
 
@@ -213,8 +211,6 @@ class TestCircular:
         subjects = [record[-100:] + record[:100]]
         subjects[0] = subjects[0].reverse_complement()
 
-        l = len(subjects[0])
-
         queries = make_circular(queries)
         subjects = make_linear(subjects)
 
@@ -239,19 +235,11 @@ class TestCircular:
         queries = [record]
         subjects = [record[200:300] + ns(500) + record[100:200]]
 
-        l = len(subjects[0])
-
         queries = make_linear(queries)
         subjects = make_circular(subjects)
 
         bioblast = BioBlast(subjects, queries)
         results = bioblast.quick_blastn()
-
-        result = results[0]
-
-        # result_seq = str((record[result['query']['start']-1:] + record[:result['query']['end']]).seq)
-        # expected_seq = str(subjects[0].seq)
-        # assert result_seq == expected_seq
 
         compare_result(results[0], 101, 300, 601, 100)
 

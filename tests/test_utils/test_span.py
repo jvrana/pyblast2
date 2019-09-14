@@ -183,18 +183,20 @@ class TestContains:
             assert s1 not in s2
 
         def test_contains_example(self):
-            r1 = Span(5947, 4219, 9408, True)
+            assert Span(5947, 4219, 9408, True)
             with pytest.raises(IndexError):
-                r2 = Span(9408, 4219, 9408, True)
+                Span(9408, 4219, 9408, True)
 
         def test_contains_example2(self):
-            r1 = Span(59, 42, 94, True)
+            assert Span(59, 42, 94, True)
             with pytest.raises(IndexError):
-                r2 = Span(94, 42, 94, True)
+                Span(94, 42, 94, True)
 
 
 class TestIntersection:
-    def x(self, a1, b1, a2, b2):
+
+    @staticmethod
+    def x(a1, b1, a2, b2):
         s1 = Span(a1, b1, 100, True)
         s2 = Span(a2, b2, 100, True)
         return s1, s2
@@ -576,7 +578,7 @@ class TestSub(object):
     def test_invalid_sub_same_indices(self, x, cyclic):
         s = Span(1432, 4779, 4799, cyclic=cyclic)
         with pytest.raises(IndexError):
-            s2 = s.sub(x, x)
+            s.sub(x, x)
 
     @pytest.mark.parametrize("x", [(99, 1000), (100, 1001), (99, 1001)])
     def test_invalid_ranges(self, x):

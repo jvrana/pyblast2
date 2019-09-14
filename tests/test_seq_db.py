@@ -95,9 +95,6 @@ def test_add_same_transformation():
     keys = db.add_many_with_transformations(
         records, pseudocircularize, C.PSEUDOCIRCULAR
     )
-    keys = db.add_many_with_transformations(
-        records, pseudocircularize, C.PSEUDOCIRCULAR
-    )
     assert len(set(keys)) == 1
     assert len(db) == 2
 
@@ -111,10 +108,10 @@ def test_add_multiple_transformations():
     from pyblast.constants import Constants as C
 
     def pseudocircularize(r):
-        r2 = r + r
-        r2.name = C.PSEUDOCIRCULAR + "__" + r.name
-        r2.id = str(uuid4())
-        return r2
+        pseudor = r + r
+        pseudor.name = C.PSEUDOCIRCULAR + "__" + r.name
+        pseudor.id = str(uuid4())
+        return pseudor
 
     record = SeqRecord(
         Seq("ACGTTCGTGATTGTGCTGTGTGTATGGTATGATTATAGTGATGTAGTGATGATGTAGTAGTATA")

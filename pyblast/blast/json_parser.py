@@ -3,6 +3,7 @@ from Bio.SeqRecord import SeqRecord
 from uuid import uuid4
 from Bio.Seq import Seq
 from pyblast.utils import new_feature_location
+from pyblast.exceptions import PyBlastException
 
 
 class JSONParser(object):
@@ -12,6 +13,7 @@ class JSONParser(object):
 
     @classmethod
     def JSON_to_SeqFeature(cls, data, length=None):
+        """Convert JSON to a Bio.SeqFeature object"""
         start = data["start"]
         end = data["end"]
         strand = data["strand"]
@@ -23,6 +25,8 @@ class JSONParser(object):
 
     @classmethod
     def __JSON_to_SeqRecord(cls, data):
+        if not issubclass(type(data), dict) and not issubclass(type(data), list):
+            raise PyBlastException("Data must be a json object but found a '{}'".format(type(data)))
         data = cls.clean_data(data)
         return SeqRecord(
             seq=Seq(data["bases"]),
@@ -38,6 +42,7 @@ class JSONParser(object):
 
     @classmethod
     def JSON_to_SeqRecords(cls, datalist):
+        """Convert JSON to SeqRecords"""
         records = []
         if isinstance(datalist, list):
             for data in datalist:

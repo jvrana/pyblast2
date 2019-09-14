@@ -1,8 +1,4 @@
-from Bio.SeqRecord import SeqRecord
-from Bio.SeqFeature import SeqFeature, FeatureLocation
-from uuid import uuid4
 import re
-from pyblast.utils import new_feature_location
 
 
 class BlastResultParser(object):

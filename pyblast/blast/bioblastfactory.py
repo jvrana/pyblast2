@@ -1,7 +1,7 @@
 from pyblast.blast import BioBlast
 from pyblast.blast.seqdb import SeqRecordDB
 from pyblast.utils import clean_records
-from typing import List
+from typing import List, Tuple
 from Bio.SeqRecord import SeqRecord
 from pyblast.log import logger
 
@@ -39,7 +39,7 @@ class BioBlastFactory(object):
         self.logger = logger(self)
         self.config = config
 
-    def __setitem__(self, record_group_name: str, records: List[SeqRecordDB]):
+    def __setitem__(self, record_group_name: str, records: List[SeqRecord]):
         """
         See add_records.
         """
@@ -49,8 +49,8 @@ class BioBlastFactory(object):
         return self.record_groups[record_group_name]
 
     def add_records(
-        self, records: List[SeqRecordDB], record_group_name: str
-    ) -> List[SeqRecord]:
+        self, records: List[SeqRecord], record_group_name: str
+    ) -> Tuple[List[str], List[SeqRecord]]:
         """
         Add records to the SeqRecordDB by keyword.
 

@@ -64,13 +64,13 @@ def test_short_blastn(new_primer_blast):
     blast = new_primer_blast()
     blast.quick_blastn()
 
-    blast.results
+    assert blast.results
 
 
 def test_blast_with_circular(new_circular_bio_blast):
     blast = new_circular_bio_blast()
     blast.quick_blastn()
-    results = blast.results
+    assert blast.results
 
 
 def test_raises_pyblast_when_not_unique(here):

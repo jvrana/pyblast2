@@ -10,7 +10,7 @@ from Bio.SeqRecord import SeqRecord
 import tempfile
 from Bio.SeqFeature import FeatureLocation, CompoundLocation
 from pyblast.constants import Constants as C
-from typing import List, Sequence
+from typing import List
 from uuid import uuid4
 from .span import Span, SpanError
 
@@ -57,7 +57,7 @@ def new_feature_location(start: int, end: int, length: int, strand: int):
     return location
 
 
-def records_to_tmpfile(records: Sequence[SeqRecord]) -> str:
+def records_to_tmpfile(records: List[SeqRecord]) -> str:
     """
     Write SeqRecords to a temporary file.
 
@@ -71,17 +71,17 @@ def records_to_tmpfile(records: Sequence[SeqRecord]) -> str:
     return tmp_path_handle
 
 
-def glob_fasta_to_tmpfile(dir: str) -> str:
+def glob_fasta_to_tmpfile(dirpath: str) -> str:
     """
     Concatenate all fasta files into a temporary fasta file.
 
-    :param dir: directory containing fasta files
-    :type dir: str
+    :param dirpath: directory containing fasta files
+    :type dirpath: str
     :return: the temporary filename
     :rtype: str
     """
-    fasta_files = glob(join(dir, "*.fsa"))
-    fasta_files += glob(join(dir, "*.fasta"))
+    fasta_files = glob(join(dirpath, "*.fsa"))
+    fasta_files += glob(join(dirpath, "*.fasta"))
     records = []
     for fsa in fasta_files:
         records += list(SeqIO.parse(fsa, "fasta"))
@@ -125,15 +125,15 @@ def force_unique_record_ids(records, use_uuid=False):
 
 
 def load_glob(
-    path: str, format: str, recursive=False, force_unique_ids=False
+    path: str, format_str: str, recursive=False, force_unique_ids=False
 ) -> List[SeqRecord]:
     """
     Load SeqRecords from a glob-like path.
 
     :param path: glob-like filepath
     :type path: str
-    :param format: Fileformat. e.g. 'genbank', 'fasta'
-    :type format: basestring
+    :param format_str: Fileformat. e.g. 'genbank', 'fasta'
+    :type format_str: basestring
     :param recursive: whether to search recusively in the glob path.
     :type recursive: bool
     :param force_unique_ids: If True, force records to have unique ids
@@ -144,7 +144,7 @@ def load_glob(
     records = []
     filenames = glob(path, recursive=recursive)
     for f in filenames:
-        new_records = list(SeqIO.parse(f, format=format))
+        new_records = list(SeqIO.parse(f, format=format_str))
         for rec in new_records:
             rec.from_file = f
             records.append(rec)
@@ -196,7 +196,7 @@ def load_genbank_glob(path, recursive=False, force_unique_ids=False):
     return records
 
 
-def clean_records(records: Sequence[SeqRecord]) -> None:
+def clean_records(records: List[SeqRecord]) -> None:
     """
     Remove features for records that have no location.
     """
@@ -222,7 +222,7 @@ def is_circular(record: SeqRecord) -> bool:
     )
 
 
-def make_linear(records: Sequence[SeqRecord]) -> Sequence[SeqRecord]:
+def make_linear(records: List[SeqRecord]) -> List[SeqRecord]:
     """
     Annotates the SeqRecords as linear by adding the 'topology' annotation and
     setting it to 'linear'
@@ -242,7 +242,7 @@ def make_linear(records: Sequence[SeqRecord]) -> Sequence[SeqRecord]:
     return records
 
 
-def make_circular(records: Sequence[SeqRecord]) -> Sequence[SeqRecord]:
+def make_circular(records: List[SeqRecord]) -> List[SeqRecord]:
     """
     Annotates the SeqRecords as linear by adding the 'topology' annotation and
     setting it to 'linear'

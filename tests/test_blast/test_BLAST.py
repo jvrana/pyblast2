@@ -72,7 +72,7 @@ def test_parse_results(b):
 
 def test_quick_blastn(b):
     b.quick_blastn()
-    results = b.raw_results
+    assert b.raw_results
 
 
 class TestAligner:
@@ -87,7 +87,7 @@ class TestAligner:
         return a
 
     def test_query(self, aligner):
-        results = aligner.results
+        assert aligner.results
 
     def test_subject(self, aligner):
         results = aligner.results

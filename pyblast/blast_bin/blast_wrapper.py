@@ -44,7 +44,8 @@ class BlastWrapper(object):
         real_path = os.path.abspath(path)
         os.environ["PATH"] += ":" + real_path
 
-    def is_installed(self):
+    @staticmethod
+    def is_installed():
         return shutil.which("makeblastdb")
 
     def install(self, email, platform):
@@ -58,10 +59,10 @@ class BlastWrapper(object):
         :return: None
         :rtype: None
         """
-        dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-        path = self.install_blast_using_ftp(email, platform, dir)
+        dirpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin")
+        if not os.path.isdir(dirpath):
+            os.makedirs(dirpath)
+        path = self.install_blast_using_ftp(email, platform, dirpath)
         self.path = os.path.join(path, "bin")
 
     @staticmethod
@@ -103,14 +104,14 @@ class BlastWrapper(object):
         cls,
         email,
         platform,
-        dir,
+        dirpath,
         user="anonymous",
         domain="ftp.ncbi.nlm.nih.gov",
         cwd="blast/executables/blast+/LATEST",
     ):
         # print config
-        if not os.path.isdir(os.path.abspath(dir)):
-            raise NotADirectoryError('Directory "{}" is not a directory'.format(dir))
+        if not os.path.isdir(os.path.abspath(dirpath)):
+            raise NotADirectoryError('Directory "{}" is not a directory'.format(dirpath))
 
         fmt = cls._get_format(platform)
         print("ftp config:")
@@ -120,7 +121,7 @@ class BlastWrapper(object):
                 "email": email,
                 "platform": platform,
                 "fileformat": fmt,
-                "dir": dir,
+                "dir": dirpath,
                 "user": user,
                 "domain": domain,
                 "cwd": cwd,
@@ -151,7 +152,7 @@ class BlastWrapper(object):
                 "Unable to find blast binary. Data retrieved:\n{}".format(data)
             )
 
-        input_file = os.path.join(dir, filename)
+        input_file = os.path.join(dirpath, filename)
 
         # download tarball
         if not os.path.isfile(input_file):
@@ -164,7 +165,7 @@ class BlastWrapper(object):
 
         # unzip and remove tarball
         if os.path.isfile(input_file):
-            subprocess.call(["tar", "zxvpf", input_file, "-C", dir])
+            subprocess.call(["tar", "zxvpf", input_file, "-C", dirpath])
             os.remove(input_file)
         print("Blast installed to {}".format(input_file))
         return input_file

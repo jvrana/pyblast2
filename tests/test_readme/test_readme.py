@@ -1,6 +1,6 @@
 def test_example1():
     from pyblast import BioBlast
-    from pyblast.utils import make_linear, make_circular
+    from pyblast.utils import make_linear
     from Bio.SeqRecord import SeqRecord
     from Bio.Seq import Seq
     import json
