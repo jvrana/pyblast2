@@ -26,7 +26,9 @@ class JSONParser(object):
     @classmethod
     def __JSON_to_SeqRecord(cls, data):
         if not issubclass(type(data), dict) and not issubclass(type(data), list):
-            raise PyBlastException("Data must be a json object but found a '{}'".format(type(data)))
+            raise PyBlastException(
+                "Data must be a json object but found a '{}'".format(type(data))
+            )
         data = cls.clean_data(data)
         return SeqRecord(
             seq=Seq(data["bases"]),

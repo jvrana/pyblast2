@@ -111,7 +111,9 @@ class BlastWrapper(object):
     ):
         # print config
         if not os.path.isdir(os.path.abspath(dirpath)):
-            raise NotADirectoryError('Directory "{}" is not a directory'.format(dirpath))
+            raise NotADirectoryError(
+                'Directory "{}" is not a directory'.format(dirpath)
+            )
 
         fmt = cls._get_format(platform)
         print("ftp config:")

@@ -194,7 +194,6 @@ class TestContains:
 
 
 class TestIntersection:
-
     @staticmethod
     def x(a1, b1, a2, b2):
         s1 = Span(a1, b1, 100, True)

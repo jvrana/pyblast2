@@ -1,4 +1,9 @@
 {
+  "0.3.7": {
+    "description": "update typing",
+    "date": "2019-09-14T08:51:11.408264",
+    "changes": []
+  },
   "0.3.6": {
     "description": "update deps",
     "date": "2019-09-13T07:55:06.099602",
