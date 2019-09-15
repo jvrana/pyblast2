@@ -4,15 +4,13 @@ import re
 class BlastResultParser(object):
     @staticmethod
     def str_to_f_to_i(v):
-        """"""
         try:
-            v = float(v)
+            return int(v)
         except ValueError:
-            pass
-        try:
-            v = int(v)
-        except ValueError:
-            pass
+            try:
+                return float(v)
+            except ValueError:
+                pass
         return v
 
     @staticmethod

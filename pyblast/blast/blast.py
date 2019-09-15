@@ -262,7 +262,8 @@ class BlastBase(object):
         return self.db
 
     def closedb(self):
-        pass
+        os.remove(self.results_out_path)
+        shutil.rmtree(self.db_output_directory)
 
     @staticmethod
     def _filter_unique_results(results):
@@ -350,10 +351,6 @@ class TmpBlast(BlastBase):
             self.subject_path = self.subject_records_path
         self.set_paths(self.db_name, db_output_directory, out)
         super(TmpBlast, self).makedb(**kwargs)
-
-    def closedb(self):
-        os.remove(self.results_out_path)
-        shutil.rmtree(self.db_output_directory)
 
     @classmethod
     def use_test_data(cls):
@@ -512,7 +509,9 @@ class BioBlast(TmpBlast):
         clean_records(records)
 
         def copy_record(r):
-            return deepcopy(r)
+            c = r[:]
+            c.annotations = dict(r.annotations)
+            return c
 
         def pseudocircularize(r):
             r2 = r + r
