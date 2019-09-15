@@ -7,13 +7,14 @@ class SpanError(Exception):
 
 
 class Span(Container, Iterable, Sized):
-    __slots__ = ["a", "b", "context_length", "cyclic", "index"]
+    __slots__ = ["a", "b", "context_length", "cyclic", "index", "_does_wrap_origin"]
 
-    def __init__(self, a, b, l, cyclic=False, index=0, allow_wrap=False):
+    def __init__(self, a, b, l, cyclic=False, index=0, allow_wrap=False, does_wrap_origin=False):
         if a > b and not cyclic:
             raise IndexError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
+        self._does_wrap_origin = False
 
         self.index = index
         self.context_length = l
@@ -48,6 +49,9 @@ class Span(Container, Iterable, Sized):
         else:
             self.b = b
 
+        if self.a == self.b:
+            self._does_wrap_origin = does_wrap_origin
+
     def bounds(self):
         """Return the bounds (end exclusive)"""
         return self.index, self.context_length + self.index
@@ -73,12 +77,12 @@ class Span(Container, Iterable, Sized):
         :return:
         :rtype:
         """
-        if self.cyclic and self.a > self.b:
+        if self.cyclic and ((self.a > self.b) or (self.a == self.b and self._does_wrap_origin)):
             return [(self.a, self.bounds()[1]), (self.bounds()[0], self.b)]
         else:
             return [(self.a, self.b)]
 
-    def new(self, a, b, allow_wrap=True):
+    def new(self, a, b, allow_wrap=True, does_wrap_origin=False):
         """Create a new span using the same context."""
         return self.__class__(
             a,
@@ -87,6 +91,7 @@ class Span(Container, Iterable, Sized):
             self.cyclic,
             index=self.index,
             allow_wrap=allow_wrap,
+            does_wrap_origin=does_wrap_origin
         )
 
     def sub(self, a, b):

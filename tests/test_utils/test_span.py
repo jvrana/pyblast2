@@ -627,3 +627,17 @@ class TestSub(object):
         assert s1.b == 3000
         assert s2.a == 2000
         assert s2.b == 3000
+
+
+class TestFullWrap(object):
+
+    def test_full_wrap(self):
+        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        assert len(s) == 1000
+
+    def test_full_wrap_sub_region(self):
+        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        assert s.contains_pos(1)
+        s2 = s.sub(500, 600)
+        assert s2.a == 500
+        assert s2.b == 600
