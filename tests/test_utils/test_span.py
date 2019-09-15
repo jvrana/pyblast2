@@ -630,7 +630,6 @@ class TestSub(object):
 
 
 class TestFullWrap(object):
-
     def test_full_wrap(self):
         s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
         assert len(s) == 1000

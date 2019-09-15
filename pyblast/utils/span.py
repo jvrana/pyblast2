@@ -9,7 +9,9 @@ class SpanError(Exception):
 class Span(Container, Iterable, Sized):
     __slots__ = ["a", "b", "context_length", "cyclic", "index", "_does_wrap_origin"]
 
-    def __init__(self, a, b, l, cyclic=False, index=0, allow_wrap=False, does_wrap_origin=False):
+    def __init__(
+        self, a, b, l, cyclic=False, index=0, allow_wrap=False, does_wrap_origin=False
+    ):
         if a > b and not cyclic:
             raise IndexError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
@@ -77,7 +79,9 @@ class Span(Container, Iterable, Sized):
         :return:
         :rtype:
         """
-        if self.cyclic and ((self.a > self.b) or (self.a == self.b and self._does_wrap_origin)):
+        if self.cyclic and (
+            (self.a > self.b) or (self.a == self.b and self._does_wrap_origin)
+        ):
             return [(self.a, self.bounds()[1]), (self.bounds()[0], self.b)]
         else:
             return [(self.a, self.b)]
@@ -91,7 +95,7 @@ class Span(Container, Iterable, Sized):
             self.cyclic,
             index=self.index,
             allow_wrap=allow_wrap,
-            does_wrap_origin=does_wrap_origin
+            does_wrap_origin=does_wrap_origin,
         )
 
     def sub(self, a, b):

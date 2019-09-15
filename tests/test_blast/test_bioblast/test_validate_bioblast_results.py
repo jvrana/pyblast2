@@ -102,7 +102,7 @@ def test_align_Ns():
 def test_partial_alignment(left_spacer, ij):
     record = rand_record(1000)
     queries = [record[:]]
-    subjects = [ns(left_spacer) + record[ij[0]: ij[1]]]
+    subjects = [ns(left_spacer) + record[ij[0] : ij[1]]]
 
     queries = make_linear(queries)
     subjects = make_linear(subjects)
@@ -121,7 +121,7 @@ def test_partial_alignment(left_spacer, ij):
 def test_partial_alignment_reverse_complement(left_spacer, ij):
     record = rand_record(1000)
     queries = [record[:]]
-    subjects = [record[ij[0]: ij[1]]]
+    subjects = [record[ij[0] : ij[1]]]
     subjects[0] = ns(left_spacer) + subjects[0].reverse_complement()
 
     queries = make_linear(queries)
@@ -196,8 +196,8 @@ class TestCircular:
 
         result_seq = str(
             (
-                    record[result["query"]["start"] - 1:]
-                    + record[: result["query"]["end"]]
+                record[result["query"]["start"] - 1 :]
+                + record[: result["query"]["end"]]
             ).seq
         )
         expected_seq = str(subjects[0].seq)
@@ -221,8 +221,8 @@ class TestCircular:
 
         result_seq = str(
             (
-                    record[result["query"]["start"] - 1:]
-                    + record[: result["query"]["end"]]
+                record[result["query"]["start"] - 1 :]
+                + record[: result["query"]["end"]]
             ).seq
         )
         expected_seq = str(subjects[0].reverse_complement().seq)
@@ -256,11 +256,10 @@ class TestCircular:
 
         result = results[0]
         print(result)
-        assert result['subject']['start'] == 1
-        assert result['subject']['end'] == 900
-        assert result['query']['start'] == 501
-        assert result['query']['end'] == 400
-
+        assert result["subject"]["start"] == 1
+        assert result["subject"]["end"] == 900
+        assert result["query"]["start"] == 501
+        assert result["query"]["end"] == 400
 
     def test_circular_complete_query(self):
         record = rand_record(1000)
@@ -275,8 +274,8 @@ class TestCircular:
 
         result = results[0]
         print(result)
-        assert result['subject']['start'] == 601
-        assert result['subject']['end'] == 500
+        assert result["subject"]["start"] == 601
+        assert result["subject"]["end"] == 500
 
 
 # TODO: fix very long repeats
@@ -344,6 +343,7 @@ def test_interaction_network_from_factory():
         k2 = r["subject"]["origin_key"]
         print(k1, k2)
         assert not k1 == k2
+
 
 # def test_interaction_network_from_data(here):
 #     from pyblast.utils import load_genbank_glob

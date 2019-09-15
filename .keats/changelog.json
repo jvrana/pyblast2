@@ -1,4 +1,11 @@
 {
+  "0.3.8": {
+    "description": "new features",
+    "date": "2019-09-15T12:08:52.506445",
+    "changes": [
+      "Span now has option to specify full wrapped regions"
+    ]
+  },
   "0.3.7": {
     "description": "update typing",
     "date": "2019-09-14T08:51:11.408264",
