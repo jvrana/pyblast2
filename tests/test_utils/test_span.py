@@ -647,3 +647,8 @@ class TestFullWrap(object):
         assert s.contains_pos(1)
         s2 = s.invert()
         assert len(s2[0]) == 0
+
+    def test_copy(self):
+        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        s2 = s[:]
+        assert len(s2) == 1000

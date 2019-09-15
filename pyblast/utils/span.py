@@ -368,6 +368,8 @@ class Span(Container, Iterable, Sized):
                 j = self.b
             else:
                 j = self[val.stop]
+            if i == j and self._does_wrap_origin:
+                return self.new(i, j, does_wrap_origin=self._does_wrap_origin)
             return self.new(i, j)
         elif isinstance(val, tuple):
             if len(val) > 2:
