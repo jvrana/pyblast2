@@ -12,6 +12,25 @@ class Span(Container, Iterable, Sized):
     def __init__(
         self, a, b, l, cyclic=False, index=0, allow_wrap=False, does_wrap_origin=False
     ):
+        """
+        Constructs a new Span.
+
+        :param a: start of the span (inclusive)
+        :type a: int
+        :param b: end of the span (exclusive)
+        :type b: int
+        :param l: context length of the region
+        :type l: int
+        :param cyclic: whether the underlying context is cyclic
+        :type cyclic: bool
+        :param index: the starting index of the region
+        :type index: int
+        :param allow_wrap: if True (default False), the region can be initialized with a and b over the origin
+        :type allow_wrap: bool
+        :param does_wrap_origin: if True (default False), if the span.a == span.b, then this span is specified to
+                                 wrap around the origin, fully encompassing the context.
+        :type does_wrap_origin: bool
+        """
         if a > b and not cyclic:
             raise IndexError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
@@ -258,8 +277,15 @@ class Span(Container, Iterable, Sized):
     # return
 
     def invert(self):
+        """
+        Invert the region, returning a tuple of the remaining spans from the context.
+        If cyclic, a tuple (span, None) tuple is returned. If linear, a (span, span) is returned.
+
+        :return: inverted regions
+        :rtype: tuple
+        """
         if self.cyclic:
-            return (self[self.b, self.a],)
+            return (self[self.b, self.a], None)
         else:
             return self[:, self.a], self[self.b, :]
 
@@ -295,6 +321,8 @@ class Span(Container, Iterable, Sized):
             return True
 
     def spans_origin(self):
+        if self._does_wrap_origin and self.cyclic and self.a == self.b:
+            return True
         return self.b < self.a and self.cyclic
 
     def __contains__(self, other):

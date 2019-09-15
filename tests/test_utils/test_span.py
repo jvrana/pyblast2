@@ -633,6 +633,7 @@ class TestFullWrap(object):
     def test_full_wrap(self):
         s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
         assert len(s) == 1000
+        assert s.spans_origin()
 
     def test_full_wrap_sub_region(self):
         s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
@@ -640,3 +641,9 @@ class TestFullWrap(object):
         s2 = s.sub(500, 600)
         assert s2.a == 500
         assert s2.b == 600
+
+    def test_invert(self):
+        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        assert s.contains_pos(1)
+        s2 = s.invert()
+        assert len(s2[0]) == 0
