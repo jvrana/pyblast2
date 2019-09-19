@@ -6,7 +6,7 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from pyblast import BioBlast, BioBlastFactory
-from pyblast.utils import make_linear, make_circular, force_unique_record_ids
+from pyblast.utils import make_linear, make_circular, force_unique_record_ids, Span
 
 
 def random_sequence(length):
@@ -261,22 +261,39 @@ class TestCircular:
         assert result["query"]["start"] == 501
         assert result["query"]["end"] == 400
 
-    def test_circular_complete_query(self):
+    @pytest.mark.parametrize('extra_right', [0, 1, 10])
+    @pytest.mark.parametrize('extra_left', [0, 1, 10])
+    def test_circular_complete_query(self, extra_right, extra_left):
         record = rand_record(1000)
         queries = [record]
-        subjects = [record[:500] + ns(100) + record[500:]]
+        subjects = [ns(100) + record[(500-extra_left):] + record[:(500+extra_right)] + ns(100)]
 
         queries = make_circular(queries)
-        subjects = make_circular(subjects)
+        subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
         results = bioblast.quick_blastn()
 
         result = results[0]
-        print(result)
-        assert result["subject"]["start"] == 601
-        assert result["subject"]["end"] == 500
+        print(json.dumps(result, indent=2))
 
+        assert result['query']['start'] == 501
+        assert result['query']['end'] == 500
+        assert result["subject"]["start"] == 101
+        assert result["subject"]["end"] == 1100
+
+        # to spans
+        subject_span = Span(result['subject']['start']-1, result['subject']['end'], result['subject']['origin_sequence_length'], index=0, cyclic=result['subject']['circular'], allow_wrap=True, does_wrap_origin=True)
+        query_span = Span(result['query']['start']-1, result['query']['end'], result['query']['origin_sequence_length'], cyclic=result['query']['circular'], index=0, allow_wrap=True, does_wrap_origin=True)
+
+        print(query_span.ranges())
+
+        assert len(subject_span) == len(query_span)
+        assert query_span.a == 500
+        assert query_span.a == 500
+
+        assert subject_span.a == 100
+        assert subject_span.b == 1100
 
 # TODO: fix very long repeats
 # def test_very_long_repeat(self):
