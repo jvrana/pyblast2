@@ -515,7 +515,7 @@ class TestAllowWrap:
     @pytest.mark.parametrize("delta", range(20))
     @pytest.mark.parametrize("index", [0, 1, 2])
     def test_allow_wrap(self, delta, index):
-        s = Span(90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=True)
+        s = Span(90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=False)
         assert len(s) == 8
 
     @pytest.mark.parametrize("index", [0, 1, 2])
@@ -630,25 +630,91 @@ class TestSub(object):
 
 
 class TestFullWrap(object):
-    def test_full_wrap(self):
-        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+
+    def test_full_wrap_same_index(self):
+        s = Span(0, 0, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 0
+        s.c == 0
+        assert s._nwraps == 0
+        assert len(s) == 0
+        # assert not s.spans_origin()
+
+        s = Span(0, 1000, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 1000
+        s.c == 1000
+        assert s._nwraps == 0
         assert len(s) == 1000
+        # assert s.spans_origin()
+
+        s = Span(0, 2000, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 1000
+        s.c == 2000
+        assert s._nwraps == 1
+        print(s.ranges())
+        assert len(s) == 2000
+
+    @pytest.mark.parametrize('start', [0])
+    @pytest.mark.parametrize('end', [0, 1])
+    @pytest.mark.parametrize('nwraps', [0, 1, 2])
+    def test_full_wrap_same_index(self, nwraps, start, end):
+        index = 0
+        length = 1000
+        s = Span(start, end + nwraps * length, length, cyclic=True, allow_wrap=True, index=index)
+        s.a == start
+        s.b == end
+        s.c == end + nwraps * length
+        assert s._nwraps == nwraps
+        print(list(s.ranges()))
+        assert len(s) == nwraps * length + end - start
+
+    def test_full_wrap_plus_one(self):
+        s = Span(0, 1, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 1
+        s.c == 1
+        assert len(s) == 1
+        assert not s.spans_origin()
+
+        s = Span(0, 1001, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 1001
+        s.c == 1001
+        assert len(s) == 1001
+        assert s.spans_origin()
+
+        s = Span(0, 2001, 1000, cyclic=True, allow_wrap=True)
+        s.a == 0
+        s.b == 1001
+        s.c == 2001
+        assert len(s) == 2001
         assert s.spans_origin()
 
     def test_full_wrap_sub_region(self):
-        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        s = Span(0, 0, 1000, cyclic=True)
         assert s.contains_pos(1)
         s2 = s.sub(500, 600)
         assert s2.a == 500
         assert s2.b == 600
 
     def test_invert(self):
-        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        s = Span(0, 0, 1000, cyclic=True)
         assert s.contains_pos(1)
         s2 = s.invert()
         assert len(s2[0]) == 0
 
     def test_copy(self):
-        s = Span(0, 0, 1000, cyclic=True, does_wrap_origin=True)
+        s = Span(0, 1000, 1000, cyclic=True)
         s2 = s[:]
         assert len(s2) == 1000
+
+
+class TestNWraps():
+
+    @pytest.mark.parametrize('i', [0, 1, 2])
+    def test_nwraps(self, i):
+        l = 1000
+        s = Span(100, 100 + i*l, l, cyclic=True, allow_wrap=True)
+        assert len(s) == i*l

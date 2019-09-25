@@ -7,10 +7,10 @@ class SpanError(Exception):
 
 
 class Span(Container, Iterable, Sized):
-    __slots__ = ["a", "b", "context_length", "cyclic", "index", "_does_wrap_origin"]
+    __slots__ = ["a", "b", "c", "context_length", "cyclic", "index"]
 
     def __init__(
-        self, a, b, l, cyclic=False, index=0, allow_wrap=False, does_wrap_origin=False
+        self, a, b, l, cyclic=False, index=0, allow_wrap=False
     ):
         """
         Constructs a new Span.
@@ -27,19 +27,16 @@ class Span(Container, Iterable, Sized):
         :type index: int
         :param allow_wrap: if True (default False), the region can be initialized with a and b over the origin
         :type allow_wrap: bool
-        :param does_wrap_origin: if True (default False), if the span.a == span.b, then this span is specified to
-                                 wrap around the origin, fully encompassing the context.
-        :type does_wrap_origin: bool
         """
         if a > b and not cyclic:
             raise IndexError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
-        self._does_wrap_origin = False
 
         self.index = index
         self.context_length = l
         self.cyclic = cyclic
+        self.c = b
 
         # check bounds
         if not cyclic or not allow_wrap:
@@ -61,6 +58,7 @@ class Span(Container, Iterable, Sized):
         # set indices
         _a = a - index
         _b = b - index
+
         if _a >= l or _a < 0:
             self.a = self.t(_a)
         else:
@@ -70,12 +68,14 @@ class Span(Container, Iterable, Sized):
         else:
             self.b = b
 
-        self._nwraps = 0
-        if self.a == self.b:
-            self._nwraps = int((b-a)/l)
-            self._does_wrap_origin = does_wrap_origin
+        if allow_wrap is False:
+            self.c = self.b
 
-    def bounds(self):
+    @property
+    def _nwraps(self):
+        return int((self.c - self.a) / (self.context_length+1))
+
+    def bounds(self) -> tuple:
         """Return the bounds (end exclusive)"""
         return self.index, self.context_length + self.index
 
@@ -100,14 +100,19 @@ class Span(Container, Iterable, Sized):
         :return:
         :rtype:
         """
-        if self.cyclic and (
-            (self.a > self.b) or (self.a == self.b and self._does_wrap_origin)
-        ):
-            return [(self.a, self.bounds()[1]), (self.bounds()[0], self.b)]
+
+        # TODO: replace this with _nwraps > 0
+        if self.cyclic and (self.b < self.a or self._nwraps):
+            ranges = [(self.a, self.bounds()[1])]
+            for _ in range(self._nwraps - 1):
+                ranges.append(self.bounds())
+            ranges.append((self.bounds()[0], self.b))
+
+            return ranges
         else:
             return [(self.a, self.b)]
 
-    def new(self, a, b, allow_wrap=True, does_wrap_origin=False):
+    def new(self, a, b, allow_wrap=True):
         """Create a new span using the same context."""
         return self.__class__(
             a,
@@ -116,7 +121,6 @@ class Span(Container, Iterable, Sized):
             self.cyclic,
             index=self.index,
             allow_wrap=allow_wrap,
-            does_wrap_origin=does_wrap_origin,
         )
 
     def sub(self, a, b):
@@ -323,7 +327,7 @@ class Span(Container, Iterable, Sized):
             return True
 
     def spans_origin(self):
-        if self._does_wrap_origin and self.cyclic and self.a == self.b:
+        if self._nwraps and self.cyclic:
             return True
         return self.b < self.a and self.cyclic
 
@@ -370,8 +374,8 @@ class Span(Container, Iterable, Sized):
                 j = self.b
             else:
                 j = self[val.stop]
-            if i == j and self._does_wrap_origin:
-                return self.new(i, j, does_wrap_origin=self._does_wrap_origin)
+            if i == j and self._nwraps:
+                return self.new(i, j)
             return self.new(i, j)
         elif isinstance(val, tuple):
             if len(val) > 2:
@@ -393,20 +397,22 @@ class Span(Container, Iterable, Sized):
             raise ValueError("indexing does not support {}".format(type(val)))
 
     def __repr__(self):
-        return "<{}={} {} {} start={}>".format(
+        return "<{}={} {} {} start={}, nwraps={}>".format(
             self.__class__.__name__,
             id(self),
             (self.a, self.b, self.context_length),
             self.cyclic,
             self.index,
+            self._nwraps
         )
 
     def __str__(self):
-        return "<{} {} {} start={}>".format(
+        return "<{} {} {} start={}, nwraps={}>".format(
             self.__class__.__name__,
             (self.a, self.b, self.context_length),
             self.cyclic,
             self.index,
+            self._nwraps
         )
 
 
