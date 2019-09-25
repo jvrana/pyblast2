@@ -70,7 +70,9 @@ class Span(Container, Iterable, Sized):
         else:
             self.b = b
 
+        self._nwraps = 0
         if self.a == self.b:
+            self._nwraps = int((b-a)/l)
             self._does_wrap_origin = does_wrap_origin
 
     def bounds(self):
