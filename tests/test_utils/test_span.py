@@ -28,7 +28,7 @@ class TestInit:
 
     def test_init_should_raise2(self):
         with pytest.raises(IndexError):
-            Span(9408, 4219, 9408, True)
+            Span(9408, 4219, 9408, True, strict=True)
 
     def test_init_linear(self):
         s = Span(10, 80, 100, False)
@@ -53,7 +53,7 @@ class TestInit:
     def test_invalid_cyclic(self):
         print(Span(0, 10, 10, True))
         with pytest.raises(IndexError):
-            print(Span(0, 10, 9, True))
+            print(Span(0, 10, 9, True, strict=True))
         print(Span(0, 10, 9, True, allow_wrap=True))
 
 
@@ -185,12 +185,12 @@ class TestContains:
         def test_contains_example(self):
             assert Span(5947, 4219, 9408, True)
             with pytest.raises(IndexError):
-                Span(9408, 4219, 9408, True)
+                Span(9408, 4219, 9408, True, strict=True)
 
         def test_contains_example2(self):
             assert Span(59, 42, 94, True)
             with pytest.raises(IndexError):
-                Span(94, 42, 94, True)
+                Span(94, 42, 94, True, strict=True)
 
 
 class TestIntersection:
@@ -693,14 +693,14 @@ class TestFullWrap(object):
         assert s.spans_origin()
 
     def test_full_wrap_sub_region(self):
-        s = Span(0, 0, 1000, cyclic=True)
+        s = Span(0, 1000, 1000, cyclic=True)
         assert s.contains_pos(1)
         s2 = s.sub(500, 600)
         assert s2.a == 500
         assert s2.b == 600
 
     def test_invert(self):
-        s = Span(0, 0, 1000, cyclic=True)
+        s = Span(0, 1000, 1000, cyclic=True)
         assert s.contains_pos(1)
         s2 = s.invert()
         assert len(s2[0]) == 0

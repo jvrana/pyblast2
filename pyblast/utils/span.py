@@ -10,7 +10,7 @@ class Span(Container, Iterable, Sized):
     __slots__ = ["a", "b", "c", "context_length", "cyclic", "index"]
 
     def __init__(
-        self, a, b, l, cyclic=False, index=0, allow_wrap=False
+        self, a, b, l, cyclic=False, index=0, allow_wrap=False, strict=False
     ):
         """
         Constructs a new Span.
@@ -39,7 +39,7 @@ class Span(Container, Iterable, Sized):
         self.c = b
 
         # check bounds
-        if not cyclic or not allow_wrap:
+        if not cyclic or strict:
             bounds = self.bounds()
             if not bounds[0] <= a < bounds[1]:
                 raise IndexError(
