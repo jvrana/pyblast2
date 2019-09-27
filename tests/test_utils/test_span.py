@@ -140,47 +140,68 @@ class TestInit:
         with pytest.raises(IndexError):
             Span(10, 10, 10, cyclic=False)
 
-    @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11, 19, 20, 21])
-    @pytest.mark.parametrize('index', [0, 1], ids=['index=0', 'index=1'])
+    @pytest.mark.parametrize('x', [0, 5, 6, 7, 8, 9])
+    @pytest.mark.parametrize('index', [0], ids=['index=0'])
     def test_special_case_empty_cyclic(self, x, index):
         """Special case of empty span should be valid for any endpoints that are the same"""
         s = Span(x, x, 10, cyclic=True, index=index)
         assert len(s) == 0
-        if x < index:
-            d = index - x
-            x = 10 + index - d
-            if d == 0:
-                x = index
-        elif x >= index + 10:
-            x = index + x%10
-            if x == index + 10:
-                x = index
+        assert s.a == x
+        assert s.b == x
+        assert s.c == x
+
+    @pytest.mark.parametrize('x', [1, 5, 6, 7, 8, 9, 10])
+    @pytest.mark.parametrize('index', [1], ids=['index=0'])
+    def test_special_case_empty_cyclic_index1(self, x, index):
+        """Special case of empty span should be valid for any endpoints that are the same"""
+        s = Span(x, x, 10, cyclic=True, index=index)
+        assert len(s) == 0
         assert s.a == x
         assert s.b == x
         assert s.c == x
 
     def test_special_case_empty_cyclic__explicit(self):
-
-        s = Span(10, 10, 10, cyclic=True, index=1)
-        assert s.a == 10
-        assert s.b == 10
-
-        s = Span(11, 11, 10, cyclic=True, index=1)
-        assert s.a == 1
-        assert s.b == 1
+        # index=0
+        s = Span(0, 0, 10, cyclic=True, index=0)
+        assert s.a == 0
+        assert s.b == 0
+        assert s.c == s.b
 
         s = Span(10, 10, 10, cyclic=True, index=0)
         assert s.a == 0
         assert s.b == 0
+        assert s.c == s.b
 
-        s = Span(0, 0, 10, cyclic=True, index=0)
+        s = Span(20, 20, 10, cyclic=True, index=0)
         assert s.a == 0
         assert s.b == 0
+        assert s.c == s.b
 
-    def test__(self):
+        # index=1
+        s = Span(10, 10, 10, cyclic=True, index=1)
+        assert s.a == 10
+        assert s.b == 10
+        assert s.c == s.b
+
+        s = Span(11, 11, 10, cyclic=True, index=1)
+        assert s.a == 1
+        assert s.b == 1
+        assert s.c == s.b
+
+        s = Span(21, 21, 10, cyclic=True, index=1)
+        assert s.a == 1
+        assert s.b == 1
+        assert s.c == s.b
+
         s = Span(0, 0, 10, cyclic=True, index=1)
         assert s.a == 10
         assert s.b == 10
+        assert s.c == s.b
+
+        s = Span(10, 10, 10, cyclic=True, index=1)
+        assert s.a == 10
+        assert s.b == 10
+        assert s.c == s.b
 
     @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11])
     def test_special_case_empty_linear(self, x):
@@ -631,18 +652,57 @@ class TestSlice(object):
 
     @pytest.mark.parametrize("i", list(range(-20, 20)))
     @pytest.mark.parametrize("cyclic", [True, False])
-    def test_indexing(self, i, cyclic):
+    @pytest.mark.parametrize('index', [0, 1])
+    def test_indexing(self, i, cyclic, index):
 
-        s = Span(5, 15, 20, cyclic)
+        s = Span(5, 15, 20, cyclic, index=index)
         assert len(s) == 10
-        if (i < -len(s) or i >= len(s)) and not cyclic:
+        if (i < -len(s) or i >= len(s)):
             with pytest.raises(IndexError):
                 print(s[i])
         else:
             if i < 0:
                 assert s[i] == (i + 15) % 20
             else:
-                assert s[i] == (i + 5) % 20
+                assert s[i] == (i + 5)
+
+    def test_slice_indexing_basic(self):
+        s = Span(5, 9, 10, index=1)
+        assert s[0] == 5
+        assert s[-1] == 8
+
+        s = Span(5, 12, 10, cyclic=True, index=0)
+        print(list(s))
+        assert s[0] == 5
+        assert s[6] == 1
+        assert s[-1] == 1
+        assert s[len(s)-1] == 1
+
+    def test_slice_indexing_basic_index0(self):
+        s = Span(5, 11, 10, cyclic=True, index=0)
+        assert s.a == 5
+        assert s.b == 1
+        assert s[0] == 5
+        assert s[1] == 6
+        assert s[2] == 7
+        assert s[3] == 8
+        assert s[4] == 9
+        assert s[5] == 0
+        assert s[-1] == 0
+
+    def test_slice_indexing_basic_index1(self):
+        s = Span(6, 12, 10, cyclic=True, index=1)
+        a = list(s)
+        print(a)
+        assert s.a == 6
+        assert s.b == 2
+        assert s[0] == 6
+        assert s[1] == 7
+        assert s[2] == 8
+        assert s[3] == 9
+        assert s[4] == 10
+        assert s[5] == 1
+        assert s[-1] == 1
 
     @pytest.mark.parametrize("i", list(range(10, 50, 5)))
     @pytest.mark.parametrize("j", list(range(60, 80, 5)))
@@ -712,7 +772,6 @@ class TestSlice(object):
         assert copied.b == 16
 
     def test_invert_cyclic(self):
-
         s = Span(5, 15, 20, True)
         i1 = s.invert()[0]
 
@@ -727,6 +786,66 @@ class TestSlice(object):
         assert s2.a == 15
         assert s2.b == 20
 
+    def test_invert_wrapped(self):
+        s = Span(5, 15, 10, True)
+        s1, s2 = s.invert()
+        assert len(s1) == 0
+        assert s2 is None
+
+    def test_slice_wrapped_basic(self):
+
+        s = Span(5, 16, 10, True)
+        assert len(s) == 11
+        assert s.a == 5
+        assert s.b == 6
+        assert s.c == 16
+
+        s1 = s[:-1]
+        assert s1.a == 5
+        assert s1.b == 5
+        assert s1.c == 15
+        assert len(s1) == 10
+
+    def test_slice_wrapped_adv1(self):
+
+        s = Span(5, 36, 10, True)
+        assert s.a == 5
+        assert s.b == 6
+        assert s.c == 36
+        assert len(s) == 31
+
+        s1 = s[:-10]
+        assert s1.a == 5
+        assert s1.b == 6
+        assert s1.c == 26
+        assert len(s1) == 21
+
+        s1 = s[:-20]
+        assert s1.a == 5
+        assert s1.b == 6
+        assert s1.c == 16
+        assert len(s1) == 11
+
+        s1 = s[:-30]
+        assert s1.a == 5
+        assert s1.b == 6
+        assert s1.c == 6
+        assert len(s1) == 1
+
+        with pytest.raises(IndexError):
+            s1 = s[:-40]
+
+    def test_slice_wrapped_adv2(self):
+        s = Span(5, 36, 10, True)
+        s1 = s[:4]
+        assert s1.a == 5
+        assert s1.b == 9
+        assert s1.c == 9
+
+        s1 = s[:6]
+        assert s1.a == 5
+        assert s1.b == 1
+        assert s1.c == 11
 
 class TestDifference:
     """These test the 'difference' between spans. The difference of two spans
@@ -1040,6 +1159,15 @@ class TestSub(object):
         assert s2.a == 2000
         assert s2.b == 3000
 
+    def test_sub_wrapped(self):
+
+        s = Span(5, 16, 10, cyclic=True)
+        s1 = s.sub(5, 6)
+        assert len(s1) == 1
+
+        s2 = s.sub(5, 12)
+        assert len(s2) == 7
+
 
 class TestFullWrap(object):
 
@@ -1121,6 +1249,15 @@ class TestFullWrap(object):
         s2 = s[:]
         assert len(s) == 1000
         assert len(s2) == 1000
+
+    def test_copy_wrapped(self):
+        s = Span(0, 1002, 1000, cyclic=True)
+        s2 = s[:]
+        assert len(s) == 1002
+        assert len(s2) == 1002
+        assert s.a == s2.a
+        assert s.b == s2.b
+        assert s.c == s2.c
 
 
 class TestNWraps():

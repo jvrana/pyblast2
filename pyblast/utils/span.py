@@ -79,7 +79,7 @@ class Span(Container, Iterable, Sized):
             self.b = b
 
         if self.a > self.b and not cyclic:
-            raise IndexError("Start {} cannot be greater than end {} for cyclic spans.".format(self.a, self.b))
+            raise IndexError("Start {} cannot be greater than end {} for linear spans.".format(self.a, self.b))
 
         # allow wrap mean this will keep track of how many time the span wraps around the context
         if allow_wrap and end_wrap - start_wrap:
@@ -104,7 +104,7 @@ class Span(Container, Iterable, Sized):
 
     def t(self, p, throw_error=True):
         """
-        Translates a position 'p' to an index within the bounds. If
+        Translates a position 'p' to an index within the context bounds. If
         :param p:
         :type p:
         :param strict:
@@ -119,7 +119,7 @@ class Span(Container, Iterable, Sized):
                 )
         _x = p % self.context_length
         if _x < 0:
-            return self.bound()[1] + _x
+            return self.bounds()[1] + _x
         else:
             return self.bounds()[0] + _x
 
@@ -149,6 +149,10 @@ class Span(Container, Iterable, Sized):
 
     def new(self, a, b, allow_wrap=True):
         """Create a new span using the same context."""
+        if a is None:
+            a = self.a
+        if b is None:
+            b = self.c
         return self.__class__(
             a,
             b,
@@ -175,10 +179,13 @@ class Span(Container, Iterable, Sized):
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
 
-        valid_ranges = [list(x) for x in self.ranges()]
+        if self._nwraps > 0:
+            valid_ranges = [(self.a, self.c)]
+        else:
+            valid_ranges = [list(x) for x in self.ranges()]
 
-        valid_ranges[0][0] = max(a, self.a)
-        valid_ranges[-1][1] = min(b + 1, self.b + 1)
+            valid_ranges[0][0] = max(a, self.a)
+            valid_ranges[-1][1] = min(b + 1, self.b + 1)
         assert len(valid_ranges) <= 2
 
         def in_range(pos, ranges):
@@ -203,7 +210,7 @@ class Span(Container, Iterable, Sized):
             )
         subregion = self.new(a, b)
         if len(subregion) > len(self):
-            raise IndexError("Cannot make subspan. S")
+            raise IndexError("Cannot make subspan.")
         return subregion
 
     def same_context(self, other):
@@ -382,40 +389,67 @@ class Span(Container, Iterable, Sized):
     def __invert__(self):
         return self.invert()
 
+    def _check_index_pos(self, val):
+        if val is not None and (val >= len(self) or val < -len(self)):
+            raise IndexError(
+                "Index '{}' outside of linear span with length of {}".format(
+                    val, len(self)
+                )
+            )
+
     def __getitem__(self, val):
         if isinstance(val, int):
-            if not self.cyclic and (val >= len(self) or val < -len(self)):
-                raise IndexError(
-                    "Index '{}' outside of linear span with length of {}".format(
-                        val, len(self)
-                    )
-                )
+            self._check_index_pos(val)
+            if val < 0:
+                return self.t(val + self.c - self.index)
             else:
-                if val < 0:
-                    return self.t(val + self.b) - self.index
-                else:
-                    return self.t(val + self.a) - self.index
+                return self.t(val + self.a - self.index)
         elif issubclass(type(val), slice):
-            if val.step:
+
+            self._check_index_pos(val.start)
+            self._check_index_pos(val.stop)
+
+            if val.step == -1:
+                return self[val.start:val.stop].invert()
+            elif val.step is not None and val.step != 1:
                 raise ValueError(
-                    "{} slicing does not support step.".format(self.__class__.__name__)
+                    "{} slicing does not support step {}.".format(self.__class__.__name__, val.step)
                 )
+
             if val.start is None:
                 i = self.a
+            elif val.start < 0:
+                i = self.c + val.start
             else:
-                i = self[val.start]
+                i = self.a + val.start
 
             if val.stop is None:
-                j = self.b
+                j = self.c
+            elif val.stop < 0:
+                j = self.c + val.stop
             else:
-                j = self[val.stop]
-            if i == j and self._nwraps:
-                return self.new(i, j)
+                j = self.a + val.stop
+
             return self.new(i, j)
+            # if val.start is None:
+            #     i = self.a
+            # else:
+            #     i = self[val.start]
+            #
+            # if val.stop is None:
+            #     j = self.c
+            # else:
+            #     j = self[val.stop]
+            #
+            # if val.stop is None:
+            #     return self.new(i, self.c)
+            # else:
+            #     wraps = int((self.a + val.stop)/self.context_length)
+            #     return self.new(i, self[val.stop] + wraps * self.context_length)
         elif isinstance(val, tuple):
             if len(val) > 2:
                 raise ValueError(
-                    "{} -- copying does only supports (start, stop)".format(val)
+                    "{} -- copying only supports (start, stop)".format(val)
                 )
             val = list(val)
             for i in [0, 1]:
@@ -443,13 +477,7 @@ class Span(Container, Iterable, Sized):
         )
 
     def __str__(self):
-        return "<{} {} {} start={}, nwraps={}>".format(
-            self.__class__.__name__,
-            (self.a, self.b, self.context_length),
-            self.cyclic,
-            self.index,
-            self._nwraps
-        )
+        return self.__repr__()
 
 
 class EmptySpan(Span):
