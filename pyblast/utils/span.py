@@ -431,21 +431,6 @@ class Span(Container, Iterable, Sized):
                 j = self.a + val.stop
 
             return self.new(i, j)
-            # if val.start is None:
-            #     i = self.a
-            # else:
-            #     i = self[val.start]
-            #
-            # if val.stop is None:
-            #     j = self.c
-            # else:
-            #     j = self[val.stop]
-            #
-            # if val.stop is None:
-            #     return self.new(i, self.c)
-            # else:
-            #     wraps = int((self.a + val.stop)/self.context_length)
-            #     return self.new(i, self[val.stop] + wraps * self.context_length)
         elif isinstance(val, tuple):
             if len(val) > 2:
                 raise ValueError(
