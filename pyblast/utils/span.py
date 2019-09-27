@@ -35,9 +35,7 @@ class Span(Container, Iterable, Sized):
 
         # special empty edge case
         if cyclic and a == b:
-            _a = self.t(a - index, False)
-            self.a = self.b = self.c = _a
-            return
+            return self._set_as_empty(a)
 
         # check bounds
         if strict or not cyclic:
@@ -59,6 +57,7 @@ class Span(Container, Iterable, Sized):
             self.b = b
             self.c = b
             diff = end_wrap - start_wrap
+            # return self._set_as_empty(a)
             raise IndexError("Could not interpret span {span}. Starting position wraps around "
                              "context {i} times and end position wraps around {j} times."
                              " A valid initialization would be Span({a}, {b}, ...)".format(
@@ -73,7 +72,7 @@ class Span(Container, Iterable, Sized):
         else:
             self.a = a
         if _b > l:
-            self.b = self.t(_b-1, False)
+            self.b = self.t(_b - 1, False) + 1
         elif _b < 0:
             self.b = self.t(_b, False) + 1
         else:
@@ -84,14 +83,20 @@ class Span(Container, Iterable, Sized):
 
         # allow wrap mean this will keep track of how many time the span wraps around the context
         if allow_wrap and end_wrap - start_wrap:
-            self.c = self.b + (end_wrap - start_wrap) * l + 1
+            _c = self.b + (end_wrap - start_wrap) * l
+            self.c = self.b + (end_wrap - start_wrap) * l
         else:
             self.c = self.b
+
+    def _set_as_empty(self, a):
+        _a = self.t(a - self.index, False)
+        self.a = self.b = self.c = _a
+        return
 
 
     @property
     def _nwraps(self):
-        return int((self.c - self.a) / (self.context_length+1))
+        return int((self.c - self.index - 1) / (self.context_length))
 
     def bounds(self) -> tuple:
         """Return the bounds (end exclusive)"""
@@ -427,13 +432,14 @@ class Span(Container, Iterable, Sized):
             raise ValueError("indexing does not support {}".format(type(val)))
 
     def __repr__(self):
-        return "<{}={} {} {} start={}, nwraps={}>".format(
+        return "<Span {a} {b} ({c}) cyclic={cyclic} index={index}, nwraps={n}>".format(
             self.__class__.__name__,
-            id(self),
-            (self.a, self.b, self.context_length),
-            self.cyclic,
-            self.index,
-            self._nwraps
+            a=self.a,
+            b=self.b,
+            c=self.c,
+            cyclic=self.cyclic,
+            index=self.index,
+            n=self._nwraps
         )
 
     def __str__(self):

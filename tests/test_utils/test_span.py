@@ -49,10 +49,10 @@ class TestInit:
         assert s.b == 10
 
         s = Span(5, 11, 10, cyclic=True, index=0)
-        assert s.b == 0
+        assert s.b == 1
 
         s = Span(5, 12, 10, cyclic=True, index=0)
-        assert s.b == 1
+        assert s.b == 2
 
         # index 1
         s = Span(5, 10, 10, cyclic=True, index=1)
@@ -62,10 +62,10 @@ class TestInit:
         assert s.b == 11
 
         s = Span(5, 12, 10, cyclic=True, index=1)
-        assert s.b == 1
+        assert s.b == 2
 
         s = Span(5, 13, 10, cyclic=True, index=1)
-        assert s.b == 2
+        assert s.b == 3
 
 
         # index 2
@@ -73,7 +73,7 @@ class TestInit:
         assert s.b == 12
 
         s = Span(5, 13, 10, cyclic=True, index=2)
-        assert s.b == 2
+        assert s.b == 3
 
     def test_cyclic_beyond_left_bound(self):
         """Start points beyond left bound shoulde be translated"""
@@ -141,15 +141,46 @@ class TestInit:
             Span(10, 10, 10, cyclic=False)
 
     @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11, 19, 20, 21])
-    @pytest.mark.parametrize('index', [0, 1])
+    @pytest.mark.parametrize('index', [0, 1], ids=['index=0', 'index=1'])
     def test_special_case_empty_cyclic(self, x, index):
         """Special case of empty span should be valid for any endpoints that are the same"""
         s = Span(x, x, 10, cyclic=True, index=index)
         assert len(s) == 0
-        expected = s.t(x - index)
-        assert s.a == expected
-        assert s.b == expected
-        assert s.c == expected
+        if x < index:
+            d = index - x
+            x = 10 + index - d
+            if d == 0:
+                x = index
+        elif x >= index + 10:
+            x = index + x%10
+            if x == index + 10:
+                x = index
+        assert s.a == x
+        assert s.b == x
+        assert s.c == x
+
+    def test_special_case_empty_cyclic__explicit(self):
+
+        s = Span(10, 10, 10, cyclic=True, index=1)
+        assert s.a == 10
+        assert s.b == 10
+
+        s = Span(11, 11, 10, cyclic=True, index=1)
+        assert s.a == 1
+        assert s.b == 1
+
+        s = Span(10, 10, 10, cyclic=True, index=0)
+        assert s.a == 0
+        assert s.b == 0
+
+        s = Span(0, 0, 10, cyclic=True, index=0)
+        assert s.a == 0
+        assert s.b == 0
+
+    def test__(self):
+        s = Span(0, 0, 10, cyclic=True, index=1)
+        assert s.a == 10
+        assert s.b == 10
 
     @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11])
     def test_special_case_empty_linear(self, x):
@@ -207,43 +238,44 @@ class TestInit:
             assert s.c == 9
             assert len(s) == 4
 
-            # not exactly intuitive, but since index=0, b is not equal to 8 (not 9). Transition from 20 to 0 is equivalent.
             s = Span(5, 29, 20, cyclic=True)
             assert s.a == 5
-            assert s.b == 8
+            assert s.b == 9
             assert s.c == 29
-            assert len(s) == 23
+            assert len(s) == 24
 
             s = Span(5, 49, 20, cyclic=True)
             assert s.a == 5
-            assert s.b == 8
+            assert s.b == 9
             assert s.c == 49
-            assert len(s) == 43
+            assert len(s) == 44
 
             s = Span(25, 49, 20, cyclic=True)
             assert s.a == 5
-            assert s.b == 8
+            assert s.b == 9
             assert s.c == 49 - 20
-            assert len(s) == 23
+            assert len(s) == 24
 
         def test_wrapped_when_allow_wrapping_is_false(self):
+            # 5, 6, 7, 8, 9, 0
             s = Span(5, 11, 10, cyclic=True, allow_wrap=False)
-            assert s.a == 5
-            assert s.b == 0
-            assert s.c == 0
-            assert len(s) == 5
-
-            s = Span(5, 12, 10, cyclic=True, allow_wrap=False)
             assert s.a == 5
             assert s.b == 1
             assert s.c == 1
             assert len(s) == 6
 
+            # 5, 6, 7, 8, 9, 0, 1
+            s = Span(5, 12, 10, cyclic=True, allow_wrap=False)
+            assert s.a == 5
+            assert s.b == 2
+            assert s.c == 2
+            assert len(s) == 7
+
         def test_wrapped_reverse(self):
             s = Span(15, 11, 10, cyclic=True)
             assert s.a == 5
-            assert s.b == 0
-            assert len(s) == 5
+            assert s.b == 1
+            assert len(s) == 6
 
         def test_invalid_wrapping(self):
             assert Span(15, 11, 10, cyclic=True, index=0)
@@ -255,9 +287,10 @@ class TestInit:
         def test_complete_wrap_plus_one(self):
             s = Span(0, 11, 10, cyclic=True)
             assert s.a == 0
-            assert s.b == 0
+            assert s.b == 1
             assert s.c == 11
-            assert len(s) == 10
+            assert len(s) == 11
+
 
 class TestRanges(object):
 
@@ -279,6 +312,116 @@ class TestRanges(object):
         s = Span(8, 2, 10, cyclic=True)
         assert list(s) == [8, 9, 0, 1]
 
+    def test_cyclic_range_beyond_rbound(self):
+
+        s = Span(8, 11, 10, cyclic=True)
+        assert list(s) == [8, 9, 0]
+
+        s = Span(8, 12, 10, cyclic=True)
+        assert list(s) == [8, 9, 0, 1]
+
+        s = Span(8, 12, 10, cyclic=True, index=1)
+        assert list(s) == [8, 9, 10, 1]
+
+        s = Span(8, 13, 10, cyclic=True, index=2)
+        assert list(s) == [8, 9, 10, 11, 2]
+
+    def test_cyclic_range_beyond_lbound(self):
+
+        s = Span(0, 4, 10, cyclic=True)
+        assert list(s) == [0, 1, 2, 3]
+
+        s = Span(-1, 4, 10, cyclic=True)
+        assert list(s) == [9, 0, 1, 2, 3]
+
+        s = Span(0, 4, 10, cyclic=True, index=1)
+        assert list(s) == [10, 1, 2, 3]
+
+        s = Span(0, 4, 10, cyclic=True, index=2)
+        assert list(s) == [10, 11, 2, 3]
+
+    def test_complete(self):
+        s = Span(0, 10, 10, cyclic=True)
+        assert list(s) == list(range(0, 10))
+
+        s = Span(0, 10, 10, cyclic=False)
+        assert list(s) == list(range(0, 10))
+
+    def test_complete_wrapped(self):
+        s = Span(10, 20, 10, cyclic=True)
+        assert list(s) == list(range(0, 10))
+        assert len(s) == 10
+
+        s = Span(20, 30, 10, cyclic=True)
+        assert list(s) == list(range(0, 10))
+        assert len(s) == 10
+
+        s = Span(11, 21, 10, cyclic=True, index=1)
+        assert list(s) == list(range(1, 11))
+        assert len(s) == 10
+
+        s = Span(21, 31, 10, cyclic=True, index=1)
+        assert list(s) == list(range(1, 11))
+        assert len(s) == 10
+
+    def test_wrapped_twice(self):
+
+        s = Span(5, 15, 10, cyclic=True)
+        assert len(s) == 10
+        assert list(s) == list(range(5, 10)) + list(range(5))
+
+        s = Span(5, 25, 10, cyclic=True)
+        assert list(s) == list(range(5, 10)) + list(range(10)) + list(range(5))
+        assert len(s) == 20
+        assert s.a == 5
+        assert s.b == 5
+        assert s.c == 25
+
+    def test_wrapped_twice_index(self):
+        s = Span(5, 15, 10, cyclic=True, index=1)
+        assert len(s) == 10
+        assert list(s) == list(range(5, 11)) + list(range(1, 5))
+
+        s = Span(5, 25, 10, cyclic=True, index=1)
+        assert list(s) == list(range(5, 11)) + list(range(1,11)) + list(range(1,5))
+        assert len(s) == 20
+        assert s.a == 5
+        assert s.b == 5
+        assert s.c == 25
+
+        s = Span(5, 26, 10, cyclic=True, index=1)
+        assert list(s) == list(range(5, 11)) + list(range(1,11)) + list(range(1,6))
+        assert len(s) == 21
+        assert s.a == 5
+        assert s.b == 6
+        assert s.c == 26
+
+    def test_wrapped_twice_at_index(self):
+        s = Span(0, 10, 10, cyclic=True)
+        assert list(s) == list(range(0, 10))
+
+        s = Span(0, 11, 10, cyclic=True)
+        assert list(s) == list(range(0, 10)) + [0]
+
+        s = Span(0, 20, 10, cyclic=True)
+        assert list(s) == list(range(0, 10)) + list(range(0, 10))
+
+        s = Span(0, 21, 10, cyclic=True)
+        assert list(s) == list(range(0, 10)) + list(range(0, 10)) + [0]
+
+
+
+    def test_cyclic_wrapped_beyond_rbound(self):
+        s = Span(9, 15, 10, cyclic=True)
+        assert list(s) == [9, 0, 1, 2, 3, 4]
+
+        s = Span(5, 16, 10, cyclic=True)
+        assert list(s) == [5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5]
+
+        s = Span(5, 15, 10, cyclic=True)
+        assert list(s) == [5, 6, 7, 8, 9, 0, 1, 2, 3, 4]
+
+
 def test_t():
     """Test translating positions"""
     s = Span(0, 10, 10, cyclic=True)
@@ -287,12 +430,6 @@ def test_t():
     assert s.t(1) == 1
     assert s.t(10) == 0
     assert s.t(-1) == 9
-
-    assert s.t(0, inclusive=False) == 0
-    assert s.t(1, inclusive=False) == 1
-    assert s.t(10, inclusive=False) == 10
-    assert s.t(11, inclusive=False) == 0
-    assert s.t(-1) == 10
 
 def test_t_index5():
     """Test translating positions"""
@@ -906,34 +1043,32 @@ class TestSub(object):
 
 class TestFullWrap(object):
 
-    def test_full_wrap_same_index(self):
-        s = Span(0, 0, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 0
-        s.c == 0
-        assert s._nwraps == 0
-        assert len(s) == 0
-        # assert not s.spans_origin()
-
-        s = Span(0, 1000, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 1000
-        s.c == 1000
-        assert s._nwraps == 0
-        assert len(s) == 1000
-        # assert s.spans_origin()
-
-        s = Span(0, 2000, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 1000
-        s.c == 2000
-        assert s._nwraps == 1
-        print(s.ranges())
-        assert len(s) == 2000
+    # def test_full_wrap_same_index(self):
+    #     s = Span(0, 0, 1000, cyclic=True, allow_wrap=True)
+    #     s.a == 0
+    #     s.b == 0
+    #     s.c == 0
+    #     assert len(s) == 0
+    #     # assert not s.spans_origin()
+    #
+    #     s = Span(0, 1000, 1000, cyclic=True, allow_wrap=True)
+    #     s.a == 0
+    #     s.b == 1000
+    #     s.c == 1000
+    #     assert len(s) == 1000
+    #     # assert s.spans_origin()
+    #
+    #     s = Span(0, 2000, 1000, cyclic=True, allow_wrap=True)
+    #     s.a == 0
+    #     s.b == 1000
+    #     s.c == 2000
+    #     assert s._nwraps == 1
+    #     print(s.ranges())
+    #     assert len(s) == 2000
 
     @pytest.mark.parametrize('start', [0])
     @pytest.mark.parametrize('end', [0, 1])
-    @pytest.mark.parametrize('nwraps', [0, 1, 2])
+    @pytest.mark.parametrize('nwraps', [0, 1, 2, 3])
     def test_full_wrap_same_index(self, nwraps, start, end):
         index = 0
         length = 1000
@@ -941,29 +1076,30 @@ class TestFullWrap(object):
         s.a == start
         s.b == end
         s.c == end + nwraps * length
-        assert s._nwraps == nwraps
         print(list(s.ranges()))
+
         assert len(s) == nwraps * length + end - start
 
     def test_full_wrap_plus_one(self):
         s = Span(0, 1, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 1
-        s.c == 1
+        assert s.a == 0
+        assert s.b == 1
+        assert s.c == 1
         assert len(s) == 1
         assert not s.spans_origin()
 
         s = Span(0, 1001, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 1001
-        s.c == 1001
+        assert s.a == 0
+        assert s.b == 1
+        assert s.c == 1001
         assert len(s) == 1001
         assert s.spans_origin()
 
         s = Span(0, 2001, 1000, cyclic=True, allow_wrap=True)
-        s.a == 0
-        s.b == 1001
-        s.c == 2001
+        assert s.a == 0
+        assert s.b == 1
+        assert s.c == 2001
+        print(list(s.ranges()))
         assert len(s) == 2001
         assert s.spans_origin()
 
@@ -983,6 +1119,7 @@ class TestFullWrap(object):
     def test_copy(self):
         s = Span(0, 1000, 1000, cyclic=True)
         s2 = s[:]
+        assert len(s) == 1000
         assert len(s2) == 1000
 
 
