@@ -10,7 +10,7 @@ class Span(Container, Iterable, Sized):
     __slots__ = ["a", "b", "c", "context_length", "cyclic", "index"]
 
     def __init__(
-        self, a, b, l, cyclic=False, index=0, allow_wrap=False, strict=False
+        self, a, b, l, cyclic=False, index=0, allow_wrap=True, strict=False
     ):
         """
         Constructs a new Span.
@@ -28,18 +28,19 @@ class Span(Container, Iterable, Sized):
         :param allow_wrap: if True (default False), the region can be initialized with a and b over the origin
         :type allow_wrap: bool
         """
-        if a > b and not cyclic:
-            raise IndexError(
-                "Start {} cannot exceed end {} for linear spans".format(a, b)
-            )
 
-        self.index = index
         self.context_length = l
+        self.index = index
         self.cyclic = cyclic
-        self.c = b
+
+        # special empty edge case
+        if cyclic and a == b:
+            _a = self.t(a - index, False)
+            self.a = self.b = self.c = _a
+            return
 
         # check bounds
-        if not cyclic or strict:
+        if strict or not cyclic:
             bounds = self.bounds()
             if not bounds[0] <= a < bounds[1]:
                 raise IndexError(
@@ -50,26 +51,43 @@ class Span(Container, Iterable, Sized):
                     "End {} must be in [{}, {}]".format(b, index, index + l)
                 )
 
-        # empty edge case
-        if a == b and a == l + index:
-            self.a = self.b = index
-            return
+        start_wrap = int((a - index) / l)
+        end_wrap = int((b - index - 1) / (l))
+
+        if start_wrap > end_wrap:
+            self.a = a
+            self.b = b
+            self.c = b
+            diff = end_wrap - start_wrap
+            raise IndexError("Could not interpret span {span}. Starting position wraps around "
+                             "context {i} times and end position wraps around {j} times."
+                             " A valid initialization would be Span({a}, {b}, ...)".format(
+                span=self, i=start_wrap, j=end_wrap, a=self.a, b=self.b - diff * self.context_length ))
 
         # set indices
         _a = a - index
         _b = b - index
 
         if _a >= l or _a < 0:
-            self.a = self.t(_a)
+            self.a = self.t(_a, False)
         else:
             self.a = a
-        if _b > l or _b < 0:
-            self.b = self.t(_b - 1) + 1
+        if _b > l:
+            self.b = self.t(_b-1, False)
+        elif _b < 0:
+            self.b = self.t(_b, False) + 1
         else:
             self.b = b
 
-        if allow_wrap is False:
+        if self.a > self.b and not cyclic:
+            raise IndexError("Start {} cannot be greater than end {} for cyclic spans.".format(self.a, self.b))
+
+        # allow wrap mean this will keep track of how many time the span wraps around the context
+        if allow_wrap and end_wrap - start_wrap:
+            self.c = self.b + (end_wrap - start_wrap) * l + 1
+        else:
             self.c = self.b
+
 
     @property
     def _nwraps(self):
@@ -79,14 +97,26 @@ class Span(Container, Iterable, Sized):
         """Return the bounds (end exclusive)"""
         return self.index, self.context_length + self.index
 
-    def t(self, p):
-        """Translate an index to a valid index"""
+    def t(self, p, throw_error=True):
+        """
+        Translates a position 'p' to an index within the bounds. If
+        :param p:
+        :type p:
+        :param strict:
+        :type strict:
+        :return:
+        :rtype:
+        """
         if p >= self.bounds()[1] or p < self.bounds()[0]:
-            if not self.cyclic:
+            if throw_error and not self.cyclic:
                 raise IndexError(
                     "Position {} outside of linear bounds {}".format(p, self.bounds())
                 )
-        return (p % self.context_length) + self.bounds()[0]
+        _x = p % self.context_length
+        if _x < 0:
+            return self.bound()[1] + _x
+        else:
+            return self.bounds()[0] + _x
 
     @staticmethod
     def _ranges_str(ranges):

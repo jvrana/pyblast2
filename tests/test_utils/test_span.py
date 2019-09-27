@@ -3,34 +3,174 @@ import pytest
 
 
 class TestInit:
-    @pytest.mark.parametrize("a", list(range(10)))
-    @pytest.mark.parametrize("b", list(range(10)))
-    @pytest.mark.parametrize("cyclic", [True, False])
-    def test_all_init(self, a, b, cyclic):
+
+    @pytest.mark.parametrize('a', [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
+    @pytest.mark.parametrize('b', [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
+    @pytest.mark.parametrize('index', [-1, 0, 1])
+    def test_linear(self, a, b, index):
+        """Any linear span outside of bounds or with a > b is invalid"""
         length = 20
-        if a > b and not cyclic:
+        bounds = [index, length + index]
+        if a < bounds[0] or a >= bounds[1] or b > bounds[1] or a > b:
             with pytest.raises(IndexError):
-                Span(a, b, length, cyclic)
+                Span(a, b, length, cyclic=False, index=index)
         else:
-            s = Span(a, b, length, cyclic)
+            s = Span(a, b, length, cyclic=False, index=index)
             assert s.a == a
             assert s.b == b
-            assert s.context_length == length
+
+    def test_cyclic_basic(self):
+        s = Span(5, 10, 20, cyclic=True)
+        assert s.a == 5
+        assert s.b == 10
+
+        s = Span(15, 5, 20, cyclic=True)
+        assert s.a == 15
+        assert s.b == 5
+
+        s = Span(-1, 5, 20, cyclic=True)
+        assert s.a == 19
+        assert s.b == 5
+
+    def test_cyclic_edge_case(self):
+        s = Span(5, 10, 10, cyclic=True)
+        s.a == 5
+        s.b == 10
+
+        s = Span(5, 0, 10, cyclic=True)
+        assert s.a == 5
+        assert s.b == 0
+
+    def test_cyclic_beyond_right_bound(self):
+        """Endpoints outside of right bound should be translated."""
+
+        # index 0
+        s = Span(5, 10, 10, cyclic=True, index=0)
+        assert s.b == 10
+
+        s = Span(5, 11, 10, cyclic=True, index=0)
+        assert s.b == 0
+
+        s = Span(5, 12, 10, cyclic=True, index=0)
+        assert s.b == 1
+
+        # index 1
+        s = Span(5, 10, 10, cyclic=True, index=1)
+        assert s.b == 10
+
+        s = Span(5, 11, 10, cyclic=True, index=1)
+        assert s.b == 11
+
+        s = Span(5, 12, 10, cyclic=True, index=1)
+        assert s.b == 1
+
+        s = Span(5, 13, 10, cyclic=True, index=1)
+        assert s.b == 2
+
+
+        # index 2
+        s = Span(5, 12, 10, cyclic=True, index=2)
+        assert s.b == 12
+
+        s = Span(5, 13, 10, cyclic=True, index=2)
+        assert s.b == 2
+
+    def test_cyclic_beyond_left_bound(self):
+        """Start points beyond left bound shoulde be translated"""
+        s = Span(5, -1, 10, cyclic=True, index=0)
+        assert s.b == 10
+        s = Span(5, 0, 10, cyclic=True, index=1)
+        assert s.b == 11
+        s = Span(5, 1, 10, cyclic=True, index=2)
+        assert s.b == 12
+
+        s = Span(-1, 5, 10, cyclic=True, index=0)
+        assert s.a == 9
+        assert s.b == 5
+
+        s = Span(0, 5, 10, cyclic=True, index=1)
+        assert s.a == 10
+        assert s.b == 5
+
+        s = Span(1, 5, 10, cyclic=True, index=2)
+        assert s.a == 11
+        assert s.b == 5
+
+    @pytest.mark.parametrize('abi', [
+        (5, 20, 0, False),
+        (5, 21, 0, True),
+        (5, 22, 1, True),
+        (5, 21, 1, False),
+        (-1, 5, 0, True),
+        (0, 5, 1, True),
+        (1, 5, 2, True)
+    ])
+    def test_cyclic_invalid_when_strict(self, abi):
+        a, b, index, does_raise = abi
+        if does_raise:
+            with pytest.raises(IndexError):
+                Span(a, b, 20, cyclic=True, index=index, strict=True)
+        else:
+            Span(a, b, 20, cyclic=True, index=index, strict=True)
+        assert Span(a, b, 20, cyclic=True, index=index, strict=False)
+
+    @pytest.mark.parametrize('a', range(0, 10, 3))
+    @pytest.mark.parametrize('b', range(0, 10, 3))
+    @pytest.mark.parametrize("cyclic", [True, False])
+    def test_init(self, a, b, cyclic):
+        length = 20
+        index = 0
+        if not cyclic:
+            if a > b or a >= length or b > length or a < index or b < index:
+                with pytest.raises(IndexError):
+                    Span(a, b, length, cyclic)
+        else:
+            s = Span(a, b, length, cyclic)
+
+            assert s.a == a
+            assert s.b == b
             assert s.context_length == length
             if cyclic and a > b:
                 assert len(s) == length - a + b
             else:
                 assert len(s) == b - a
 
-    def test_init_should_raise(self):
+    def test_linear_init_should_raise(self):
+        """start is beyond bounds, so IndexError should be raised"""
         with pytest.raises(IndexError):
-            Span(10, 10, 10, False)
+            Span(10, 10, 10, cyclic=False)
+
+    @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11, 19, 20, 21])
+    @pytest.mark.parametrize('index', [0, 1])
+    def test_special_case_empty_cyclic(self, x, index):
+        """Special case of empty span should be valid for any endpoints that are the same"""
+        s = Span(x, x, 10, cyclic=True, index=index)
+        assert len(s) == 0
+        expected = s.t(x - index)
+        assert s.a == expected
+        assert s.b == expected
+        assert s.c == expected
+
+    @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11])
+    def test_special_case_empty_linear(self, x):
+        """Special case of empty span should be valid for any endpoints that are the same"""
+        if x < 0 or x >= 10:
+            with pytest.raises(IndexError):
+                Span(x, x, 10, cyclic=False)
+        else:
+            s = Span(x, x, 10, cyclic=False)
+            assert s.a == x
+            assert s.b == x
+            assert s.c == x
+            assert len(s) == 0
 
     def test_init_should_raise2(self):
+        """Anything outside the bounds while strict should raise exception"""
         with pytest.raises(IndexError):
             Span(9408, 4219, 9408, True, strict=True)
 
     def test_init_linear(self):
+        """Basic constructor for linear span"""
         s = Span(10, 80, 100, False)
         assert s.a == 10
         assert s.b == 80
@@ -38,6 +178,7 @@ class TestInit:
         assert s.cyclic is False
 
     def test_init_cyclic(self):
+        """Basic constructor for cyclic spans"""
         s = Span(10, 5, 100, True)
         assert s.a == 10
         assert s.b == 5
@@ -45,17 +186,123 @@ class TestInit:
         assert s.cyclic
 
     def test_init_linear_raises(self):
+        """Linear span raises error when a > b"""
         Span(10, 5, 100, True)
         with pytest.raises(IndexError):
             Span(10, 5, 100, False)
 
     # TODO: handle wraps better
     def test_invalid_cyclic(self):
+        """When strict is True, any indices outside bounds is invalid."""
         print(Span(0, 10, 10, True))
         with pytest.raises(IndexError):
             print(Span(0, 10, 9, True, strict=True))
         print(Span(0, 10, 9, True, allow_wrap=True))
 
+    class TestInitWraps(object):
+        def test_wrapped(self):
+            s = Span(5, 9, 20, cyclic=True)
+            assert s.a == 5
+            assert s.b == 9
+            assert s.c == 9
+            assert len(s) == 4
+
+            # not exactly intuitive, but since index=0, b is not equal to 8 (not 9). Transition from 20 to 0 is equivalent.
+            s = Span(5, 29, 20, cyclic=True)
+            assert s.a == 5
+            assert s.b == 8
+            assert s.c == 29
+            assert len(s) == 23
+
+            s = Span(5, 49, 20, cyclic=True)
+            assert s.a == 5
+            assert s.b == 8
+            assert s.c == 49
+            assert len(s) == 43
+
+            s = Span(25, 49, 20, cyclic=True)
+            assert s.a == 5
+            assert s.b == 8
+            assert s.c == 49 - 20
+            assert len(s) == 23
+
+        def test_wrapped_when_allow_wrapping_is_false(self):
+            s = Span(5, 11, 10, cyclic=True, allow_wrap=False)
+            assert s.a == 5
+            assert s.b == 0
+            assert s.c == 0
+            assert len(s) == 5
+
+            s = Span(5, 12, 10, cyclic=True, allow_wrap=False)
+            assert s.a == 5
+            assert s.b == 1
+            assert s.c == 1
+            assert len(s) == 6
+
+        def test_wrapped_reverse(self):
+            s = Span(15, 11, 10, cyclic=True)
+            assert s.a == 5
+            assert s.b == 0
+            assert len(s) == 5
+
+        def test_invalid_wrapping(self):
+            assert Span(15, 11, 10, cyclic=True, index=0)
+            with pytest.raises(IndexError):
+                Span(15, 11, 10, cyclic=True, index=1)
+            with pytest.raises(IndexError):
+                Span(15, 10, 10, cyclic=True, index=0)
+
+        def test_complete_wrap_plus_one(self):
+            s = Span(0, 11, 10, cyclic=True)
+            assert s.a == 0
+            assert s.b == 0
+            assert s.c == 11
+            assert len(s) == 10
+
+class TestRanges(object):
+
+    def test_linear_range(self):
+        s = Span(5, 10, 20)
+        assert list(s) == [5,6,7,8,9]
+
+    def test_empty_range(self):
+        s = Span(5, 5, 20)
+        assert list(s) == []
+
+    def test_cyclic_range(self):
+        s = Span(8, 10, 10, cyclic=True)
+        assert list(s) == [8, 9]
+
+        s = Span(8, 0, 10, cyclic=True)
+        assert list(s) == [8, 9]
+
+        s = Span(8, 2, 10, cyclic=True)
+        assert list(s) == [8, 9, 0, 1]
+
+def test_t():
+    """Test translating positions"""
+    s = Span(0, 10, 10, cyclic=True)
+
+    assert s.t(0) == 0
+    assert s.t(1) == 1
+    assert s.t(10) == 0
+    assert s.t(-1) == 9
+
+    assert s.t(0, inclusive=False) == 0
+    assert s.t(1, inclusive=False) == 1
+    assert s.t(10, inclusive=False) == 10
+    assert s.t(11, inclusive=False) == 0
+    assert s.t(-1) == 10
+
+def test_t_index5():
+    """Test translating positions"""
+    s = Span(0, 10, 10, cyclic=True, index=5)
+
+    assert s.t(0) == 5
+    assert s.t(1) == 6
+    assert s.t(9) == 14
+    assert s.t(10) == 5
+    assert s.t(-1) == 14
 
 @pytest.mark.parametrize(
     ("a", "b", "does_span"),
@@ -70,11 +317,11 @@ def test_len_linear():
     s = Span(5, 20, 100, False)
     assert len(s) == 15
 
-
-def test_len_cyclic():
-    s = Span(90, 10, 100, True)
-    assert len(s) == 20
-
+@pytest.mark.parametrize('b', [5, 9, 10, 11, 12])
+@pytest.mark.parametrize('index', [-2, 0, 5])
+def test_len_cyclic(b, index):
+    s = Span(5, b, 10, cyclic=True, index=index)
+    assert len(s) == b - 5
 
 def test_iter_linear():
     s = Span(10, 20, 100, False)
@@ -91,6 +338,7 @@ def test_str():
 
 
 def test_eq():
+    """Tests for span equality."""
     s1 = Span(10, 90, 100, True)
     s2 = Span(10, 90, 100, True)
     assert s1 == s2
@@ -194,6 +442,14 @@ class TestContains:
 
 
 class TestIntersection:
+    """These test the intersection between two spans, as in below:
+
+    ..code-block::
+
+        |-------|
+            |------|
+            |---|    << intersection
+    """
     @staticmethod
     def x(a1, b1, a2, b2):
         s1 = Span(a1, b1, 100, True)
@@ -234,6 +490,8 @@ class TestIntersection:
 
 
 class TestSlice(object):
+    """These test slicing and indexing"""
+
     @pytest.mark.parametrize("i", list(range(-20, 20)))
     @pytest.mark.parametrize("cyclic", [True, False])
     def test_indexing(self, i, cyclic):
@@ -334,6 +592,16 @@ class TestSlice(object):
 
 
 class TestDifference:
+    """These test the 'difference' between spans. The difference of two spans
+    is outlined here:
+
+    ..code-block::
+
+        |----------|
+           |----|
+        |--|    |--|  << difference
+    """
+
     def test_linear_diff(self):
 
         s1 = Span(20, 80, 100, True)
@@ -385,6 +653,8 @@ class TestDifference:
 
 
 class TestConsecutive:
+    """These test whether spans are consecutive"""
+
     def test_consecutive(self):
         s1 = Span(20, 80, 100, True)
         s2 = Span(81, 95, 100, True)
@@ -408,73 +678,75 @@ class TestConsecutive:
         assert s1.consecutive(s2)
         assert not s2.consecutive(s1)
 
+class TestConnectingSpans:
+    """These tests connecting spans."""
 
-def test_connecting_span():
-    s1 = Span(20, 50, 100, False)
-    s2 = Span(60, 75, 100, False)
-    s3 = s1.connecting_span(s2)
-    assert s3.a == 50
-    assert s3.b == 60
-
-
-def test_connecting_span_cyclic():
-    s1 = Span(10, 20, 100, True)
-    s2 = Span(80, 90, 100, True)
-    s3 = s1.connecting_span(s2)
-    assert s3.a == 20
-    assert s3.b == 80
-
-    s4 = s2.connecting_span(s1)
-    assert s4.a == 90
-    assert s4.b == 10
+    def test_connecting_span(self):
+        s1 = Span(20, 50, 100, False)
+        s2 = Span(60, 75, 100, False)
+        s3 = s1.connecting_span(s2)
+        assert s3.a == 50
+        assert s3.b == 60
 
 
-def test_connecting_span_at_origin():
+    def test_connecting_span_cyclic(self):
+        s1 = Span(10, 20, 100, True)
+        s2 = Span(80, 90, 100, True)
+        s3 = s1.connecting_span(s2)
+        assert s3.a == 20
+        assert s3.b == 80
 
-    s1 = Span(50, 60, 100, True)
-    s2 = Span(0, 30, 100, True)
-    s3 = s1.connecting_span(s2)
-    assert s3.a == 60
-    assert s3.b == 0
-
-
-def test_connectin_span_over_origin():
-
-    s1 = Span(50, 60, 100, True)
-    s2 = Span(5, 30, 100, True)
-    s3 = s1.connecting_span(s2)
-    assert s3.a == 60
-    assert s3.b == 5
+        s4 = s2.connecting_span(s1)
+        assert s4.a == 90
+        assert s4.b == 10
 
 
-def test_self_connecting_span():
-    s1 = Span(50, 60, 100, True)
-    s2 = s1.connecting_span(s1)
-    assert s2.a == 60
-    assert s2.b == 50
+    def test_connecting_span_at_origin(self):
+        s1 = Span(50, 60, 100, True)
+        s2 = Span(0, 30, 100, True)
+        s3 = s1.connecting_span(s2)
+        assert s3.a == 60
+        assert s3.b == 0
 
 
-def test_connectin_span_with_overlap():
-
-    s1 = Span(10, 30, 100, True)
-    s2 = Span(20, 50, 100, True)
-    assert not s1.connecting_span(s2)
-
-
-def test_connectin_span_consecurive_is_empty():
-
-    s1 = Span(10, 30, 100, True)
-    s2 = Span(30, 50, 100, True)
-    assert not s1.overlaps_with(s2)
-    s3 = s1.connecting_span(s2)
-    assert len(s3) == 0
+    def test_connecting_span_over_origin(self):
+        """The connecting span should span the origin"""
+        s1 = Span(50, 60, 100, True)
+        s2 = Span(5, 30, 100, True)
+        s3 = s1.connecting_span(s2)
+        assert s3.a == 60
+        assert s3.b == 5
 
 
-def test_connecting_span_linear_no_span():
-    s1 = Span(10, 99, 100, False)
-    s2 = Span(0, 10, 100, False)
-    s3 = s1.connecting_span(s2)
-    assert s3 is None
+    def test_self_connecting_span(self):
+        """The connecting span with a cyclic span should be equivalent to its inverse span."""
+        s1 = Span(50, 60, 100, True)
+        s2 = s1.connecting_span(s1)
+        assert s2.a == 60
+        assert s2.b == 50
+
+
+    def test_connecting_span_with_overlap(self):
+        """There is no connecting span with overlapping spans."""
+        s1 = Span(10, 30, 100, True)
+        s2 = Span(20, 50, 100, True)
+        assert not s1.connecting_span(s2)
+
+
+    def test_connecting_span_consecutive_is_empty(self):
+        """The connecting span between two consecutive spans is empty."""
+        s1 = Span(10, 30, 100, True)
+        s2 = Span(30, 50, 100, True)
+        assert not s1.overlaps_with(s2)
+        s3 = s1.connecting_span(s2)
+        assert len(s3) == 0
+
+
+    def test_connecting_span_linear_no_span(self):
+        s1 = Span(10, 99, 100, False)
+        s2 = Span(0, 10, 100, False)
+        s3 = s1.connecting_span(s2)
+        assert s3 is None
 
 
 class TestEmptySpan:
@@ -512,10 +784,13 @@ class TestEmptySpan:
 
 
 class TestAllowWrap:
-    @pytest.mark.parametrize("delta", range(20))
+
+    @pytest.mark.parametrize("delta", range(0, 21, 5))
     @pytest.mark.parametrize("index", [0, 1, 2])
     def test_allow_wrap(self, delta, index):
         s = Span(90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=False)
+        print(list(s.ranges()))
+        print(list(s))
         assert len(s) == 8
 
     @pytest.mark.parametrize("index", [0, 1, 2])
@@ -718,3 +993,5 @@ class TestNWraps():
         l = 1000
         s = Span(100, 100 + i*l, l, cyclic=True, allow_wrap=True)
         assert len(s) == i*l
+
+
