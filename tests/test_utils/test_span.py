@@ -3,10 +3,9 @@ import pytest
 
 
 class TestInit:
-
-    @pytest.mark.parametrize('a', [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
-    @pytest.mark.parametrize('b', [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
-    @pytest.mark.parametrize('index', [-1, 0, 1])
+    @pytest.mark.parametrize("a", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
+    @pytest.mark.parametrize("b", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
+    @pytest.mark.parametrize("index", [-1, 0, 1])
     def test_linear(self, a, b, index):
         """Any linear span outside of bounds or with a > b is invalid"""
         length = 20
@@ -67,7 +66,6 @@ class TestInit:
         s = Span(5, 13, 10, cyclic=True, index=1)
         assert s.b == 3
 
-
         # index 2
         s = Span(5, 12, 10, cyclic=True, index=2)
         assert s.b == 12
@@ -96,15 +94,18 @@ class TestInit:
         assert s.a == 11
         assert s.b == 5
 
-    @pytest.mark.parametrize('abi', [
-        (5, 20, 0, False),
-        (5, 21, 0, True),
-        (5, 22, 1, True),
-        (5, 21, 1, False),
-        (-1, 5, 0, True),
-        (0, 5, 1, True),
-        (1, 5, 2, True)
-    ])
+    @pytest.mark.parametrize(
+        "abi",
+        [
+            (5, 20, 0, False),
+            (5, 21, 0, True),
+            (5, 22, 1, True),
+            (5, 21, 1, False),
+            (-1, 5, 0, True),
+            (0, 5, 1, True),
+            (1, 5, 2, True),
+        ],
+    )
     def test_cyclic_invalid_when_strict(self, abi):
         a, b, index, does_raise = abi
         if does_raise:
@@ -114,8 +115,8 @@ class TestInit:
             Span(a, b, 20, cyclic=True, index=index, strict=True)
         assert Span(a, b, 20, cyclic=True, index=index, strict=False)
 
-    @pytest.mark.parametrize('a', range(0, 10, 3))
-    @pytest.mark.parametrize('b', range(0, 10, 3))
+    @pytest.mark.parametrize("a", range(0, 10, 3))
+    @pytest.mark.parametrize("b", range(0, 10, 3))
     @pytest.mark.parametrize("cyclic", [True, False])
     def test_init(self, a, b, cyclic):
         length = 20
@@ -140,8 +141,8 @@ class TestInit:
         with pytest.raises(IndexError):
             Span(10, 10, 10, cyclic=False)
 
-    @pytest.mark.parametrize('x', [0, 5, 6, 7, 8, 9])
-    @pytest.mark.parametrize('index', [0], ids=['index=0'])
+    @pytest.mark.parametrize("x", [0, 5, 6, 7, 8, 9])
+    @pytest.mark.parametrize("index", [0], ids=["index=0"])
     def test_special_case_empty_cyclic(self, x, index):
         """Special case of empty span should be valid for any endpoints that are the same"""
         s = Span(x, x, 10, cyclic=True, index=index)
@@ -150,8 +151,8 @@ class TestInit:
         assert s.b == x
         assert s.c == x
 
-    @pytest.mark.parametrize('x', [1, 5, 6, 7, 8, 9, 10])
-    @pytest.mark.parametrize('index', [1], ids=['index=0'])
+    @pytest.mark.parametrize("x", [1, 5, 6, 7, 8, 9, 10])
+    @pytest.mark.parametrize("index", [1], ids=["index=0"])
     def test_special_case_empty_cyclic_index1(self, x, index):
         """Special case of empty span should be valid for any endpoints that are the same"""
         s = Span(x, x, 10, cyclic=True, index=index)
@@ -203,7 +204,7 @@ class TestInit:
         assert s.b == 10
         assert s.c == s.b
 
-    @pytest.mark.parametrize('x', [-1, 0, 1, 5, 10, 11])
+    @pytest.mark.parametrize("x", [-1, 0, 1, 5, 10, 11])
     def test_special_case_empty_linear(self, x):
         """Special case of empty span should be valid for any endpoints that are the same"""
         if x < 0 or x >= 10:
@@ -314,10 +315,9 @@ class TestInit:
 
 
 class TestRanges(object):
-
     def test_linear_range(self):
         s = Span(5, 10, 20)
-        assert list(s) == [5,6,7,8,9]
+        assert list(s) == [5, 6, 7, 8, 9]
 
     def test_empty_range(self):
         s = Span(5, 5, 20)
@@ -404,14 +404,14 @@ class TestRanges(object):
         assert list(s) == list(range(5, 11)) + list(range(1, 5))
 
         s = Span(5, 25, 10, cyclic=True, index=1)
-        assert list(s) == list(range(5, 11)) + list(range(1,11)) + list(range(1,5))
+        assert list(s) == list(range(5, 11)) + list(range(1, 11)) + list(range(1, 5))
         assert len(s) == 20
         assert s.a == 5
         assert s.b == 5
         assert s.c == 25
 
         s = Span(5, 26, 10, cyclic=True, index=1)
-        assert list(s) == list(range(5, 11)) + list(range(1,11)) + list(range(1,6))
+        assert list(s) == list(range(5, 11)) + list(range(1, 11)) + list(range(1, 6))
         assert len(s) == 21
         assert s.a == 5
         assert s.b == 6
@@ -429,8 +429,6 @@ class TestRanges(object):
 
         s = Span(0, 21, 10, cyclic=True)
         assert list(s) == list(range(0, 10)) + list(range(0, 10)) + [0]
-
-
 
     def test_cyclic_wrapped_beyond_rbound(self):
         s = Span(9, 15, 10, cyclic=True)
@@ -452,6 +450,7 @@ def test_t():
     assert s.t(10) == 0
     assert s.t(-1) == 9
 
+
 def test_t_index5():
     """Test translating positions"""
     s = Span(0, 10, 10, cyclic=True, index=5)
@@ -461,6 +460,7 @@ def test_t_index5():
     assert s.t(9) == 14
     assert s.t(10) == 5
     assert s.t(-1) == 14
+
 
 @pytest.mark.parametrize(
     ("a", "b", "does_span"),
@@ -475,11 +475,13 @@ def test_len_linear():
     s = Span(5, 20, 100, False)
     assert len(s) == 15
 
-@pytest.mark.parametrize('b', [5, 9, 10, 11, 12])
-@pytest.mark.parametrize('index', [-2, 0, 5])
+
+@pytest.mark.parametrize("b", [5, 9, 10, 11, 12])
+@pytest.mark.parametrize("index", [-2, 0, 5])
 def test_len_cyclic(b, index):
     s = Span(5, b, 10, cyclic=True, index=index)
     assert len(s) == b - 5
+
 
 def test_iter_linear():
     s = Span(10, 20, 100, False)
@@ -608,6 +610,7 @@ class TestIntersection:
             |------|
             |---|    << intersection
     """
+
     @staticmethod
     def x(a1, b1, a2, b2):
         s1 = Span(a1, b1, 100, True)
@@ -652,12 +655,12 @@ class TestSlice(object):
 
     @pytest.mark.parametrize("i", list(range(-20, 20)))
     @pytest.mark.parametrize("cyclic", [True, False])
-    @pytest.mark.parametrize('index', [0, 1])
+    @pytest.mark.parametrize("index", [0, 1])
     def test_indexing(self, i, cyclic, index):
 
         s = Span(5, 15, 20, cyclic, index=index)
         assert len(s) == 10
-        if (i < -len(s) or i >= len(s)):
+        if i < -len(s) or i >= len(s):
             with pytest.raises(IndexError):
                 print(s[i])
         else:
@@ -676,7 +679,7 @@ class TestSlice(object):
         assert s[0] == 5
         assert s[6] == 1
         assert s[-1] == 1
-        assert s[len(s)-1] == 1
+        assert s[len(s) - 1] == 1
 
     def test_slice_indexing_basic_index0(self):
         s = Span(5, 11, 10, cyclic=True, index=0)
@@ -847,6 +850,7 @@ class TestSlice(object):
         assert s1.b == 1
         assert s1.c == 11
 
+
 class TestDifference:
     """These test the 'difference' between spans. The difference of two spans
     is outlined here:
@@ -934,6 +938,7 @@ class TestConsecutive:
         assert s1.consecutive(s2)
         assert not s2.consecutive(s1)
 
+
 class TestConnectingSpans:
     """These tests connecting spans."""
 
@@ -943,7 +948,6 @@ class TestConnectingSpans:
         s3 = s1.connecting_span(s2)
         assert s3.a == 50
         assert s3.b == 60
-
 
     def test_connecting_span_cyclic(self):
         s1 = Span(10, 20, 100, True)
@@ -956,14 +960,12 @@ class TestConnectingSpans:
         assert s4.a == 90
         assert s4.b == 10
 
-
     def test_connecting_span_at_origin(self):
         s1 = Span(50, 60, 100, True)
         s2 = Span(0, 30, 100, True)
         s3 = s1.connecting_span(s2)
         assert s3.a == 60
         assert s3.b == 0
-
 
     def test_connecting_span_over_origin(self):
         """The connecting span should span the origin"""
@@ -973,7 +975,6 @@ class TestConnectingSpans:
         assert s3.a == 60
         assert s3.b == 5
 
-
     def test_self_connecting_span(self):
         """The connecting span with a cyclic span should be equivalent to its inverse span."""
         s1 = Span(50, 60, 100, True)
@@ -981,13 +982,11 @@ class TestConnectingSpans:
         assert s2.a == 60
         assert s2.b == 50
 
-
     def test_connecting_span_with_overlap(self):
         """There is no connecting span with overlapping spans."""
         s1 = Span(10, 30, 100, True)
         s2 = Span(20, 50, 100, True)
         assert not s1.connecting_span(s2)
-
 
     def test_connecting_span_consecutive_is_empty(self):
         """The connecting span between two consecutive spans is empty."""
@@ -996,7 +995,6 @@ class TestConnectingSpans:
         assert not s1.overlaps_with(s2)
         s3 = s1.connecting_span(s2)
         assert len(s3) == 0
-
 
     def test_connecting_span_linear_no_span(self):
         s1 = Span(10, 99, 100, False)
@@ -1040,11 +1038,12 @@ class TestEmptySpan:
 
 
 class TestAllowWrap:
-
     @pytest.mark.parametrize("delta", range(0, 21, 5))
     @pytest.mark.parametrize("index", [0, 1, 2])
     def test_allow_wrap(self, delta, index):
-        s = Span(90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=False)
+        s = Span(
+            90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=False
+        )
         print(list(s.ranges()))
         print(list(s))
         assert len(s) == 8
@@ -1194,13 +1193,20 @@ class TestFullWrap(object):
     #     print(s.ranges())
     #     assert len(s) == 2000
 
-    @pytest.mark.parametrize('start', [0])
-    @pytest.mark.parametrize('end', [0, 1])
-    @pytest.mark.parametrize('nwraps', [0, 1, 2, 3])
+    @pytest.mark.parametrize("start", [0])
+    @pytest.mark.parametrize("end", [0, 1])
+    @pytest.mark.parametrize("nwraps", [0, 1, 2, 3])
     def test_full_wrap_same_index(self, nwraps, start, end):
         index = 0
         length = 1000
-        s = Span(start, end + nwraps * length, length, cyclic=True, allow_wrap=True, index=index)
+        s = Span(
+            start,
+            end + nwraps * length,
+            length,
+            cyclic=True,
+            allow_wrap=True,
+            index=index,
+        )
         s.a == start
         s.b == end
         s.c == end + nwraps * length
@@ -1260,12 +1266,9 @@ class TestFullWrap(object):
         assert s.c == s2.c
 
 
-class TestNWraps():
-
-    @pytest.mark.parametrize('i', [0, 1, 2])
+class TestNWraps:
+    @pytest.mark.parametrize("i", [0, 1, 2])
     def test_nwraps(self, i):
         l = 1000
-        s = Span(100, 100 + i*l, l, cyclic=True, allow_wrap=True)
-        assert len(s) == i*l
-
-
+        s = Span(100, 100 + i * l, l, cyclic=True, allow_wrap=True)
+        assert len(s) == i * l

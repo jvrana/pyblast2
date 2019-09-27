@@ -9,9 +9,7 @@ class SpanError(Exception):
 class Span(Container, Iterable, Sized):
     __slots__ = ["a", "b", "c", "context_length", "cyclic", "index"]
 
-    def __init__(
-        self, a, b, l, cyclic=False, index=0, allow_wrap=True, strict=False
-    ):
+    def __init__(self, a, b, l, cyclic=False, index=0, allow_wrap=True, strict=False):
         """
         Constructs a new Span.
 
@@ -58,10 +56,17 @@ class Span(Container, Iterable, Sized):
             self.c = b
             diff = end_wrap - start_wrap
             # return self._set_as_empty(a)
-            raise IndexError("Could not interpret span {span}. Starting position wraps around "
-                             "context {i} times and end position wraps around {j} times."
-                             " A valid initialization would be Span({a}, {b}, ...)".format(
-                span=self, i=start_wrap, j=end_wrap, a=self.a, b=self.b - diff * self.context_length ))
+            raise IndexError(
+                "Could not interpret span {span}. Starting position wraps around "
+                "context {i} times and end position wraps around {j} times."
+                " A valid initialization would be Span({a}, {b}, ...)".format(
+                    span=self,
+                    i=start_wrap,
+                    j=end_wrap,
+                    a=self.a,
+                    b=self.b - diff * self.context_length,
+                )
+            )
 
         # set indices
         _a = a - index
@@ -79,7 +84,11 @@ class Span(Container, Iterable, Sized):
             self.b = b
 
         if self.a > self.b and not cyclic:
-            raise IndexError("Start {} cannot be greater than end {} for linear spans.".format(self.a, self.b))
+            raise IndexError(
+                "Start {} cannot be greater than end {} for linear spans.".format(
+                    self.a, self.b
+                )
+            )
 
         # allow wrap mean this will keep track of how many time the span wraps around the context
         if allow_wrap and end_wrap - start_wrap:
@@ -92,7 +101,6 @@ class Span(Container, Iterable, Sized):
         _a = self.t(a - self.index, False)
         self.a = self.b = self.c = _a
         return
-
 
     @property
     def _nwraps(self):
@@ -410,10 +418,12 @@ class Span(Container, Iterable, Sized):
             self._check_index_pos(val.stop)
 
             if val.step == -1:
-                return self[val.start:val.stop].invert()
+                return self[val.start : val.stop].invert()
             elif val.step is not None and val.step != 1:
                 raise ValueError(
-                    "{} slicing does not support step {}.".format(self.__class__.__name__, val.step)
+                    "{} slicing does not support step {}.".format(
+                        self.__class__.__name__, val.step
+                    )
                 )
 
             if val.start is None:
@@ -458,7 +468,7 @@ class Span(Container, Iterable, Sized):
             c=self.c,
             cyclic=self.cyclic,
             index=self.index,
-            n=self._nwraps
+            n=self._nwraps,
         )
 
     def __str__(self):
