@@ -633,7 +633,6 @@ class BioBlast(TmpBlast):
                             cyclic=is_circular,
                             index=1,
                             allow_wrap=True,
-                            does_wrap_origin=True,
                         )
                         v[x]["start"] = span.a
                         v[x]["end"] = span.b

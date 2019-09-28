@@ -155,6 +155,15 @@ class Span(Container, Iterable, Sized):
         else:
             return [(self.a, self.b)]
 
+    def slices(self):
+        """
+        Return list of slices
+
+        :return:
+        :rtype:
+        """
+        return [slice(*r) for r in self.ranges()]
+
     def new(self, a, b, allow_wrap=True):
         """Create a new span using the same context."""
         if a is None:
@@ -340,6 +349,8 @@ class Span(Container, Iterable, Sized):
         :return: inverted regions
         :rtype: tuple
         """
+        if len(self) >= self.context_length:
+            return (self[self.a, self.a], None)
         if self.cyclic:
             return (self[self.b, self.a], None)
         else:

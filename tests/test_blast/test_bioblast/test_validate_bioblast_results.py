@@ -295,7 +295,6 @@ class TestCircular:
             index=0,
             cyclic=result["subject"]["circular"],
             allow_wrap=True,
-            does_wrap_origin=True,
         )
         query_span = Span(
             result["query"]["start"] - 1,
@@ -304,7 +303,6 @@ class TestCircular:
             cyclic=result["query"]["circular"],
             index=0,
             allow_wrap=True,
-            does_wrap_origin=True,
         )
 
         print(query_span.ranges())
