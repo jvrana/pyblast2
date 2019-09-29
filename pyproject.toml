@@ -31,6 +31,7 @@ pylint = "^2.3"
 tox = "^3.13"
 tox-conda = "^0.2.0"
 keats = "^0.2.19"
+numpy = "^1.17"
 
 [tool.poetry.scripts]
 pyblast = 'pyblast:cli.main'

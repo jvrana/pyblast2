@@ -1,5 +1,6 @@
 from pyblast.utils import Span
 import pytest
+import numpy as np
 
 
 class TestInit:
@@ -1272,3 +1273,12 @@ class TestNWraps:
         l = 1000
         s = Span(100, 100 + i * l, l, cyclic=True, allow_wrap=True)
         assert len(s) == i * l
+
+
+class TestSlicingNumpy:
+
+    def test_numpy_slice(self):
+        s = Span(50, 120, 100, cyclic=True)
+        a = np.arange(100, 200)
+        b = a[s]
+        print(b)
