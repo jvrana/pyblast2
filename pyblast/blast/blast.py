@@ -536,7 +536,8 @@ class BioBlast(TmpBlast):
     def parse_results(self, delim=","):
         """
         Parses the blast output to a digestable JSON output of the following format. Results
-        can be found in `self.results` or returned from this function.
+        can be found in `self.results` or returned from this function. Starting and ending
+        positions are inclusive and starting index is 1.
 
         ..code-block::
 
@@ -603,6 +604,7 @@ class BioBlast(TmpBlast):
                     v[x]["origin_key"] = origin_key
                     v[x]["origin_record_id"] = record.id
                     v[x]["origin_sequence_length"] = len(record.seq)
+                    v[x]['raw_end'] = v[x]['end']
 
                     s, e = v[x]["start"], v[x]["end"]
                     reverse = v[x]["strand"] != 1
@@ -610,21 +612,6 @@ class BioBlast(TmpBlast):
                         s, e = e, s
                     if e - s < 0:
                         raise ValueError("End cannot be less than start")
-                    elif e - s >= len(record.seq):
-                        if not reverse:
-                            v[x]["start"] = 1
-                            v[x]["end"] = 0
-                        else:
-                            v[x]["start"] = 0
-                            v[x]["end"] = 1
-                        # TODO: why is this even a warning?
-                        warn(
-                            PyBlastWarning(
-                                "A circular {} {} overlapped the origins".format(
-                                    x, origin_key
-                                )
-                            )
-                        )
                     elif is_circular:
                         span = Span(
                             s,
@@ -636,8 +623,9 @@ class BioBlast(TmpBlast):
                         )
                         v[x]["start"] = span.a
                         v[x]["end"] = span.b
+                        v[x]["raw_end"] = span.c
                         if reverse:
-                            v[x]["start"], v[x]["end"] = v[x]["end"], v[x]["start"]
+                            v[x]["start"], v[x]["end"], v[x]['raw_end'] = v[x]["end"], v[x]["start"], v[x]['start']
                 v["meta"]["span_origin"] = self.span_origin
 
         parsed_results = self._filter_results(parsed_results)

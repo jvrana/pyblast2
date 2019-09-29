@@ -7,7 +7,7 @@ class SpanError(Exception):
 
 
 class Span(Container, Iterable, Sized):
-    __slots__ = ["a", "b", "c", "context_length", "cyclic", "index"]
+    __slots__ = ["_a", "_b", "_c", "_context_length", "_cyclic", "_index", "_strict"]
 
     def __init__(self, a, b, l, cyclic=False, index=0, allow_wrap=True, strict=False):
         """
@@ -23,20 +23,22 @@ class Span(Container, Iterable, Sized):
         :type cyclic: bool
         :param index: the starting index of the region
         :type index: int
-        :param allow_wrap: if True (default False), the region can be initialized with a and b over the origin
+        :param allow_wrap: if True (default False), spans that wrap around context more than once will be mapped
+                            as if the span only wrapped around once.
         :type allow_wrap: bool
         """
 
-        self.context_length = l
-        self.index = index
-        self.cyclic = cyclic
+        self._context_length = l
+        self._index = index
+        self._cyclic = cyclic
+        self._strict = strict
 
         # special empty edge case
         if cyclic and a == b:
             return self._set_as_empty(a)
 
         # check bounds
-        if strict or not cyclic:
+        if self._strict or not cyclic:
             bounds = self.bounds()
             if not bounds[0] <= a < bounds[1]:
                 raise IndexError(
@@ -51,9 +53,9 @@ class Span(Container, Iterable, Sized):
         end_wrap = int((b - index - 1) / (l))
 
         if start_wrap > end_wrap:
-            self.a = a
-            self.b = b
-            self.c = b
+            self._a = a
+            self._b = b
+            self._c = b
             diff = end_wrap - start_wrap
             # return self._set_as_empty(a)
             raise IndexError(
@@ -63,8 +65,8 @@ class Span(Container, Iterable, Sized):
                     span=self,
                     i=start_wrap,
                     j=end_wrap,
-                    a=self.a,
-                    b=self.b - diff * self.context_length,
+                    a=self._a,
+                    b=self._b - diff * self._context_length,
                 )
             )
 
@@ -73,59 +75,81 @@ class Span(Container, Iterable, Sized):
         _b = b - index
 
         if _a >= l or _a < 0:
-            self.a = self.t(_a, False)
+            self._a = self.t(_a, False)
         else:
-            self.a = a
+            self._a = a
         if _b > l:
-            self.b = self.t(_b - 1, False) + 1
+            self._b = self.t(_b - 1, False) + 1
         elif _b < 0:
-            self.b = self.t(_b, False) + 1
+            self._b = self.t(_b, False) + 1
         else:
-            self.b = b
+            self._b = b
 
-        if self.a > self.b and not cyclic:
+        if self._a > self._b and not cyclic:
             raise IndexError(
                 "Start {} cannot be greater than end {} for linear spans.".format(
-                    self.a, self.b
+                    self._a, self._b
                 )
             )
 
         # allow wrap mean this will keep track of how many time the span wraps around the context
         if allow_wrap and end_wrap - start_wrap:
-            _c = self.b + (end_wrap - start_wrap) * l
-            self.c = self.b + (end_wrap - start_wrap) * l
+            _c = self._b + (end_wrap - start_wrap) * l
+            self._c = self._b + (end_wrap - start_wrap) * l
         else:
-            self.c = self.b
+            self._c = self._b
+
+    @property
+    def index(self):
+        return self._index
+
+    @property
+    def a(self):
+        return self._a
+
+    @property
+    def b(self):
+        return self._b
+
+    @property
+    def c(self):
+        return self._c
+
+    @property
+    def cyclic(self):
+        return self._cyclic
+
+    @property
+    def context_length(self):
+        return self._context_length
 
     def _set_as_empty(self, a):
-        _a = self.t(a - self.index, False)
-        self.a = self.b = self.c = _a
+        _a = self.t(a - self._index, False)
+        self._a = self._b = self._c = _a
         return
 
     @property
     def _nwraps(self):
-        return int((self.c - self.index - 1) / (self.context_length))
+        return int((self._c - self._index - 1) / (self._context_length))
 
     def bounds(self) -> tuple:
-        """Return the bounds (end exclusive)"""
-        return self.index, self.context_length + self.index
+        """Return the bdounds (end exclusive)"""
+        return self._index, self._context_length + self._index
 
     def t(self, p, throw_error=True):
         """
         Translates a position 'p' to an index within the context bounds. If
         :param p:
         :type p:
-        :param strict:
-        :type strict:
         :return:
         :rtype:
         """
         if p >= self.bounds()[1] or p < self.bounds()[0]:
-            if throw_error and not self.cyclic:
+            if throw_error and not self._cyclic:
                 raise IndexError(
                     "Position {} outside of linear bounds {}".format(p, self.bounds())
                 )
-        _x = p % self.context_length
+        _x = p % self._context_length
         if _x < 0:
             return self.bounds()[1] + _x
         else:
@@ -145,15 +169,15 @@ class Span(Container, Iterable, Sized):
         """
 
         # TODO: replace this with _nwraps > 0
-        if self.cyclic and (self.b < self.a or self._nwraps):
-            ranges = [(self.a, self.bounds()[1])]
+        if self._cyclic and (self._b < self._a or self._nwraps):
+            ranges = [(self._a, self.bounds()[1])]
             for _ in range(self._nwraps - 1):
                 ranges.append(self.bounds())
-            ranges.append((self.bounds()[0], self.b))
+            ranges.append((self.bounds()[0], self._b))
 
             return ranges
         else:
-            return [(self.a, self.b)]
+            return [(self._a, self._b)]
 
     def slices(self):
         """
@@ -164,19 +188,33 @@ class Span(Container, Iterable, Sized):
         """
         return [slice(*r) for r in self.ranges()]
 
-    def new(self, a, b, allow_wrap=True):
+    def reindex(self, i, strict=None, allow_wrap=True):
+        return self.new(None, None, allow_wrap=allow_wrap, index=i, strict=strict)
+
+    def new(self, a, b, allow_wrap=True, index=None, strict=None):
         """Create a new span using the same context."""
         if a is None:
-            a = self.a
+            a = self._a
         if b is None:
-            b = self.c
+            b = self._c
+
+        if strict is None:
+            strict = self._strict
+
+        if index is not None:
+            d = index - self._index
+            a += d
+            b += d
+        else:
+            index = self._index
         return self.__class__(
             a,
             b,
-            self.context_length,
-            self.cyclic,
-            index=self.index,
+            self._context_length,
+            self._cyclic,
+            index=index,
             allow_wrap=allow_wrap,
+            strict=strict,
         )
 
     def sub(self, a, b):
@@ -191,18 +229,18 @@ class Span(Container, Iterable, Sized):
         """
         # if a == b:
         #     return self.new(a, b)
-        if b is not None and a > b and not self.cyclic:
+        if b is not None and a > b and not self._cyclic:
             raise ValueError(
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
 
         if self._nwraps > 0:
-            valid_ranges = [(self.a, self.c)]
+            valid_ranges = [(self._a, self._c)]
         else:
             valid_ranges = [list(x) for x in self.ranges()]
 
-            valid_ranges[0][0] = max(a, self.a)
-            valid_ranges[-1][1] = min(b + 1, self.b + 1)
+            valid_ranges[0][0] = max(a, self._a)
+            valid_ranges[-1][1] = min(b + 1, self._b + 1)
         assert len(valid_ranges) <= 2
 
         def in_range(pos, ranges):
@@ -232,7 +270,7 @@ class Span(Container, Iterable, Sized):
 
     def same_context(self, other):
         return (
-            other.context_length == self.context_length and self.cyclic == other.cyclic
+            other.context_length == self._context_length and self._cyclic == other.cyclic
         )
 
     def force_context(self, other):
@@ -248,8 +286,8 @@ class Span(Container, Iterable, Sized):
         if (
             other.a in self
             or other.b - 1 in self
-            or self.a in other
-            or self.b - 1 in other
+            or self._a in other
+            or self._b - 1 in other
         ):
             return True
         return False
@@ -258,13 +296,13 @@ class Span(Container, Iterable, Sized):
         """Return a tuple of differences between this span and the other span."""
         self.force_context(other)
         if other.a in self and other.b not in self:
-            return (self.new(self.a, other.a),)
+            return (self.new(self._a, other.a),)
         elif other.b in self and other.a not in self:
-            return (self.new(other.b, self.b),)
+            return (self.new(other.b, self._b),)
         if other in self:
-            return self.new(self.a, other.a), self.new(other.b, self.b)
+            return self.new(self._a, other.a), self.new(other.b, self._b)
         elif self in other:
-            return (self.new(self.a, self.a),)
+            return (self.new(self._a, self._a),)
         else:
             return ((self[:]),)
 
@@ -272,9 +310,9 @@ class Span(Container, Iterable, Sized):
         """Return the span inersection between this span and the other span."""
         self.force_context(other)
         if other.a in self and other.b not in self:
-            return self.sub(other.a, self.b)
+            return self.sub(other.a, self._b)
         elif other.b in self and other.a not in self:
-            return self.sub(self.a, other.b)
+            return self.sub(self._a, other.b)
         if other in self:
             return other[:]
         elif self in other:
@@ -283,7 +321,7 @@ class Span(Container, Iterable, Sized):
     def consecutive(self, other):
         self.force_context(other)
         try:
-            return self.b == other.t(other.a)
+            return self._b == other.t(other.a)
         except IndexError:
             return False
 
@@ -295,16 +333,16 @@ class Span(Container, Iterable, Sized):
         :return:
         """
         self.force_context(other)
-        if self.cyclic and self.a == other.a and self.b == other.b:
+        if self._cyclic and self._a == other.a and self._b == other.b:
             return self.invert()[0]
         if self.consecutive(other):
-            return self[self.b, self.b]
+            return self[self._b, self._b]
         elif self.overlaps_with(other):
             return None
         else:
-            if self.b > other.a and not self.cyclic:
+            if self._b > other.a and not self._cyclic:
                 return None
-            return self[self.b, other.a]
+            return self[self._b, other.a]
 
     # def union(self, other):
     #     self.force_context(other)
@@ -313,31 +351,31 @@ class Span(Container, Iterable, Sized):
     #     elif self in other:
     #         return other[:]
     #     elif other.a in self and not other.t(other.b - 1) in self:
-    #         if self.a == other.b:
-    #             return self.new(self.a, None)
-    #         return self.new(self.a, other.b)
+    #         if self._a == other.b:
+    #             return self.new(self._a, None)
+    #         return self.new(self._a, other.b)
     #     elif other.t(other.b - 1) in self and other.a not in self:
-    #         if other.a == self.b:
-    #             return self.new(self.a, None)
-    #         return self.new(other.a, self.b)
+    #         if other.a == self._b:
+    #             return self.new(self._a, None)
+    #         return self.new(other.a, self._b)
 
     # def __ge__(self, other):
     #     self.force_context(other)
-    #     return self.a >= other.a
+    #     return self._a >= other.a
 
     #     def __lt__(self, other):
-    #         return self.a < other.a
+    #         return self._a < other.a
 
     #     def __gt__(self, other):
-    #         return self.a > other.a
+    #         return self._a > other.a
 
     #     def __ge__(self, other):
-    #         return self.a >= other.a
+    #         return self._a >= other.a
 
     # def __invert__(self):
-    #     if self.a > self.b:
-    #         if self.cyclic:
-    #             return self[self.b+1, self.a-1],
+    #     if self._a > self._b:
+    #         if self._cyclic:
+    #             return self[self._b+1, self._a-1],
     #         else:
     # return
 
@@ -349,15 +387,15 @@ class Span(Container, Iterable, Sized):
         :return: inverted regions
         :rtype: tuple
         """
-        if len(self) >= self.context_length:
-            return (self[self.a, self.a], None)
-        if self.cyclic:
-            return (self[self.b, self.a], None)
+        if len(self) >= self._context_length:
+            return (self[self._a, self._a], None)
+        if self._cyclic:
+            return (self[self._b, self._a], None)
         else:
-            return self[:, self.a], self[self.b, :]
+            return self[:, self._a], self[self._b, :]
 
     def __eq__(self, other):
-        return self.same_context(other) and self.a == other.a and self.b == other.b
+        return self.same_context(other) and self._a == other.a and self._b == other.b
 
     def __ne__(self, other):
         return not (self.__eq__(other))
@@ -375,7 +413,7 @@ class Span(Container, Iterable, Sized):
     def contains_span(self, other):
         if not self.same_context(other):
             return False
-        if other.a == other.b == self.a:
+        if other.a == other.b == self._a:
             # special case where starting indices and ending indices are the same
             return True
         else:
@@ -388,9 +426,9 @@ class Span(Container, Iterable, Sized):
             return True
 
     def spans_origin(self):
-        if self._nwraps and self.cyclic:
+        if self._nwraps and self._cyclic:
             return True
-        return self.b < self.a and self.cyclic
+        return self._b < self._a and self._cyclic
 
     def __contains__(self, other):
         if isinstance(other, int):
@@ -420,9 +458,9 @@ class Span(Container, Iterable, Sized):
         if isinstance(val, int):
             self._check_index_pos(val)
             if val < 0:
-                return self.t(val + self.c - self.index)
+                return self.t(val + self._c - self._index)
             else:
-                return self.t(val + self.a - self.index)
+                return self.t(val + self._a - self._index)
         elif issubclass(type(val), slice):
 
             self._check_index_pos(val.start)
@@ -438,18 +476,18 @@ class Span(Container, Iterable, Sized):
                 )
 
             if val.start is None:
-                i = self.a
+                i = self._a
             elif val.start < 0:
-                i = self.c + val.start
+                i = self._c + val.start
             else:
-                i = self.a + val.start
+                i = self._a + val.start
 
             if val.stop is None:
-                j = self.c
+                j = self._c
             elif val.stop < 0:
-                j = self.c + val.stop
+                j = self._c + val.stop
             else:
-                j = self.a + val.stop
+                j = self._a + val.stop
 
             return self.new(i, j)
         elif isinstance(val, tuple):
@@ -474,11 +512,11 @@ class Span(Container, Iterable, Sized):
     def __repr__(self):
         return "<Span {a} {b} ({c}) cyclic={cyclic} index={index}, nwraps={n}>".format(
             self.__class__.__name__,
-            a=self.a,
-            b=self.b,
-            c=self.c,
-            cyclic=self.cyclic,
-            index=self.index,
+            a=self._a,
+            b=self._b,
+            c=self._c,
+            cyclic=self._cyclic,
+            index=self._index,
             n=self._nwraps,
         )
 

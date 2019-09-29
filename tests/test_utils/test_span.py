@@ -1282,3 +1282,50 @@ class TestSlicingNumpy:
         a = np.arange(100, 200)
         b = a[s]
         print(b)
+
+
+class TestChangingStartingIndex:
+
+    def test_change_starting_index(self):
+
+        s = Span(1, 10, 10, index=1)
+        assert s.a == 1
+        assert s.b == 10
+        assert s.c == 10
+        assert s.index == 1
+        assert len(s) == 9
+
+        s2 = s.reindex(0)
+
+        assert s2.a == 0
+        assert s2.b == 9
+        assert s2.c == 9
+        assert s2.index == 0
+        assert len(s) == 9
+
+        s2 = s.reindex(-5)
+        assert s2.a == 0 - 5
+        assert s2.b == 9 - 5
+        assert s2.c == 9 - 5
+        assert s2.index == -5
+        assert len(s) == 9
+
+    def test_change_starting_index_cyclic(self):
+
+        s = Span(90, 110, 100, cyclic=True, index=1)
+        s2 = s.reindex(0)
+        s2.a == 89
+        s2.b == 109
+        s2.c == 109
+        assert len(s2) == len(s)
+        assert s2.index == 0
+
+    def test_change_starting_index_many_wraps(self):
+
+        s = Span(90, 210, 100, cyclic=True, index=1)
+        s2 = s.reindex(0)
+        s2.a == 89
+        s2.b == 109
+        s2.c == 209
+        assert len(s2) == len(s)
+        assert s2.index == 0
