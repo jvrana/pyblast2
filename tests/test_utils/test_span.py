@@ -526,6 +526,13 @@ def test_eq():
     s2 = Span(10, 90, 101, True)
     assert not s1 == s2
 
+    s1 = Span(10, 190, 100, True)
+    s2 = Span(10, 90, 100, True)
+    assert not s1 == s2
+    assert s1.a == s2.a
+    assert s2.b == s2.b
+    assert s1.c != s2.c
+
 
 class TestContains:
     @pytest.mark.parametrize("i", range(-20, 20))
@@ -1335,13 +1342,60 @@ class TestChangingStartingIndex:
         assert s2.index == 0
 
 
-def test_empty_span():
+def test_ignore_wrap():
 
-    s = Span(3000, 0, 3000, cyclic=True, ignore_wrap=True)
-    assert len(s) == 0
+    with pytest.raises(IndexError):
+        Span(3000, 1, 3000, cyclic=True, ignore_wrap=False)
+
+    s = Span(3000, 1, 3000, cyclic=True, ignore_wrap=True)
+    assert s.a == 0
+    assert s.b == 1
+    assert s.c == 1
+
+    s = Span(3000, 3000 * 10 + 1, 3000, cyclic=True, ignore_wrap=True)
+    assert s.a == 0
+    assert s.b == 1
+    assert s.c == 1
 
 
-def test_empty_span_():
+def test_abs_wrap():
 
-    s = Span(3000, 0, 3000, cyclic=True, ignore_wrap=False, abs_wrap=True)
-    assert len(s) == 0
+    s = Span(6010, 1, 3000, cyclic=True, abs_wrap=True)
+    assert s.a == 10
+    assert s.b == 1
+    assert s.c == 6001
+
+    with pytest.raises(IndexError):
+        Span(6010, 1, 3000, cyclic=True, abs_wrap=False)
+
+
+def test_abs_wrap_doctest():
+    # all of the following initializations result in equivalent spans
+
+    # starts at 1, wraps around one full time, ends at 5.
+    # Length is 15 - 1
+    s1 = Span(1, 15, 10, cyclic=True, abs_wrap=True)
+    assert len(s1) == 14
+
+    # starts at 11, wraps around one full time, ends at 15.
+    # Then positions are mapped back to context at 1 and 5.
+    # Length is still 25 - 11 == 14
+    s2 = Span(11, 25, 10, cyclic=True, abs_wrap=True)
+    assert len(s2) == 14
+
+    # starts at 11, wraps around one full time, ends at 15.
+    # Then positions are mapped back to context at 1 and 5.
+    # Length is now 11 + 5 = 14
+    s3 = Span(11, 5, 10, cyclic=True, abs_wrap=True)
+    assert len(s3) == 14
+
+    # the lengths change with the abs diff in number of times wrapped
+    _s = Span(21, 5, 10, cyclic=True, abs_wrap=True)
+    assert len(_s) == 24
+
+    _s = Span(21, 15, 10, cyclic=True, abs_wrap=True)
+    assert len(_s) == 14
+
+    # all
+    assert s1 == s2
+    assert s2 == s3

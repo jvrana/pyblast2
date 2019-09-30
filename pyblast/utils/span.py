@@ -10,7 +10,8 @@ class SpanError(Exception):
 
 class Span(Container, Iterable, Sized):
     """
-    `Span` maps the provided positions onto a context
+        `Span` maps the provided positions onto a context
+
         Spans have no direction and have an underlying context
         that has a certain length, can be linear or cyclic, and has a starting index.
 
@@ -154,6 +155,7 @@ class Span(Container, Iterable, Sized):
         Inversion returns two spans that represent everything *except* the span:
 
         .. code-block::
+
             s = Span(4, 8, 10)
             s1, s2 = s.invert()  # also s[::-1]
             assert s1.a == 0
@@ -212,7 +214,70 @@ class Span(Container, Iterable, Sized):
         abs_wrap=False,
     ):
         """
-        Constructs a new Span.
+        Constructs a new Span. There are several options to customize the initialization procedure.
+
+        **strict=True**
+
+        When strict, any index outside the valid bounds of the context raises an IndexError.
+
+        .. code-block::
+
+            Span(1, 10, 10, cyclic=True, strict=True) # no raise
+            Span(1, 11, 10, cyclic=True, strict=True) # raises IndexError
+            Span(0, 11, 10, index=1, cyclic=True, strict=True) # raises IndexError
+
+        **ignore_wrap=True**
+
+        When wrapping is ignored, indices are simply mapped to the context with no consideration
+        of the number of times the absolute position would wrap around the context.
+
+        .. code-block::
+
+            # all of the following are equivalent with ignore_wrap == True
+            Span(1, 10, 10, cyclic=True, ignore_wrap=True)
+            Span(1+10, 10, 10, cyclic=True, ignore_wrap=True)
+            Span(1, 10-100, 10, cyclic=True, ignore_wrap=True)
+            Span(1+20, 10-100, 10, cyclic=True, ignore_wrap=True)
+
+        **abs_wrap=True**
+
+        When absolute wrapping is used, the absolute difference between starting and ending index wrappings
+        is calculated, the starting index is to the context while the ending index is adjusted such
+        that the length will reflect the abs difference between starting and ending index wrappings.
+        This can be unintuitive 
+        is best shown with the following example:
+
+        .. code-block::
+
+            # all of the following initializations result in equivalent spans
+
+            # starts at 1, wraps around one full time, ends at 5.
+            # Length is 15 - 1
+            s1 = Span(1, 15, 10, cyclic=True, abs_wrap=True)
+            assert len(s1) == 14
+
+            # starts at 11, wraps around one full time, ends at 15.
+            # Then positions are mapped back to context at 1 and 5.
+            # Length is still 25 - 11 == 14
+            s2 = Span(11, 25, 10, cyclic=True, abs_wrap=True)
+            assert len(s2) == 14
+
+            # starts at 11, wraps around one full time, ends at 15.
+            # Then positions are mapped back to context at 1 and 5.
+            # Length is now 11 + 5 = 14
+            s3 = Span(11, 5, 10, cyclic=True, abs_wrap=True)
+            assert len(s3) == 14
+
+            # the lengths change with the abs diff in number of times wrapped
+            _s = Span(21, 5, 10, cyclic=True, abs_wrap=True)
+            assert len(_s) == 24
+
+            _s = Span(21, 15, 10, cyclic=True, abs_wrap=True)
+            assert len(_s) == 14
+
+            # all
+            assert s1 == s2
+            assert s2 == s3
 
         :param a: start of the span (inclusive)
         :type a: int
@@ -658,7 +723,12 @@ class Span(Container, Iterable, Sized):
             return self[:, self._a], self[self._b, :]
 
     def __eq__(self, other: Span) -> bool:
-        return self.same_context(other) and self._a == other.a and self._b == other.b
+        return (
+            self.same_context(other)
+            and self._a == other._a
+            and self._b == other._b
+            and self._c == other._c
+        )
 
     def __ne__(self, other: Span) -> bool:
         return not (self.__eq__(other))
