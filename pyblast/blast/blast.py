@@ -568,7 +568,7 @@ class BioBlast(TmpBlast):
         c = data["circular"]
         if inclusive:
             e += 1
-        span = Span(s, e, l, cyclic=c, allow_wrap=True, index=input_index)
+        span = Span(s, e, l, cyclic=c, ignore_wrap=False, index=input_index)
         if input_index != output_index:
             span = span.reindex(output_index)
         return span

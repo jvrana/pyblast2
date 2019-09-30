@@ -9,20 +9,8 @@ class SpanError(Exception):
 
 
 class Span(Container, Iterable, Sized):
-    __slots__ = ["_a", "_b", "_c", "_context_length", "_cyclic", "_index", "_strict"]
-
-    def __init__(
-        self,
-        a: int,
-        b: int,
-        l: int,
-        cyclic=False,
-        index=0,
-        allow_wrap=True,
-        strict=False,
-    ):
-        """
-        Constructs a new Span. `Span` maps the provided positions onto a context
+    """
+    `Span` maps the provided positions onto a context
         Spans have no direction and have an underlying context
         that has a certain length, can be linear or cyclic, and has a starting index.
 
@@ -198,6 +186,33 @@ class Span(Container, Iterable, Sized):
 
             assert s3.a, s3.b == 4, 8
             assert s4,a, s4.b == 10, 12
+    """
+
+    __slots__ = [
+        "_a",
+        "_b",
+        "_c",
+        "_context_length",
+        "_cyclic",
+        "_index",
+        "_strict",
+        "_abs_wrap",
+        "_ignore_wrap",
+    ]
+
+    def __init__(
+        self,
+        a: int,
+        b: int,
+        l: int,
+        cyclic=False,
+        index=0,
+        ignore_wrap=False,
+        strict=False,
+        abs_wrap=False,
+    ):
+        """
+        Constructs a new Span.
 
         :param a: start of the span (inclusive)
         :type a: int
@@ -211,15 +226,20 @@ class Span(Container, Iterable, Sized):
         :type index: int
         :param strict: if True, positions outside of context bounds are disallowed.
         :type strict: bool
-        :param allow_wrap: if True (default False), spans that wrap around context more than once will be mapped
-                            as if the span only wrapped around once.
-        :type allow_wrap: bool
+        :param ignore_wrap: if True (default False), initialization indicies that wrap around multiple times will
+                            simply be mapped directly to the context (no wrapping used).
+        :type ignore_wrap: bool
+        :param abs_wrap: if True, the abs difference between start and end wrappings are used. Starting wraps that
+                            are greater than ending wraps are valid. If False and the starting wrap is greater than
+                            the ending wrap, an IndexError is thrown.
         """
 
         self._context_length = l
         self._index = index
         self._cyclic = cyclic
         self._strict = strict
+        self._abs_wrap = abs_wrap
+        self._ignore_wrap = ignore_wrap
 
         # special empty edge case
         if cyclic and a == b:
@@ -238,10 +258,14 @@ class Span(Container, Iterable, Sized):
                     "End {} must be in [{}, {}]".format(b, index, index + l)
                 )
 
-        start_wrap = int((a - index) / l)
-        end_wrap = int((b - index - 1) / (l))
+        if self._ignore_wrap:
+            start_wrap = 0
+            end_wrap = 0
+        else:
+            start_wrap = int((a - index) / l)
+            end_wrap = int((b - index - 1) / (l))
 
-        if start_wrap > end_wrap:
+        if self._abs_wrap is False and start_wrap > end_wrap:
             self._a = a
             self._b = b
             self._c = b
@@ -282,9 +306,12 @@ class Span(Container, Iterable, Sized):
             )
 
         # allow wrap mean this will keep track of how many time the span wraps around the context
-        if allow_wrap and end_wrap - start_wrap:
-            _c = self._b + (end_wrap - start_wrap) * l
-            self._c = self._b + (end_wrap - start_wrap) * l
+        if not ignore_wrap and end_wrap - start_wrap:
+            if self._abs_wrap:
+                _c = self._b + abs(end_wrap - start_wrap) * l
+            else:
+                _c = self._b + (end_wrap - start_wrap) * l
+            self._c = _c
         else:
             self._c = self._b
 
@@ -385,24 +412,27 @@ class Span(Container, Iterable, Sized):
         """
         return [slice(*r) for r in self.ranges()]
 
-    def reindex(self, i, strict=None, allow_wrap=True):
+    def reindex(self, i, strict=None, ignore_wrap=None):
         """
         Return a new span with positions reindexed.
 
         :param i: new index
         :param strict: initialize with 'strict'
-        :param allow_wrap: allow multiple wrapping.
+        :param ignore_wrap: whether to ignore wrapping indices
         :return:
         """
-        return self.new(None, None, allow_wrap=allow_wrap, index=i, strict=strict)
+        if ignore_wrap is None:
+            ignore_wrap = self._ignore_wrap
+        return self.new(None, None, ignore_wrap=ignore_wrap, index=i, strict=strict)
 
     def new(
         self,
         a: Union[int, None],
         b: Union[int, None],
-        allow_wrap=True,
+        ignore_wrap=None,
         index=None,
         strict=None,
+        abs_wrap=None,
     ) -> Span:
         """Create a new span using the same context."""
         if a is None:
@@ -412,6 +442,12 @@ class Span(Container, Iterable, Sized):
 
         if strict is None:
             strict = self._strict
+
+        if abs_wrap is None:
+            abs_wrap = self._abs_wrap
+
+        if ignore_wrap is None:
+            ignore_wrap = self._ignore_wrap
 
         if index is not None:
             d = index - self._index
@@ -425,8 +461,9 @@ class Span(Container, Iterable, Sized):
             self._context_length,
             self._cyclic,
             index=index,
-            allow_wrap=allow_wrap,
+            ignore_wrap=ignore_wrap,
             strict=strict,
+            abs_wrap=abs_wrap,
         )
 
     def sub(self, a: int, b: int) -> Span:

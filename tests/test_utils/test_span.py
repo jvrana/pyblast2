@@ -251,7 +251,7 @@ class TestInit:
         print(Span(0, 10, 10, True))
         with pytest.raises(IndexError):
             print(Span(0, 10, 9, True, strict=True))
-        print(Span(0, 10, 9, True, allow_wrap=True))
+        print(Span(0, 10, 9, True, ignore_wrap=False))
 
     class TestInitWraps(object):
         def test_wrapped(self):
@@ -279,16 +279,22 @@ class TestInit:
             assert s.c == 49 - 20
             assert len(s) == 24
 
+        def test_negative_wrapped(self):
+            s = Span(-40, 5, 20, cyclic=True)
+            assert len(s) == 45
+            assert s.a == 0
+            assert s.b == 5
+
         def test_wrapped_when_allow_wrapping_is_false(self):
             # 5, 6, 7, 8, 9, 0
-            s = Span(5, 11, 10, cyclic=True, allow_wrap=False)
+            s = Span(5, 11, 10, cyclic=True, ignore_wrap=True)
             assert s.a == 5
             assert s.b == 1
             assert s.c == 1
             assert len(s) == 6
 
             # 5, 6, 7, 8, 9, 0, 1
-            s = Span(5, 12, 10, cyclic=True, allow_wrap=False)
+            s = Span(5, 12, 10, cyclic=True, ignore_wrap=True)
             assert s.a == 5
             assert s.b == 2
             assert s.c == 2
@@ -1028,7 +1034,7 @@ class TestEmptySpan:
     @pytest.mark.parametrize("index", [0, 1])
     def test_empty_span_new_cyclic(self, index, x):
         s = Span(1, 10, 3000, cyclic=True)
-        s2 = s.new(x, x, allow_wrap=True)
+        s2 = s.new(x, x, ignore_wrap=False)
         if x >= 3000:
             r = x - 3000
         else:
@@ -1043,7 +1049,7 @@ class TestAllowWrap:
     @pytest.mark.parametrize("index", [0, 1, 2])
     def test_allow_wrap(self, delta, index):
         s = Span(
-            90 + delta, 98 + delta, 100, cyclic=True, index=index, allow_wrap=False
+            90 + delta, 98 + delta, 100, cyclic=True, index=index, ignore_wrap=True
         )
         print(list(s.ranges()))
         print(list(s))
@@ -1058,7 +1064,7 @@ class TestAllowWrap:
 
     @pytest.mark.parametrize("index", [0, 1, 2])
     def test_simple_len_allow_wrap(self, index):
-        s = Span(90, 110, 100, cyclic=True, index=index, allow_wrap=True)
+        s = Span(90, 110, 100, cyclic=True, index=index, ignore_wrap=False)
         assert len(s) == 20
 
 
@@ -1132,12 +1138,12 @@ class TestSub(object):
             s.sub(x[0], x[1])
 
     def test_invalid_span(self):
-        s = Span(5947, 4219, 10000, cyclic=True, allow_wrap=True)
+        s = Span(5947, 4219, 10000, cyclic=True, ignore_wrap=False)
         with pytest.raises(IndexError):
             s.sub(28, 5980)
 
     def test_invalid_span2(self):
-        s = Span(5000, 4999, 10000, cyclic=True, allow_wrap=True)
+        s = Span(5000, 4999, 10000, cyclic=True, ignore_wrap=False)
         with pytest.raises(IndexError):
             s.sub(4998, 5001)
 
@@ -1152,8 +1158,8 @@ class TestSub(object):
 
     def test_span_over_region_twice(self):
 
-        s1 = Span(2000, 3000, 3000, cyclic=True, allow_wrap=True)
-        s2 = Span(5000, 6000, 3000, cyclic=True, allow_wrap=True)
+        s1 = Span(2000, 3000, 3000, cyclic=True, ignore_wrap=False)
+        s2 = Span(5000, 6000, 3000, cyclic=True, ignore_wrap=False)
         assert s1.a == 2000
         assert s1.b == 3000
         assert s2.a == 2000
@@ -1205,7 +1211,7 @@ class TestFullWrap(object):
             end + nwraps * length,
             length,
             cyclic=True,
-            allow_wrap=True,
+            ignore_wrap=False,
             index=index,
         )
         s.a == start
@@ -1216,21 +1222,21 @@ class TestFullWrap(object):
         assert len(s) == nwraps * length + end - start
 
     def test_full_wrap_plus_one(self):
-        s = Span(0, 1, 1000, cyclic=True, allow_wrap=True)
+        s = Span(0, 1, 1000, cyclic=True, ignore_wrap=False)
         assert s.a == 0
         assert s.b == 1
         assert s.c == 1
         assert len(s) == 1
         assert not s.spans_origin()
 
-        s = Span(0, 1001, 1000, cyclic=True, allow_wrap=True)
+        s = Span(0, 1001, 1000, cyclic=True, ignore_wrap=False)
         assert s.a == 0
         assert s.b == 1
         assert s.c == 1001
         assert len(s) == 1001
         assert s.spans_origin()
 
-        s = Span(0, 2001, 1000, cyclic=True, allow_wrap=True)
+        s = Span(0, 2001, 1000, cyclic=True, ignore_wrap=False)
         assert s.a == 0
         assert s.b == 1
         assert s.c == 2001
@@ -1271,7 +1277,7 @@ class TestNWraps:
     @pytest.mark.parametrize("i", [0, 1, 2])
     def test_nwraps(self, i):
         l = 1000
-        s = Span(100, 100 + i * l, l, cyclic=True, allow_wrap=True)
+        s = Span(100, 100 + i * l, l, cyclic=True, ignore_wrap=False)
         assert len(s) == i * l
 
 
@@ -1327,3 +1333,15 @@ class TestChangingStartingIndex:
         s2.c == 209
         assert len(s2) == len(s)
         assert s2.index == 0
+
+
+def test_empty_span():
+
+    s = Span(3000, 0, 3000, cyclic=True, ignore_wrap=True)
+    assert len(s) == 0
+
+
+def test_empty_span_():
+
+    s = Span(3000, 0, 3000, cyclic=True, ignore_wrap=False, abs_wrap=True)
+    assert len(s) == 0
