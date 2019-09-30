@@ -2,6 +2,7 @@ from pyblast.utils import Span
 import pytest
 import numpy as np
 
+
 class TestInit:
     @pytest.mark.parametrize("a", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
     @pytest.mark.parametrize("b", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
@@ -1275,7 +1276,6 @@ class TestNWraps:
 
 
 class TestSlicingNumpy:
-
     def test_numpy_slice(self):
         s = Span(50, 120, 100, cyclic=True)
         a = np.arange(100, 200)
@@ -1284,7 +1284,6 @@ class TestSlicingNumpy:
 
 
 class TestChangingStartingIndex:
-
     def test_change_starting_index(self):
 
         s = Span(1, 10, 10, index=1)

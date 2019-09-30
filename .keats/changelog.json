@@ -5,7 +5,8 @@
     "changes": [
       "fully wrapped circular alignments are now supported. The full alignment can be accessed from `x[\"query\"][\"start\"], x[\"query\"][\"raw_end\"]`",
       "new `result_to_span` function available in the BioBlast class. Function converts a restult to a Span instance (no direction available).",
-      "new `reindex` method for Span. Method will reindex and adjust the `a`, `b`, and `c` attributes"
+      "new `reindex` method for Span. Method will reindex and adjust the `a`, `b`, and `c` attributes",
+      "Spans may now wrap around context multiple times. Mapped endpoint accessible by `b` attr and unmapped endpoint accessible by `c` attribute."
     ]
   },
   "0.3.8": {

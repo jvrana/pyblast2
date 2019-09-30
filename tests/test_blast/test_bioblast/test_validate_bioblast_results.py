@@ -267,12 +267,7 @@ class TestCircular:
          pyblast results start at index 1."""
         record = rand_record(1000)
         queries = [record]
-        subjects = [
-            ns(100)
-            + record[500:]
-            + record[:500]
-            + ns(100)
-        ]
+        subjects = [ns(100) + record[500:] + record[:500] + ns(100)]
 
         queries = make_circular(queries)
         subjects = make_linear(subjects)
@@ -292,12 +287,7 @@ class TestCircular:
         Note that pyblast results start at index 1."""
         record = rand_record(1000)
         queries = [record]
-        subjects = [
-            ns(100)
-            + record[-10 + 500:]
-            + record[:500]
-            + ns(100)
-        ]
+        subjects = [ns(100) + record[-10 + 500 :] + record[:500] + ns(100)]
 
         queries = make_circular(queries)
         subjects = make_linear(subjects)
@@ -317,12 +307,7 @@ class TestCircular:
         Note that pyblast results start at index 1."""
         record = rand_record(1000)
         queries = [record]
-        subjects = [
-            ns(100)
-            + record[500:]
-            + record[:500 + 10]
-            + ns(100)
-        ]
+        subjects = [ns(100) + record[500:] + record[: 500 + 10] + ns(100)]
 
         queries = make_circular(queries)
         subjects = make_linear(subjects)
@@ -342,12 +327,7 @@ class TestCircular:
         Note that pyblast results start at index 1."""
         record = rand_record(1000)
         queries = [record]
-        subjects = [
-            ns(100)
-            + record[-10 + 500:]
-            + record[:500 + 10]
-            + ns(100)
-        ]
+        subjects = [ns(100) + record[-10 + 500 :] + record[: 500 + 10] + ns(100)]
 
         queries = make_circular(queries)
         subjects = make_linear(subjects)
@@ -388,8 +368,8 @@ class TestCircular:
         assert result["subject"]["end"] == 1100 + extra_right + extra_left
 
         # to spans
-        query_span = bioblast.parse_result_to_span(result['query'], output_index=0)
-        subject_span = bioblast.parse_result_to_span(result['subject'], output_index=0)
+        query_span = bioblast.parse_result_to_span(result["query"], output_index=0)
+        subject_span = bioblast.parse_result_to_span(result["subject"], output_index=0)
 
         assert len(subject_span) == len(query_span) == 1000 + extra_right + extra_left
         assert query_span.a == 500 - extra_left
@@ -397,7 +377,6 @@ class TestCircular:
 
         assert subject_span.a == 100
         assert subject_span.b == 1100 + extra_right + extra_left
-
 
     @pytest.mark.parametrize("extra_right", [0, 1, 10])
     @pytest.mark.parametrize("extra_left", [0, 1, 10])
@@ -428,8 +407,8 @@ class TestCircular:
         assert result["subject"]["end"] == 101
 
         # to spans
-        query_span = bioblast.parse_result_to_span(result['query'], output_index=0)
-        subject_span = bioblast.parse_result_to_span(result['subject'], output_index=0)
+        query_span = bioblast.parse_result_to_span(result["query"], output_index=0)
+        subject_span = bioblast.parse_result_to_span(result["subject"], output_index=0)
 
         assert len(subject_span) == len(query_span) == 1000 + extra_right + extra_left
         assert query_span.a == 500 - extra_left
@@ -437,6 +416,7 @@ class TestCircular:
 
         assert subject_span.a == 100
         assert subject_span.b == 1100 + extra_right + extra_left
+
 
 # TODO: fix very long repeats
 # def test_very_long_repeat(self):

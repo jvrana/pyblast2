@@ -3,7 +3,7 @@
 __version__ = "0.4.0"
 __name__ = "pyblastbio"
 __title__ = "pyblastbio"
-__authors__ = ['Justin Vrana <justin.vrana@gmail.com>']
+__authors__ = ["Justin Vrana <justin.vrana@gmail.com>"]
 __repo__ = None
 __homepage__ = "https://www.github.com/jvrana/pyblast"
 __description__ = ""

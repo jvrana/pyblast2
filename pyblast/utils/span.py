@@ -3,6 +3,7 @@ from collections.abc import Container, Iterable, Sized
 from itertools import chain
 from typing import List, Tuple, Union
 
+
 class SpanError(Exception):
     pass
 
@@ -10,7 +11,16 @@ class SpanError(Exception):
 class Span(Container, Iterable, Sized):
     __slots__ = ["_a", "_b", "_c", "_context_length", "_cyclic", "_index", "_strict"]
 
-    def __init__(self, a: int, b: int, l: int, cyclic=False, index=0, allow_wrap=True, strict=False):
+    def __init__(
+        self,
+        a: int,
+        b: int,
+        l: int,
+        cyclic=False,
+        index=0,
+        allow_wrap=True,
+        strict=False,
+    ):
         """
         Constructs a new Span. `Span` maps the provided positions onto a context
         Spans have no direction and have an underlying context
@@ -59,11 +69,13 @@ class Span(Container, Iterable, Sized):
 
         .. code-block::
 
-            s = Span(-1, 5, 10, cyclic=True, index=0)  # index '-1' is mapped onto last available index on the context, '9'
+            s = Span(-1, 5, 10, cyclic=True, index=0)  # index '-1' is mapped onto last available index on the context,
+            '9'
             assert s.a == 9
             assert s.b == 5
 
-            s = Span(6, -1, 10, cyclic=True, index=0)  # index '-1' is mapped onto last available exclusive index on the context, '10'
+            s = Span(6, -1, 10, cyclic=True, index=0)  # index '-1' is mapped onto last available exclusive index on the
+             context, '10'
             assert s.a == 6
             assert s.b == 10
 
@@ -211,7 +223,8 @@ class Span(Container, Iterable, Sized):
 
         # special empty edge case
         if cyclic and a == b:
-            return self._set_as_empty(a)
+            self._set_as_empty(a)
+            return
 
         # check bounds
         if self._strict or not cyclic:
@@ -324,6 +337,7 @@ class Span(Container, Iterable, Sized):
 
         :param p:
         :type p:
+        :param throw_error:
         :return:
         :rtype:
         """
@@ -382,7 +396,7 @@ class Span(Container, Iterable, Sized):
         """
         return self.new(None, None, allow_wrap=allow_wrap, index=i, strict=strict)
 
-    def new(self, a: int, b: int, allow_wrap=True, index=None, strict=None) -> Span:
+    def new(self, a: Union[int, None], b: Union[int, None], allow_wrap=True, index=None, strict=None) -> Span:
         """Create a new span using the same context."""
         if a is None:
             a = self._a
@@ -460,7 +474,8 @@ class Span(Container, Iterable, Sized):
     def same_context(self, other: Span) -> bool:
         """Return if another Span as an equivalent context."""
         return (
-            other.context_length == self._context_length and self._cyclic == other.cyclic
+            other.context_length == self._context_length
+            and self._cyclic == other.cyclic
         )
 
     def force_context(self, other: Span) -> None:
@@ -529,7 +544,7 @@ class Span(Container, Iterable, Sized):
         except IndexError:
             return False
 
-    def connecting_span(self, other: Span) -> Span:
+    def connecting_span(self, other: Span) -> Union[Span, None]:
         """
         Return the span that connects the two spans. Returns None
 
@@ -605,7 +620,7 @@ class Span(Container, Iterable, Sized):
         return not (self.__eq__(other))
 
     @classmethod
-    def _pos_in_ranges(cls, pos: int, ranges: List[Tuple(int, int)]):
+    def _pos_in_ranges(cls, pos: int, ranges: List[Tuple[int, int]]):
         for r in ranges:
             if r[0] <= pos < r[1]:
                 return True
@@ -634,7 +649,7 @@ class Span(Container, Iterable, Sized):
             return True
         return self._b < self._a and self._cyclic
 
-    def __contains__(self, other: Span):
+    def __contains__(self, other: Union[Span, int]):
         if isinstance(other, int):
             return self.contains_pos(other)
         elif issubclass(type(other), Span):
@@ -671,7 +686,7 @@ class Span(Container, Iterable, Sized):
             self._check_index_pos(val.stop)
 
             if val.step == -1:
-                return self[val.start : val.stop].invert()
+                return self[val.start: val.stop].invert()
             elif val.step is not None and val.step != 1:
                 raise ValueError(
                     "{} slicing does not support step {}.".format(

@@ -9,6 +9,7 @@ class BlastResultParser(object):
     """
     Parses blast results
     """
+
     @staticmethod
     def str_to_f_to_i(v):
         try:
@@ -60,8 +61,8 @@ class BlastResultParser(object):
     @classmethod
     def __clean_json(cls, data_list):
         for data in data_list:
-            query = {}
-            subject = {}
+            query = dict()
+            subject = dict()
 
             query["start"] = data["q. start"]
             query["end"] = data["q. end"]
@@ -115,10 +116,10 @@ class BlastResultParser(object):
         :return:
         :rtype:
         """
-        no_gaps = lambda x: x["meta"]["gaps"] == 0
-        no_gap_opens = lambda x: x["meta"]["gap opens"] == 0
-        identical = lambda x: x["meta"]["identical"] == x["meta"]["alignment length"]
-        perfect = lambda x: all([no_gaps(x), no_gap_opens(x), identical(x)])
+        def no_gaps(x): return x["meta"]["gaps"] == 0
+        def no_gap_opens(x): return x["meta"]["gap opens"] == 0
+        def identical(x): return x["meta"]["identical"] == x["meta"]["alignment length"]
+        def perfect(x): return all([no_gaps(x), no_gap_opens(x), identical(x)])
         return [r for r in data if perfect(r)]
 
     @staticmethod
@@ -129,5 +130,5 @@ class BlastResultParser(object):
         :return: perfect alignments
         :rtype:
         """
-        f = lambda x: x["meta"]["alignment_length"] == x["subject"]["length"]
+        def f(x): return x["meta"]["alignment_length"] == x["subject"]["length"]
         return [r for r in data if f(r)]

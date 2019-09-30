@@ -365,7 +365,7 @@ class TmpBlast(BlastBase):
 class BioBlast(TmpBlast):
 
     DEFAULT_REINDEX = 1
-    REINDEX_KEY = 'reindex'
+    REINDEX_KEY = "reindex"
 
     def __init__(
         self,
@@ -417,9 +417,7 @@ class BioBlast(TmpBlast):
             config=config,
         )
 
-        self.parse_options = {
-            self.REINDEX_KEY: self.DEFAULT_REINDEX
-        }
+        self.parse_options = {self.REINDEX_KEY: self.DEFAULT_REINDEX}
 
     def _check_records(self, subjects, queries):
         self._check_empty_records(queries, subjects)
@@ -499,7 +497,7 @@ class BioBlast(TmpBlast):
                     x["subject"]["sequence_id"],
                     x["subject"]["start"],
                     x["subject"]["end"],
-                    x["subject"]["raw_end"]
+                    x["subject"]["raw_end"],
                 ),
             )
         )
@@ -557,15 +555,17 @@ class BioBlast(TmpBlast):
         transformed_records = seq_db.get_many(keys)
         return keys, transformed_records
 
-    def parse_result_to_span(self, data, inclusive=True, input_index=1, output_index=None):
+    def parse_result_to_span(
+        self, data, inclusive=True, input_index=1, output_index=None
+    ):
 
         if output_index is None:
             output_index = input_index
 
-        s, e, l = data['start'], data['raw_end'], data['origin_sequence_length']
-        if data['strand'] == -1:
+        s, e, l = data["start"], data["raw_end"], data["origin_sequence_length"]
+        if data["strand"] == -1:
             s, e = e, s
-        c = data['circular']
+        c = data["circular"]
         if inclusive:
             e += 1
         span = Span(s, e, l, cyclic=c, allow_wrap=True, index=input_index)
@@ -576,15 +576,16 @@ class BioBlast(TmpBlast):
     @classmethod
     def parse_to_span(cls, v, reindex=0):
         """Convert a JSON blast result to a Span. Optionally reindex"""
+
         def make_span(data):
-            cls.parse_result_to_span(data=data,
-                                     inclusive=v['meta']['inclusive'],
-                                     input_index=v['meta']['start_index'],
-                                     output_index=reindex)
-        return {
-            'query': make_span(v['query']),
-            'subject': make_span(v['subject'])
-        }
+            cls.parse_result_to_span(
+                data=data,
+                inclusive=v["meta"]["inclusive"],
+                input_index=v["meta"]["start_index"],
+                output_index=reindex,
+            )
+
+        return {"query": make_span(v["query"]), "subject": make_span(v["subject"])}
 
     def _parse__annotate_meta(self, meta):
         """
@@ -593,8 +594,8 @@ class BioBlast(TmpBlast):
         :param meta:
         :return:
         """
-        meta['start_index'] = 1
-        meta['inclusive'] = True
+        meta["start_index"] = 1
+        meta["inclusive"] = True
         meta["span_origin"] = self.span_origin
 
     def _parse__annotate_record(self, data):
@@ -613,7 +614,9 @@ class BioBlast(TmpBlast):
         data["origin_record_id"] = record.id
         data["origin_sequence_length"] = len(record.seq)
 
-    def _parse__correct_endpoints(self, data, inclusive=True, input_index=1, output_index=None):
+    def _parse__correct_endpoints(
+        self, data, inclusive=True, input_index=1, output_index=None
+    ):
         """
         Correct endpoints of JSON results.
 
@@ -626,33 +629,41 @@ class BioBlast(TmpBlast):
 
         if output_index is None:
             output_index = input_index
-        data['raw_end'] = data['end']
+        data["raw_end"] = data["end"]
         s, e = data["start"], data["end"]
         reverse = data["strand"] != 1
         if reverse:
             s, e = e, s
         if e - s < 0:
             raise ValueError("End cannot be less than start")
-        elif data['circular']:
-            span = self.parse_result_to_span(data=data,
-                                             inclusive=inclusive,
-                                             input_index=input_index,
-                                             output_index=output_index)
+        elif data["circular"]:
+            span = self.parse_result_to_span(
+                data=data,
+                inclusive=inclusive,
+                input_index=input_index,
+                output_index=output_index,
+            )
             data["start"] = span.a
             data["end"] = span.b - 1
             data["raw_end"] = span.c - 1
             if reverse:
-                data["start"], data["end"], data['raw_end'] = data["end"], data["start"], data['start']
+                data["start"], data["end"], data["raw_end"] = (
+                    data["end"],
+                    data["start"],
+                    data["start"],
+                )
 
     def _parse_bioblast_results(self, v, output_index):
-        self._parse__annotate_meta(v['meta'])
+        self._parse__annotate_meta(v["meta"])
         for x in ["query", "subject"]:
             self._parse__annotate_record(v[x])
-            self._parse__correct_endpoints(v[x],
-                                           inclusive=v['meta']['inclusive'],
-                                           input_index=v['meta']['start_index'],
-                                           output_index=output_index)
-        v['meta']['start_index'] = output_index
+            self._parse__correct_endpoints(
+                v[x],
+                inclusive=v["meta"]["inclusive"],
+                input_index=v["meta"]["start_index"],
+                output_index=output_index,
+            )
+        v["meta"]["start_index"] = output_index
         return v
 
     def parse_results(self, delim=",", reindex=None):

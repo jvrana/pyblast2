@@ -105,7 +105,8 @@ def force_unique_record_ids(records, use_uuid=False):
 
     :param records: list of SeqRecords
     :type records: list
-    :param use_uuid: If True, will append a unique identifier to the front of the record id. Else, enumerate the records.
+    :param use_uuid: If True, will append a unique identifier to the front of the record id. Else, enumerate the
+    records.
     :type use_uuid: bool
     :return: the records
     :rtype: list
