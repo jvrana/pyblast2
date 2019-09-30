@@ -116,10 +116,19 @@ class BlastResultParser(object):
         :return:
         :rtype:
         """
-        def no_gaps(x): return x["meta"]["gaps"] == 0
-        def no_gap_opens(x): return x["meta"]["gap opens"] == 0
-        def identical(x): return x["meta"]["identical"] == x["meta"]["alignment length"]
-        def perfect(x): return all([no_gaps(x), no_gap_opens(x), identical(x)])
+
+        def no_gaps(x):
+            return x["meta"]["gaps"] == 0
+
+        def no_gap_opens(x):
+            return x["meta"]["gap opens"] == 0
+
+        def identical(x):
+            return x["meta"]["identical"] == x["meta"]["alignment length"]
+
+        def perfect(x):
+            return all([no_gaps(x), no_gap_opens(x), identical(x)])
+
         return [r for r in data if perfect(r)]
 
     @staticmethod
@@ -130,5 +139,8 @@ class BlastResultParser(object):
         :return: perfect alignments
         :rtype:
         """
-        def f(x): return x["meta"]["alignment_length"] == x["subject"]["length"]
+
+        def f(x):
+            return x["meta"]["alignment_length"] == x["subject"]["length"]
+
         return [r for r in data if f(r)]

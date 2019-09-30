@@ -396,7 +396,14 @@ class Span(Container, Iterable, Sized):
         """
         return self.new(None, None, allow_wrap=allow_wrap, index=i, strict=strict)
 
-    def new(self, a: Union[int, None], b: Union[int, None], allow_wrap=True, index=None, strict=None) -> Span:
+    def new(
+        self,
+        a: Union[int, None],
+        b: Union[int, None],
+        allow_wrap=True,
+        index=None,
+        strict=None,
+    ) -> Span:
         """Create a new span using the same context."""
         if a is None:
             a = self._a
@@ -686,7 +693,7 @@ class Span(Container, Iterable, Sized):
             self._check_index_pos(val.stop)
 
             if val.step == -1:
-                return self[val.start: val.stop].invert()
+                return self[val.start : val.stop].invert()
             elif val.step is not None and val.step != 1:
                 raise ValueError(
                     "{} slicing does not support step {}.".format(
