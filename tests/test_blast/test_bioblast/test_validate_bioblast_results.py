@@ -388,31 +388,16 @@ class TestCircular:
         assert result["subject"]["end"] == 1100 + extra_right + extra_left
 
         # to spans
-        subject_span = Span(
-            result["subject"]["start"] - 1,
-            result["subject"]["raw_end"],
-            result["subject"]["origin_sequence_length"],
-            index=0,
-            cyclic=result["subject"]["circular"],
-            allow_wrap=True,
-        )
-        query_span = Span(
-            result["query"]["start"] - 1,
-            result["query"]["raw_end"],
-            result["query"]["origin_sequence_length"],
-            cyclic=result["query"]["circular"],
-            index=0,
-            allow_wrap=True,
-        )
+        query_span = bioblast.parse_result_to_span(result['query'], output_index=0)
+        subject_span = bioblast.parse_result_to_span(result['subject'], output_index=0)
+        
+        assert len(subject_span) == len(query_span)
+        assert query_span.a == 500 - extra_left
+        assert query_span.b == 500 + extra_right
 
-        # print(query_span.ranges())
-        #
-        # assert len(subject_span) == len(query_span)
-        # assert query_span.a == 500
-        # assert query_span.a == 500
-        #
-        # assert subject_span.a == 100
-        # assert subject_span.b == 1100
+        assert subject_span.a == 100
+        assert subject_span.b == 1100 + extra_right + extra_left
+
 
 
 # TODO: fix very long repeats

@@ -365,6 +365,10 @@ class TmpBlast(BlastBase):
 
 
 class BioBlast(TmpBlast):
+
+    DEFAULT_REINDEX = 1
+    REINDEX_KEY = 'reindex'
+
     def __init__(
         self,
         subjects: typing.List[SeqRecord],
@@ -414,6 +418,10 @@ class BioBlast(TmpBlast):
             query_path=query_path,
             config=config,
         )
+
+        self.parse_options = {
+            self.REINDEX_KEY: self.DEFAULT_REINDEX
+        }
 
     def _check_records(self, subjects, queries):
         self._check_empty_records(queries, subjects)
@@ -480,6 +488,24 @@ class BioBlast(TmpBlast):
                 new_results.append(r)
         return new_results
 
+    @staticmethod
+    def _filter_unique_results(results):
+        return list(
+            unique_everseen(
+                results,
+                key=lambda x: (
+                    x["query"]["sequence_id"],
+                    x["query"]["start"],
+                    x["query"]["end"],
+                    x["query"]["raw_end"],
+                    x["subject"]["sequence_id"],
+                    x["subject"]["start"],
+                    x["subject"]["end"],
+                    x["subject"]["raw_end"]
+                ),
+            )
+        )
+
     def _filter_results(self, results):
         results = self._filter_unique_results(results)
         results = self._filter_remove_same_results(results)
@@ -533,7 +559,105 @@ class BioBlast(TmpBlast):
         transformed_records = seq_db.get_many(keys)
         return keys, transformed_records
 
-    def parse_results(self, delim=","):
+    def parse_result_to_span(self, data, inclusive=True, input_index=1, output_index=None):
+
+        if output_index is None:
+            output_index = input_index
+
+        s, e, l = data['start'], data['raw_end'], data['origin_sequence_length']
+        if data['strand'] == -1:
+            s, e = e, s
+        c = data['circular']
+        if inclusive:
+            e += 1
+        span = Span(s, e, l, cyclic=c, allow_wrap=True, index=input_index)
+        if input_index != output_index:
+            span = span.reindex(output_index)
+        return span
+
+    @classmethod
+    def parse_to_span(cls, v, reindex=0):
+        """Convert a JSON blast result to a Span. Optionally reindex"""
+        def make_span(data):
+            cls.parse_result_to_span(data=data,
+                                     inclusive=v['meta']['inclusive'],
+                                     input_index=v['meta']['start_index'],
+                                     output_index=reindex)
+        return {
+            'query': make_span(v['query']),
+            'subject': make_span(v['subject'])
+        }
+
+    def _parse__annotate_meta(self, meta):
+        """
+        Annotate default meta information from the raw JSON result.
+
+        :param meta:
+        :return:
+        """
+        meta['start_index'] = 1
+        meta['inclusive'] = True
+        meta["span_origin"] = self.span_origin
+
+    def _parse__annotate_record(self, data):
+        """
+        Annotate record information from the raw JSON result using the sequence database and sequence_id.
+
+        :param data:
+        :return:
+        """
+        origin_key = self.seq_db.get_origin_key(data["sequence_id"])
+        record = self.seq_db.get(origin_key)
+        is_circular = self.seq_db.is_circular(record)
+        data["circular"] = is_circular
+        data["name"] = record.name
+        data["origin_key"] = origin_key
+        data["origin_record_id"] = record.id
+        data["origin_sequence_length"] = len(record.seq)
+
+    def _parse__correct_endpoints(self, data, inclusive=True, input_index=1, output_index=None):
+        """
+        Correct endpoints of JSON results.
+
+        :param data: The JSON result. E.g. `{"start": 0, "end": 100, "origin_sequence_length": 200}`
+        :param inclusive: If True, the input JSON result is considered to be inclusive at the endpoint.
+        :param input_index: The starting index assumed in the input JSON result.
+        :param output_index: The index to reindex the result.
+        :return:
+        """
+
+        if output_index is None:
+            output_index = input_index
+        data['raw_end'] = data['end']
+        s, e = data["start"], data["end"]
+        reverse = data["strand"] != 1
+        if reverse:
+            s, e = e, s
+        if e - s < 0:
+            raise ValueError("End cannot be less than start")
+        elif data['circular']:
+            span = self.parse_result_to_span(data=data,
+                                             inclusive=inclusive,
+                                             input_index=input_index,
+                                             output_index=output_index)
+            data["start"] = span.a
+            data["end"] = span.b - 1
+            data["raw_end"] = span.c - 1
+            if reverse:
+                data["start"], data["end"], data['raw_end'] = data["end"], data["start"], data['start']
+
+    def _parse_bioblast_results(self, v, output_index):
+        self._parse__annotate_meta(v['meta'])
+        for x in ["query", "subject"]:
+            self._parse__annotate_record(v[x])
+            self._parse__correct_endpoints(v[x],
+                                           inclusive=v['meta']['inclusive'],
+                                           input_index=v['meta']['start_index'],
+                                           output_index=output_index)
+        v['meta']['start_index'] = output_index
+        return v
+
+    def parse_results(self, delim=",", reindex=None):
         """
         Parses the blast output to a digestable JSON output of the following format. Results
         can be found in `self.results` or returned from this function. Starting and ending
@@ -587,6 +711,8 @@ class BioBlast(TmpBlast):
         :return:
         :rtype:
         """
+        if reindex is None:
+            reindex = self.parse_options.get(self.REINDEX_KEY, self.DEFAULT_REINDEX)
         parsed_results = BlastResultParser.raw_results_to_json(
             self.raw_results, delim=delim
         )
@@ -594,41 +720,7 @@ class BioBlast(TmpBlast):
         # # TODO: resolve with sequence dictionary, resolving pseudocircularized constructs
         for v in parsed_results:
             if v:
-                for x in ["query", "subject"]:
-
-                    origin_key = self.seq_db.get_origin_key(v[x]["sequence_id"])
-                    record = self.seq_db.get(origin_key)
-                    is_circular = self.seq_db.is_circular(record)
-                    v[x]["circular"] = is_circular
-                    v[x]["name"] = record.name
-                    v[x]["origin_key"] = origin_key
-                    v[x]["origin_record_id"] = record.id
-                    v[x]["origin_sequence_length"] = len(record.seq)
-                    v[x]['raw_end'] = v[x]['end']
-                    s, e = v[x]["start"], v[x]["end"]
-                    reverse = v[x]["strand"] != 1
-                    if reverse:
-                        s, e = e, s
-                    if e - s < 0:
-                        raise ValueError("End cannot be less than start")
-                    elif is_circular:
-                        span = Span(
-                            s,
-                            e,
-                            len(record.seq),
-                            cyclic=is_circular,
-                            index=1,
-                            allow_wrap=True,
-                        )
-                        v[x]["start"] = span.a
-                        v[x]["end"] = span.b
-                        v[x]["raw_end"] = span.c
-                        if reverse:
-                            v[x]["start"], v[x]["end"], v[x]['raw_end'] = v[x]["end"], v[x]["start"], v[x]['start']
-                v['meta']['start_index'] = 1
-                v['meta']['inclusive'] = True
-                v["meta"]["span_origin"] = self.span_origin
-
+                self._parse_bioblast_results(v, output_index=reindex)
         parsed_results = self._filter_results(parsed_results)
         self.results = parsed_results
         return self.results
