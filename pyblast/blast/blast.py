@@ -605,7 +605,6 @@ class BioBlast(TmpBlast):
                     v[x]["origin_record_id"] = record.id
                     v[x]["origin_sequence_length"] = len(record.seq)
                     v[x]['raw_end'] = v[x]['end']
-
                     s, e = v[x]["start"], v[x]["end"]
                     reverse = v[x]["strand"] != 1
                     if reverse:
@@ -626,6 +625,8 @@ class BioBlast(TmpBlast):
                         v[x]["raw_end"] = span.c
                         if reverse:
                             v[x]["start"], v[x]["end"], v[x]['raw_end'] = v[x]["end"], v[x]["start"], v[x]['start']
+                v['meta']['start_index'] = 1
+                v['meta']['inclusive'] = True
                 v["meta"]["span_origin"] = self.span_origin
 
         parsed_results = self._filter_results(parsed_results)
