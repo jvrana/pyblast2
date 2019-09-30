@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyblastbio"
-version = "0.3.8"
+version = "0.4.0"
 description = ""
 authors = ["Justin Vrana <justin.vrana@gmail.com>"]
 homepage = "https://www.github.com/jvrana/pyblast"
@@ -32,6 +32,11 @@ tox = "^3.13"
 tox-conda = "^0.2.0"
 keats = "^0.2.19"
 numpy = "^1.17"
+sphinx = "^2.2"
+sphinx-bootstrap-theme = "^0.7.1"
+nbsphinx = "^0.4.3"
+recommonmark = "^0.6.0"
+sphinx_autodoc_typehints = "^1.8"
 
 [tool.poetry.scripts]
 pyblast = 'pyblast:cli.main'

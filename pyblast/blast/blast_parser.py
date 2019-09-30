@@ -1,7 +1,14 @@
+"""
+blast_parser
+"""
+
 import re
 
 
 class BlastResultParser(object):
+    """
+    Parses blast results
+    """
     @staticmethod
     def str_to_f_to_i(v):
         try:

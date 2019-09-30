@@ -2,7 +2,6 @@ from pyblast.utils import Span
 import pytest
 import numpy as np
 
-
 class TestInit:
     @pytest.mark.parametrize("a", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])
     @pytest.mark.parametrize("b", [-2, -1, 0, 1, 5, 10, 19, 20, 21, 22])

@@ -1,5 +1,3 @@
-"""utils"""
-
 from .cmd import run_cmd
 from Bio.Alphabet import generic_dna
 from Bio.Seq import Seq

@@ -1,3 +1,6 @@
+"""bioblastfactory"""
+
+
 from pyblast.blast import BioBlast
 from pyblast.blast.seqdb import SeqRecordDB
 from pyblast.utils import clean_records

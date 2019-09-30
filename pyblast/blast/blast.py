@@ -10,9 +10,7 @@ import os
 import shutil
 import tempfile
 import typing
-from copy import deepcopy
 from uuid import uuid4
-from warnings import warn
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
