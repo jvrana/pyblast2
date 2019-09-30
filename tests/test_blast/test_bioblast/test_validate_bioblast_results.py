@@ -390,8 +390,8 @@ class TestCircular:
         # to spans
         query_span = bioblast.parse_result_to_span(result['query'], output_index=0)
         subject_span = bioblast.parse_result_to_span(result['subject'], output_index=0)
-        
-        assert len(subject_span) == len(query_span)
+
+        assert len(subject_span) == len(query_span) == 1000 + extra_right + extra_left
         assert query_span.a == 500 - extra_left
         assert query_span.b == 500 + extra_right
 
@@ -399,6 +399,44 @@ class TestCircular:
         assert subject_span.b == 1100 + extra_right + extra_left
 
 
+    @pytest.mark.parametrize("extra_right", [0, 1, 10])
+    @pytest.mark.parametrize("extra_left", [0, 1, 10])
+    def test_circular_complete_query_parametrized_rc(self, extra_right, extra_left):
+        record = rand_record(1000)
+        queries = [record]
+        subjects = [
+            ns(100)
+            + record[(500 - extra_left) :]
+            + record[: (500 + extra_right)]
+            + ns(100)
+        ]
+
+        subjects = [subjects[0].reverse_complement()]
+
+        queries = make_circular(queries)
+        subjects = make_linear(subjects)
+
+        bioblast = BioBlast(subjects, queries)
+        results = bioblast.quick_blastn()
+
+        result = results[0]
+        print(json.dumps(result, indent=2))
+
+        assert result["query"]["start"] == 501 - extra_left
+        assert result["query"]["raw_end"] == 1500 + extra_right
+        assert result["subject"]["start"] == 1100 + extra_right + extra_left
+        assert result["subject"]["end"] == 101
+
+        # to spans
+        query_span = bioblast.parse_result_to_span(result['query'], output_index=0)
+        subject_span = bioblast.parse_result_to_span(result['subject'], output_index=0)
+
+        assert len(subject_span) == len(query_span) == 1000 + extra_right + extra_left
+        assert query_span.a == 500 - extra_left
+        assert query_span.b == 500 + extra_right
+
+        assert subject_span.a == 100
+        assert subject_span.b == 1100 + extra_right + extra_left
 
 # TODO: fix very long repeats
 # def test_very_long_repeat(self):
