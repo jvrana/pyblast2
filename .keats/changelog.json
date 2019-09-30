@@ -1,4 +1,11 @@
 {
+  "0.4.1": {
+    "description": "minor feature",
+    "date": "2019-09-30T14:11:10.016367",
+    "changes": [
+      "length now in Span.__repr__"
+    ]
+  },
   "0.4.0": {
     "description": "major revisions to result parsing",
     "date": "2019-09-30T14:01:36.175177",
