@@ -843,8 +843,8 @@ class Span(Container, Iterable, Sized):
             raise ValueError("indexing does not support {}".format(type(val)))
 
     def __repr__(self):
-        return "<Span {a} {b} ({c}) len={l} cyclic={cyclic} index={index}, nwraps={n}>".format(
-            self.__class__.__name__,
+        return "<{cls} {a} {b} ({c}) len={l} cyclic={cyclic} index={index}, nwraps={n}>".format(
+            cls=self.__class__.__name__,
             a=self._a,
             b=self._b,
             c=self._c,
