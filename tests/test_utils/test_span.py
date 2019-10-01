@@ -1399,3 +1399,19 @@ def test_abs_wrap_doctest():
     # all
     assert s1 == s2
     assert s2 == s3
+
+
+def test_subregion():
+
+    s = Span(5000, 13000, 9000, cyclic=True)
+
+    s1 = s.sub(5000, 4000)
+    s2 = s.sub(5000, 4000 + 9000)
+
+    assert s1.a == 5000
+    assert s1.b == 4000
+    assert s1.c == 4000
+
+    assert s2.a == 5000
+    assert s2.b == 4000
+    assert s2.c == 13000

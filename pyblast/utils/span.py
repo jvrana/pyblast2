@@ -546,14 +546,13 @@ class Span(Container, Iterable, Sized):
                 "Start {} cannot exceed end {} for linear spans".format(a, b)
             )
 
-        if self._nwraps > 0:
-            valid_ranges = [(self._a, self._c)]
-        else:
-            valid_ranges = [list(x) for x in self.ranges()]
+        valid_ranges = [list(x) for x in self.ranges()]
+        valid_ranges[0][0] = max(a, self._a)
+        valid_ranges[-1][1] = min(b + 1, self._b + 1)
 
-            valid_ranges[0][0] = max(a, self._a)
-            valid_ranges[-1][1] = min(b + 1, self._b + 1)
-        assert len(valid_ranges) <= 2
+        if self._nwraps > 0:
+            valid_ranges += [(self._a, self._c + 1)]
+        # assert len(valid_ranges) <= 2
 
         def in_range(pos, ranges):
             for i, r in enumerate(ranges):
