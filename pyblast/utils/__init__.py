@@ -244,7 +244,7 @@ def make_linear(records: List[SeqRecord]) -> List[SeqRecord]:
 def make_circular(records: List[SeqRecord]) -> List[SeqRecord]:
     """
     Annotates the SeqRecords as linear by adding the 'topology' annotation and
-    setting it to 'linear'
+    setting it to 'circular'
 
     :param records:
     :type records:
