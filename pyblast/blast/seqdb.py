@@ -33,8 +33,8 @@ class GraphDB(Sized):
         if default is not C.NULL:
             if key not in self.graph:
                 return default
-            return self.graph.node[key]["object"]
-        return self.graph.node[key]["object"]
+            return self.graph.nodes[key]["object"]
+        return self.graph.nodes[key]["object"]
 
     def add(self, obj):
         """Add an object"""
