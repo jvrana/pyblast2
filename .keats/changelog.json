@@ -1,4 +1,9 @@
 {
+  "0.5.1": {
+    "description": "removed keats dep",
+    "date": "2019-11-11T08:54:15.562364",
+    "changes": []
+  },
   "0.5": {
     "description": "bug fixed for API breaking changes to networkx 2.4",
     "date": "2019-10-18T12:42:18.611979",
