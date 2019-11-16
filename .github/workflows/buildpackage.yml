@@ -1,4 +1,4 @@
-name: Python package
+name: Build package
 
 on: ["push", "pull_request"]
 
@@ -40,7 +40,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        poetry run pytest
+        poetry run pytest --cov-report= --cov=pyblast tests/
     
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
