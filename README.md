@@ -1,4 +1,4 @@
-![Build Status](https://github.com/jvrana/pyblast/workflows/.github/workflows/pythonpackage.yml/badge.svg)
+![Build Status](https://github.com/jvrana/pyblast/.github/workflows/pythonpackage.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master)
 [![PyPI version](https://badge.fury.io/py/pyblastbio.svg)](https://badge.fury.io/py/pyblastbio)
 
