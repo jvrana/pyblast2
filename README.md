@@ -4,12 +4,6 @@
 
 ![module_icon](images/module_icon.png?raw=true)
 
-#### Build/Coverage Status
-|     Branch      |                            Build                             |                           Coverage                           |
-| :-------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|   **master**    | [![travis build](https://img.shields.io/travis/jvrana/pyblast/master.svg)](https://travis-ci.org/jvrana/pyblast/master) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master) |
-| **development** | [![travis build](https://img.shields.io/travis/jvrana/pyblast/development.svg)](https://travis-ci.org/jvrana/pyblast/development) | [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=development)](https://coveralls.io/github/jvrana/pyblast?branch=development) |
-
 # pyblast
 
 This is a wrapper for other applications to run blast searches on SeqRecord objects and JSON objects. Intended to
