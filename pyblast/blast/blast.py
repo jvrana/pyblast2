@@ -1,10 +1,8 @@
-"""
-blast.py
+"""blast.py.
 
 More information: https://www.ncbi.nlm.nih.gov/guide/howto/run-blast-local/
 BLAST User Manual: https://www.ncbi.nlm.nih.gov/books/NBK1762/
 """
-
 import json
 import os
 import shutil
@@ -16,24 +14,22 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from more_itertools import unique_everseen
 
-from pyblast.blast_bin import BlastWrapper
-from pyblast.constants import Constants as C
-from pyblast.exceptions import PyBlastException
-from pyblast.utils import Span
-from pyblast.utils import (
-    glob_fasta_to_tmpfile,
-    records_to_tmpfile,
-    clean_records,
-    force_unique_record_ids,
-    RegisteredTempFile,
-)
-from pyblast.utils import run_cmd
 from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
 from .seqdb import SeqRecordDB
+from pyblast.blast_bin import BlastWrapper
+from pyblast.constants import Constants as C
+from pyblast.exceptions import PyBlastException
+from pyblast.utils import clean_records
+from pyblast.utils import force_unique_record_ids
+from pyblast.utils import glob_fasta_to_tmpfile
+from pyblast.utils import records_to_tmpfile
+from pyblast.utils import RegisteredTempFile
+from pyblast.utils import run_cmd
+from pyblast.utils import Span
 
 
-class BlastRunningContext(object):
+class BlastRunningContext:
     def __init__(self, blastinst):
         self.blast = blastinst
 
@@ -44,12 +40,12 @@ class BlastRunningContext(object):
         self.blast.closedb()
 
 
-class BlastBase(object):
-    """
-    A Blast initializer for running blast searches against subjects contained in a directory. Sequences
-    are kept on the local machine.
+class BlastBase:
+    """A Blast initializer for running blast searches against subjects
+    contained in a directory. Sequences are kept on the local machine.
 
-    Note: This is not intended to be the endpoint. You should only use temporary files to run the blast search.
+    Note: This is not intended to be the endpoint. You should only use temporary files
+    to run the blast search.
     """
 
     outfmt = [
@@ -74,7 +70,7 @@ class BlastBase(object):
         "sseq",
     ]
 
-    blast_config = {"outfmt": '"{0}"'.format(" ".join(outfmt))}
+    blast_config = {"outfmt": '"{}"'.format(" ".join(outfmt))}
 
     def __init__(
         self,
@@ -86,15 +82,16 @@ class BlastBase(object):
         output_formatter=None,
         config=None,
     ):
-        """
-        A Blast initializer for running blast searches.
+        """A Blast initializer for running blast searches.
 
-        :param db_name: Name for database file structure. This name will be appended to all db
+        :param db_name: Name for database file structure. This name will be appended to
+         all db
         files that blast creates.
         :param subject_path: single fsa file containing the subject sequences
         :param query_path: Location of the fasta or genbank file containing the query
         :param db_output_directory: Location to store database related files
-        :param results_out_path: Path to store the results.out file. Path can be absolute or relative.
+        :param results_out_path: Path to store the results.out file. Path can be
+        absolute or relative.
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
@@ -150,7 +147,7 @@ class BlastBase(object):
 
     @property
     def config(self):
-        out_config = {"outfmt": '"{0}"'.format(" ".join(self.outfmt))}
+        out_config = {"outfmt": '"{}"'.format(" ".join(self.outfmt))}
         out_config.update(self._config)
         return out_config
 
@@ -158,12 +155,12 @@ class BlastBase(object):
         self._config.update(config)
 
     def validate_files(self):
-        """
-        Validate the directories and query files
+        """Validate the directories and query files.
 
         :return: None
         :rtype: None
-        :raises: PyBlastException if filepaths are invalid or if query sequence has more than one sequence
+        :raises: PyBlastException if filepaths are invalid or if query sequence has more
+         than one sequence
         """
 
         def _is_file(myfile):
@@ -186,14 +183,8 @@ class BlastBase(object):
         if len(errors) > 0:
             raise PyBlastException("\n".join(errors))
 
-        # seq = PySequence.open(self.query_path)
-        # if len(seq) == 0:
-        #     raise PyBlastException("Query path \"{}\" has no sequences".format(self.query_path))
-        # elif len(seq) > 1:
-        #     raise PyBlastException("Query path \"{}\" has more than one sequence.".format(self.query_path))
-
     def create_config(self):
-        """Create a configuration dictionary"""
+        """Create a configuration dictionary."""
         config_dict = {
             "db": self.db,
             "out": self.results_out_path,
@@ -206,21 +197,21 @@ class BlastBase(object):
         return BlastRunningContext(self)
 
     def blastn(self):
-        """Alias of 'quick_blastn'"""
+        """Alias of 'quick_blastn'."""
         self.quick_blastn()
 
     def quick_blastn(self):
-        """Produce database, run blastn protocol, & parse results """
+        """Produce database, run blastn protocol, & parse results."""
         with BlastRunningContext(self):
             self._run_blastn()
         return self.parse_results()
 
     def blastn_short(self):
-        """Alias of 'quick_blastn_short'"""
+        """Alias of 'quick_blastn_short'."""
         self.quick_blastn_short()
 
     def quick_blastn_short(self):
-        """Produce database, run blastn short protocol, & parse results """
+        """Produce database, run blastn short protocol, & parse results."""
         with BlastRunningContext(self):
             self._run_blastn_short()
         return self.parse_results()
@@ -232,7 +223,7 @@ class BlastBase(object):
         return self._run("blastn", task="blastn-short")
 
     def _run(self, cmd, **config_opts):
-        """Run the blastn using the current configuration"""
+        """Run the blastn using the current configuration."""
         config = self.create_config()
         config.update(config_opts)
         self.run_cmd(cmd, **config)
@@ -243,7 +234,7 @@ class BlastBase(object):
     # Wrapper for the util.run_cmd
     @staticmethod
     def run_cmd(cmd, **kwargs):
-        """Wrapper for utils.run_cmd"""
+        """Wrapper for utils.run_cmd."""
         run_cmd(cmd, **kwargs)
 
     @staticmethod
@@ -253,7 +244,8 @@ class BlastBase(object):
         return {"num_sequence": len(seqs), "total_bps": tot_bps}
 
     def makedb(self, verbose=False):
-        """Creates a blastdb from sequences grabbed from the input directory"""
+        """Creates a blastdb from sequences grabbed from the input
+        directory."""
         self.validate_files()
 
         if verbose:
@@ -271,7 +263,7 @@ class BlastBase(object):
             dbtype="nucl",
             title=self.db_name,
             out=self.db,
-            **{"in": self.subject_path}
+            **{"in": self.subject_path},
         )
         return self.db
 
@@ -300,8 +292,7 @@ class BlastBase(object):
         return results
 
     def parse_results(self, delim=","):
-        """
-        Parses the raw blast result to a JSON
+        """Parses the raw blast result to a JSON.
 
         :param delim: delimiter to parse
         :type delim: str
@@ -321,23 +312,28 @@ class BlastBase(object):
 
 
 class TmpBlast(BlastBase):
-    """
-    A Blast object that stores the database files in a hidden temporary directory. Use
-    "quick_blastn" for returning results as a python object.
+    """A Blast object that stores the database files in a hidden temporary
+    directory.
+
+    Use "quick_blastn" for returning results as a python object.
     """
 
     def __init__(self, db_name, subject_path, query_path, config=None):
         """
-        TmpBlast: A Blast object that stores the database files in a hidden temporary directory.
-        :param db_name: Name for database file structure. This name will be appended to all db files that blast creates.
-        :param subject_path: Input directory or file containing a list of subjects to align against the query
+        TmpBlast: A Blast object that stores the database files in a hidden temporary
+        directory.
+
+        :param db_name: Name for database file structure. This name will be appended to
+            all db files that blast creates.
+        :param subject_path: Input directory or file containing a list of subjects to
+            align against the query
         :param query_path: Location of the fasta or genbank file containing the query
         :param config: Additional configurations to run for the blast search (see
         https://www.ncbi.nlm.nih.gov/books/NBK279682/)
         """
         self.subject_records_path = subject_path
 
-        super(TmpBlast, self).__init__(
+        super().__init__(
             db_name=db_name,
             subject_path=None,
             query_path=query_path,
@@ -367,10 +363,9 @@ class TmpBlast(BlastBase):
         self._set_subject_path()
         self.set_paths(self.db_name, db_output_directory, out)
         assert os.path.isfile(self.subject_path)
-        super(TmpBlast, self).makedb(**kwargs)
+        super().makedb(**kwargs)
 
     def remove_temporary_files(self):
-        t = RegisteredTempFile.tmpfileregistry
         RegisteredTempFile.remove_origin(self)
 
     def closedb(self):
@@ -380,7 +375,7 @@ class TmpBlast(BlastBase):
 
     @classmethod
     def use_test_data(cls):
-        """Create a Blast instance using predefined data located in tests"""
+        """Create a Blast instance using predefined data located in tests."""
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         return cls(
@@ -404,18 +399,19 @@ class BioBlast(TmpBlast):
         force_unique_ids=False,
         config=None,
     ):
-        """
-        Initialize a new BioBlast.
+        """Initialize a new BioBlast.
 
         :param subjects: list of SeqRecords to use as subjects. Subjects get aligned to the queries.
         :type subjects: list
-        :param queries: list of SeqRecords to use as queries. Subjects get aligned to the queries.
+        :param queries: list of SeqRecords to use as queries. Subjects get aligned to
+            the queries.
         :type queries: list
         :param seq_db: optional SeqRecordDB to use
         :type seq_db: SeqRecordDB
         :param span_origin: if False, will treat all sequences as linear (default: True)
         :type span_origin: bool
-        :param force_unique_ids: if True, will force any records with the same record_id to be unique.
+        :param force_unique_ids: if True, will force any records with the same record_id
+            to be unique.
         :type force_unique_ids: bool
         :param config: additional blast config
         :type config: dict
@@ -507,8 +503,7 @@ class BioBlast(TmpBlast):
 
     @staticmethod
     def _filter_remove_same_results(results):
-        """
-        Removes alignments that aligned to themselves.
+        """Removes alignments that aligned to themselves.
 
         :param results:
         :type results:
@@ -556,15 +551,18 @@ class BioBlast(TmpBlast):
     def add_records(
         cls, records: typing.List[SeqRecord], seq_db: SeqRecordDB, span_origin=True
     ) -> typing.Tuple[typing.List[str], typing.List[SeqRecord]]:
-        """
-        Adds records to the local sequence database (SeqRecordDb). If `self.span_origin=True`,
-        then in addition to adding the original SequenceRecord to the database, sequences will
-        be pseudocircularized (concatenated with itself) if they are detected to be circular (via the 'topology'
-        annotation') so that Blast can properly align sequences over the origin. Only sequences that were linear or
-        the pseudociruclarized sequences are used in the alignment. After running blast and obtaining results, span
-        indices are automatically corrected to account for the original pseudocircularization.
+        """Adds records to the local sequence database (SeqRecordDb). If
+        `self.span_origin=True`, then in addition to adding the original
+        SequenceRecord to the database, sequences will be pseudocircularized
+        (concatenated with itself) if they are detected to be circular (via the
+        'topology' annotation') so that Blast can properly align sequences over
+        the origin. Only sequences that were linear or the pseudociruclarized
+        sequences are used in the alignment. After running blast and obtaining
+        results, span indices are automatically corrected to account for the
+        original pseudocircularization.
 
-        :param records: list of SeqRecords annotated with 'topology' being 'linear' or 'circular'
+        :param records: list of SeqRecords annotated with 'topology' being 'linear' or
+            'circular'
         :type records: list
         :param seq_db: optional SeqRecordDB to use
         :type seq_db: SeqRecordDB
@@ -607,20 +605,23 @@ class BioBlast(TmpBlast):
         if output_index is None:
             output_index = input_index
 
-        s, e, l = data["start"], data["raw_end"], data["origin_sequence_length"]
+        s, e, length = data["start"], data["raw_end"], data["origin_sequence_length"]
         if data["strand"] == -1:
             s, e = e, s
         c = data["circular"]
         if inclusive:
             e += 1
-        span = Span(s, e, l, cyclic=c, ignore_wrap=False, index=input_index)
+        span = Span(s, e, length, cyclic=c, ignore_wrap=False, index=input_index)
         if input_index != output_index:
             span = span.reindex(output_index)
         return span
 
     @classmethod
     def parse_to_span(cls, v, reindex=0):
-        """Convert a JSON blast result to a Span. Optionally reindex"""
+        """Convert a JSON blast result to a Span.
+
+        Optionally reindex
+        """
 
         def make_span(data):
             cls.parse_result_to_span(
@@ -633,8 +634,7 @@ class BioBlast(TmpBlast):
         return {"query": make_span(v["query"]), "subject": make_span(v["subject"])}
 
     def _parse__annotate_meta(self, meta):
-        """
-        Annotate default meta information from the raw JSON result.
+        """Annotate default meta information from the raw JSON result.
 
         :param meta:
         :return:
@@ -644,8 +644,8 @@ class BioBlast(TmpBlast):
         meta["span_origin"] = self.span_origin
 
     def _parse__annotate_record(self, data):
-        """
-        Annotate record information from the raw JSON result using the sequence database and sequence_id.
+        """Annotate record information from the raw JSON result using the
+        sequence database and sequence_id.
 
         :param data:
         :return:
@@ -662,11 +662,12 @@ class BioBlast(TmpBlast):
     def _parse__correct_endpoints(
         self, data, inclusive=True, input_index=1, output_index=None
     ):
-        """
-        Correct endpoints of JSON results.
+        """Correct endpoints of JSON results.
 
-        :param data: The JSON result. E.g. `{"start": 0, "end": 100, "origin_sequence_length": 200}`
-        :param inclusive: If True, the input JSON result is considered to be inclusive at the endpoint.
+        :param data: The JSON result. E.g. `{"start": 0, "end": 100,
+            "origin_sequence_length": 200}`
+        :param inclusive: If True, the input JSON result is considered to be inclusive
+            at the endpoint.
         :param input_index: The starting index assumed in the input JSON result.
         :param output_index: The index to reindex the result.
         :return:
@@ -712,10 +713,10 @@ class BioBlast(TmpBlast):
         return v
 
     def parse_results(self, delim=",", reindex=None):
-        """
-        Parses the blast output to a digestable JSON output of the following format. Results
-        can be found in `self.results` or returned from this function. Starting and ending
-        positions are inclusive and starting index is 1.
+        """Parses the blast output to a digestable JSON output of the following
+        format. Results can be found in `self.results` or returned from this
+        function. Starting and ending positions are inclusive and starting
+        index is 1.
 
         ..code-block::
 
@@ -781,19 +782,20 @@ class BioBlast(TmpBlast):
 
 
 class JSONBlast(BioBlast):
-    """Object that runs blast starting from JSON inputs and outputs"""
+    """Object that runs blast starting from JSON inputs and outputs."""
 
     def __init__(
         self, subject_json, query_json, span_origin=True, seq_db=None, config=None
     ):
-        """
-        Initialize JSONBlast
+        """Initialize JSONBlast.
 
-        :param subject_json: subject sequences as serialized json. Schema may be found in :class:`pyblast.schema.SequenceSchema`
+        :param subject_json: subject sequences as serialized json. Schema may be found
+            in :class:`pyblast.schema.SequenceSchema`
         :type subject_json: list of dict, mapping, or Object
         :param query_json: query sequence as serialized json
         :type query_json: dict, mapping, or Object
-        :param span_origin: default False. If True, circular sequences will be pseudocircularized for alignment over the origin
+        :param span_origin: default False. If True, circular sequences will be
+            pseudocircularized for alignment over the origin
         :type span_origin: boolean
         :param seq_db: optional SeqRecordDB to use
         :type seq_db: SeqRecordDB
@@ -810,7 +812,7 @@ class JSONBlast(BioBlast):
 
     @classmethod
     def use_test_data(cls):
-        """Create a Blast instance using predefined data located in tests"""
+        """Create a Blast instance using predefined data located in tests."""
         dir_path = os.path.dirname(os.path.realpath(__file__))
         with open(
             os.path.join(dir_path, "..", "..", "tests/data/test_data/templates.json"),

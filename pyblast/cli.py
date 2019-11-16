@@ -1,10 +1,10 @@
 import fire
+
 from pyblast.blast_bin import BlastWrapper
 
 
 def status(path=None):
-    """
-    Checks status of blast.
+    """Checks status of blast.
 
     :param path: installation path
     :type path: basestring
@@ -18,8 +18,7 @@ def status(path=None):
 
 
 def install(email=None, platform=None, path=None):
-    """
-    Installs blast
+    """Installs blast.
 
     :param email: users email
     :type email: basestring

@@ -1,7 +1,10 @@
-import os
-import pytest
 import json
-from pyblast.blast import BlastBase, TmpBlast
+import os
+
+import pytest
+
+from pyblast.blast import BlastBase
+from pyblast.blast import TmpBlast
 
 
 def pytest_namespace(here):

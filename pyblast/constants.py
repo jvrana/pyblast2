@@ -1,4 +1,4 @@
-class Constants(object):
+class Constants:
 
     PARENT = "origin_record"
     CIRCULAR = "circular"
@@ -9,5 +9,5 @@ class Constants(object):
     COPY_RECORD = "copy_record"
     TOPOLOGY = "topology"
 
-    class NULL(object):
+    class NULL:
         """A not NONE class."""

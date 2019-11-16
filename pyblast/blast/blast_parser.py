@@ -1,14 +1,9 @@
-"""
-blast_parser
-"""
-
+"""blast_parser."""
 import re
 
 
-class BlastResultParser(object):
-    """
-    Parses blast results
-    """
+class BlastResultParser:
+    """Parses blast results."""
 
     @staticmethod
     def str_to_f_to_i(v):
@@ -23,29 +18,29 @@ class BlastResultParser(object):
 
     @staticmethod
     def _extract_metadata(r, delim):
-        """Extracts information from the raw text file BLAST produces"""
+        """Extracts information from the raw text file BLAST produces."""
         g = re.search(
-            "#\s*(?P<blast_ver>.+)\n"
-            + "# Query:\s*(?P<query>.*)\n"
-            + "# Database:\s*(?P<database>.+)\n"
-            + "(?:# Fields:\s*(?P<fields>.+))?",
+            "#\\s*(?P<blast_ver>.+)\n"
+            + "# Query:\\s*(?P<query>.*)\n"
+            + "# Database:\\s*(?P<database>.+)\n"
+            + r"(?:# Fields:\s*(?P<fields>.+))?",
             r,
         )
         metadata = g.groupdict()
         if metadata["fields"] is None:
             return metadata
-        fields_array = re.split("\s*{}\s*".format(delim), metadata["fields"])
+        fields_array = re.split(r"\s*{}\s*".format(delim), metadata["fields"])
         metadata["fields"] = fields_array
         return metadata
 
     @staticmethod
     def _get_alignment_rows(r):
-        """Split text into alignment rows"""
+        """Split text into alignment rows."""
         return re.findall("\n([^#].*)", r)
 
     @classmethod
     def _validate_matches(cls, raw_matches, fields):
-        """Create a dictionary from the fields and rows"""
+        """Create a dictionary from the fields and rows."""
         match_dicts = []
         for m in raw_matches:
             values = [cls.str_to_f_to_i(v) for v in m.split("\t")]
@@ -85,8 +80,7 @@ class BlastResultParser(object):
 
     @classmethod
     def raw_results_to_json(cls, raw_text, delim=","):
-        """
-        Converts raw BLAST text into a flatten dictionary
+        """Converts raw BLAST text into a flatten dictionary.
 
         :param raw_text: raw text from BLAST results
         :type raw_text: basestring
@@ -110,8 +104,7 @@ class BlastResultParser(object):
 
     @staticmethod
     def get_perfect(data):
-        """
-        Returns only exact matches.
+        """Returns only exact matches.
 
         :return:
         :rtype:
@@ -133,8 +126,8 @@ class BlastResultParser(object):
 
     @staticmethod
     def get_with_perfect_subjects(data):
-        """
-        Returns only parsed alignments with 100% of the subject aligning to the query
+        """Returns only parsed alignments with 100% of the subject aligning to
+        the query.
 
         :return: perfect alignments
         :rtype:

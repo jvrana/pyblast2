@@ -6,7 +6,9 @@ from Bio.SeqRecord import SeqRecord
 
 from pyblast import BioBlast
 from pyblast.exceptions import PyBlastException
-from pyblast.utils import make_linear, load_genbank_glob, force_unique_record_ids
+from pyblast.utils import force_unique_record_ids
+from pyblast.utils import load_genbank_glob
+from pyblast.utils import make_linear
 
 
 def test_basic_run():

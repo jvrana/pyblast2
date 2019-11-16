@@ -1,9 +1,8 @@
-import six.moves.urllib.request as urlreq
-from six import PY3
-
 import dash
 import dash_bio as dashbio
 import dash_html_components as html
+import six.moves.urllib.request as urlreq
+from six import PY3
 
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]

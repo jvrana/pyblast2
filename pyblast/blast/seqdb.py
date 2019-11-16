@@ -1,9 +1,11 @@
-from pyblast.constants import Constants as C
-from uuid import uuid4
-from pyblast.exceptions import SeqRecordValidationError
-import networkx as nx
-from pyblast.utils import is_circular
 from collections.abc import Sized
+from uuid import uuid4
+
+import networkx as nx
+
+from pyblast.constants import Constants as C
+from pyblast.exceptions import SeqRecordValidationError
+from pyblast.utils import is_circular
 
 
 class GraphDB(Sized):
@@ -13,11 +15,14 @@ class GraphDB(Sized):
 
     @staticmethod
     def new_key():
-        """Generate a new unique key"""
+        """Generate a new unique key."""
         return str(uuid4())
 
     def key(self, obj):
-        """Model id to key. To ensure uniqueness of the models being added."""
+        """Model id to key.
+
+        To ensure uniqueness of the models being added.
+        """
         k = self.mapping.get(id(obj), None)
         return k
 
@@ -29,7 +34,7 @@ class GraphDB(Sized):
         return records
 
     def get(self, key, default=C.NULL):
-        """Get object from a key"""
+        """Get object from a key."""
         if default is not C.NULL:
             if key not in self.graph:
                 return default
@@ -37,7 +42,7 @@ class GraphDB(Sized):
         return self.graph.nodes[key]["object"]
 
     def add(self, obj):
-        """Add an object"""
+        """Add an object."""
         if self.key(obj):
             return self.key(obj)
         else:
@@ -47,18 +52,18 @@ class GraphDB(Sized):
             return key
 
     def add_many(self, objects):
-        """Add many objects"""
+        """Add many objects."""
         keys = []
         for o in objects:
             keys.append(self.add(o))
         return keys
 
     def add_edge(self, k1, k2, **kwargs):
-        """Add an edge"""
+        """Add an edge."""
         return self.graph.add_edge(k1, k2, **kwargs)
 
     def to_dict(self):
-        """Return key to object dictionary"""
+        """Return key to object dictionary."""
         d = {}
         for key in self.graph:
             d[key] = self.get(key)
@@ -79,7 +84,7 @@ class SeqRecordDB(GraphDB):
 
     @property
     def records(self):
-        """Return all records"""
+        """Return all records."""
         return self.to_dict()
 
     @classmethod
@@ -89,27 +94,26 @@ class SeqRecordDB(GraphDB):
 
     @staticmethod
     def validate_circular(r):
-        """Ensure the record has a 'topology' of the expected type ['circular', 'linear']"""
+        """Ensure the record has a 'topology' of the expected type ['circular',
+        'linear']"""
 
         valid_keys = [C.CIRCULAR, C.LINEAR, C.TOPOLOGY]
         if all([k not in r.annotations for k in valid_keys]):
             raise SeqRecordValidationError(
-                "SeqRecord {} is missing a any of the valid keys in its annotation: {keys}. This must be provided.\n"
-                "`Use pyblast.utils.make_circular` or `pyblast.utils.make_linear` to annotate SeqRecords".format(
-                    r, keys=valid_keys
-                )
+                "SeqRecord {} is missing a any of the valid keys in its annotation: "
+                "{keys}. This must be provided.\n"
+                "`Use pyblast.utils.make_circular` or `pyblast.utils.make_linear` to "
+                "annotate SeqRecords".format(r, keys=valid_keys)
             )
         if C.LINEAR in r.annotations and C.CIRCULAR in r.annotations:
             if r.annotations[C.LINEAR] is r.annotations[C.CIRCULAR]:
                 raise SeqRecordValidationError(
-                    "SeqRecord {} has conflicting topology definitions for '{linear}' and '{circular}'".format(
-                        r, circular=C.CIRCULAR, linear=C.LINEAR
-                    )
+                    "SeqRecord {} has conflicting topology definitions for '{linear}' "
+                    "and '{circular}'".format(r, circular=C.CIRCULAR, linear=C.LINEAR)
                 )
 
     def transform(self, parent_key, transform, transform_label):
-        """
-        Transform a record.
+        """Transform a record.
 
         :param parent_key:
         :type parent_key:
@@ -126,23 +130,24 @@ class SeqRecordDB(GraphDB):
         self.add_edge(
             parent_key,
             new_key,
-            **{C.TRANSFORMATION: transform_label, C.PARENT: parent_key}
+            **{C.TRANSFORMATION: transform_label, C.PARENT: parent_key},
         )
         new_record._transform = transform_label
         new_record.id = new_key
         return new_key
 
     def add_with_transformation(self, record, transform, transform_label):
-        """
-        Add a record and its transformation to the database. If the original
-        record exists in the database, then that record is used. If the original
-        record has had the same type of transformation applied, no new records are
-        added and the previously transformed key is returned. Else, the `transform` function
-        is applied and the new record is added, with a trace back to the original record.
+        """Add a record and its transformation to the database. If the original
+        record exists in the database, then that record is used. If the
+        original record has had the same type of transformation applied, no new
+        records are added and the previously transformed key is returned. Else,
+        the `transform` function is applied and the new record is added, with a
+        trace back to the original record.
 
         :param record: the record to apply a transformation
         :type record: SeqRecord
-        :param transform: the transformation function that takes in a single argument, the record
+        :param transform: the transformation function that takes in a single argument,
+            the record
         :type transform: callable
         :param transform_label: the transformation label of the transform function
         :type transform_label: str
@@ -159,17 +164,17 @@ class SeqRecordDB(GraphDB):
             return new_key
 
     def add_many_with_transformations(self, records, transform, transform_label):
-        """
-        Transform many records. See `add_with_transformation` for usage.
+        """Transform many records.
+
+        See `add_with_transformation` for usage.
         """
         return [
             self.add_with_transformation(r, transform, transform_label) for r in records
         ]
 
     def get_origin_key(self, key):
-        """
-        Trace the record at 'key' back to its origin through
-         its transformation trace and return the origin's key.
+        """Trace the record at 'key' back to its origin through its
+        transformation trace and return the origin's key.
 
         :param key: the key of the record
         :type key: str
@@ -181,9 +186,8 @@ class SeqRecordDB(GraphDB):
         return roots[0]
 
     def get_origin(self, key):
-        """
-        Trace the record at 'key' back to its origin through
-         its transformation trace and return the origin record.
+        """Trace the record at 'key' back to its origin through its
+        transformation trace and return the origin record.
 
         :param key: the key of the record
         :type key: str
@@ -193,7 +197,7 @@ class SeqRecordDB(GraphDB):
         return self.get(self.get_origin_key(key))
 
     def add(self, record, validate=True):
-        """Add a record"""
+        """Add a record."""
         if self.key(record):
             return self.key(record)
         else:
@@ -202,6 +206,6 @@ class SeqRecordDB(GraphDB):
             return super().add(record)
 
     def add_many(self, records):
-        """Add many records"""
+        """Add many records."""
         self.validate_records(records)
         return super().add_many(records)

@@ -1,6 +1,9 @@
-from pyblast import BioBlastFactory
-from pyblast.utils import load_genbank_glob, load_fasta_glob, make_linear
 from os.path import join
+
+from pyblast import BioBlastFactory
+from pyblast.utils import load_fasta_glob
+from pyblast.utils import load_genbank_glob
+from pyblast.utils import make_linear
 
 
 def test_bioblast_factory_init(here):

@@ -1,13 +1,12 @@
-"""
-testing expected bases for query and subject for JSON Blast
-"""
+"""testing expected bases for query and subject for JSON Blast."""
+import json
+import os
 
 import pytest
-import os
+
 from pyblast.blast import JSONBlast
-from pyblast.utils import reverse_complement
 from pyblast.exceptions import PyBlastException
-import json
+from pyblast.utils import reverse_complement
 
 
 def test_basic_run():
@@ -78,9 +77,13 @@ class TestJSONBlast:
         print(results)
 
     def test_make_from_json_with_preloaded_id(self):
-        """We expect the alignment results to contain the very same id and information in the query and subject
-        alignments as the sequences that went into the JSONBlast alignment. Since this is a perfect alignment,
-        we also expect the sequences to be spit back out."""
+        """We expect the alignment results to contain the very same id and
+        information in the query and subject alignments as the sequences that
+        went into the JSONBlast alignment.
+
+        Since this is a perfect alignment, we also expect the sequences
+        to be spit back out.
+        """
         j = JSONBlast(
             [
                 {
@@ -134,7 +137,8 @@ class TestJSONBlast:
         assert results[0]["subject"] == expected_subject
 
     def test_json_blast_with_orderdict(self):
-        """JSONBlast should handle the subclasses of dict as inputs as well as dict"""
+        """JSONBlast should handle the subclasses of dict as inputs as well as
+        dict."""
         from collections import OrderedDict
 
         j = JSONBlast(
@@ -195,7 +199,8 @@ class TestJSONBlast:
         assert results[0]["subject"] == expected_subject
 
     def test_json_blast_with_no_hits(self):
-        """JSONBlast should handle the subclasses of dict as inputs as well as dict"""
+        """JSONBlast should handle the subclasses of dict as inputs as well as
+        dict."""
         from collections import OrderedDict
 
         j = JSONBlast(
@@ -223,7 +228,7 @@ class TestJSONBlast:
         print(results)
 
     def test_json_blast_with_repeats(self):
-        """We expect no hits from repeats"""
+        """We expect no hits from repeats."""
         from collections import OrderedDict
 
         j = JSONBlast(
@@ -251,7 +256,7 @@ class TestJSONBlast:
         assert results == []
 
     def test_json_blast_with_objects_raises_pyblasterror(self):
-        class Sequence(object):
+        class Sequence:
             def __init__(self, **kwargs):
                 self.__dict__.update(**kwargs)
 
@@ -281,7 +286,7 @@ class TestJSONBlastForExpectedSequences:
 
     @pytest.fixture
     def seqs(self, frag):
-        """Alignments that wraps around the query more than onces"""
+        """Alignments that wraps around the query more than onces."""
 
         # class Sequence(object):
         #

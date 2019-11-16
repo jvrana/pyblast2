@@ -63,14 +63,14 @@ class TestPseudocircularize:
         return results
 
     def test_alignments(self, seqs):
-        """Expect alignments to be returned"""
+        """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         assert j.results
 
     def test_pseudocircularized_alignments(self, seqs):
-        """Expect alignments to be returned"""
+        """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
@@ -121,7 +121,8 @@ class TestPseudocircularize:
     def test_json_pseudocircularize_is_true_but_sequences_are_not_circular(
         self, alignments_span_origin_true_query_not_circular, frag1, frag2, seqs
     ):
-        """Expect same results as pseudocircularize==False if sequences are not circular"""
+        """Expect same results as pseudocircularize==False if sequences are not
+        circular."""
         assert len(alignments_span_origin_true_query_not_circular) == 2
         assert (
             alignments_span_origin_true_query_not_circular[0]["subject"][
@@ -206,14 +207,14 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         return [subject], query
 
     def test_alignments(self, seqs):
-        """Expect alignments to be returned"""
+        """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
         j.quick_blastn()
         assert j.results
 
     def test_pseudocircularized_alignments(self, seqs):
-        """Expect alignments to be returned"""
+        """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
         j.quick_blastn()
@@ -274,7 +275,8 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     def test_json_pseudocircularize_is_true_but_sequences_are_not_circular(
         self, alignments_span_origin_true_query_not_circular, frag1, frag2, seqs
     ):
-        """Expect same results as pseudocircularize==False if sequences are not circular"""
+        """Expect same results as pseudocircularize==False if sequences are not
+        circular."""
         assert len(alignments_span_origin_true_query_not_circular) == 2
         assert (
             alignments_span_origin_true_query_not_circular[0]["subject"][
@@ -331,7 +333,7 @@ class TestPseudocirculariseWithLongSeqs:
 
     @pytest.fixture
     def long_seqs(self, frag1, frag2):
-        """Alignments that wraps around the query more than onces"""
+        """Alignments that wraps around the query more than onces."""
 
         junk1 = "atgctatgctgatgctgctgtgctgatgctgatgtgtattgctgtatcgcgcgagttagc"
         junk2 = "g" * 30

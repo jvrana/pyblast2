@@ -37,6 +37,25 @@ nbsphinx = "^0.4.3"
 recommonmark = "^0.6.0"
 sphinx_autodoc_typehints = "^1.8"
 
+[tool.black]
+line-length = 88
+target-version = ['py36', 'py37', 'py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
 [tool.poetry.scripts]
 pyblast = 'pyblast:cli.main'
 

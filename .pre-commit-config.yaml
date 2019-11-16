@@ -3,3 +3,27 @@ repos:
     rev: stable
     hooks:
     - id: black
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: ''  # pick a git hash / tag to point to
+    hooks:
+    -   id: flake8
+        exclude: (^tests/)|(^docsrc/)
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+    -   id: check-added-large-files
+    -   id: forbid-new-submodules
+-   repo: https://github.com/myint/docformatter
+    rev: v1.3
+    hooks:
+    -   id: docformatter
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v1.12.0
+    hooks:
+    -   id: pyupgrade
+        args: [--py3-plus]
+-   repo: https://github.com/asottile/reorder_python_imports
+    rev: v1.4.0
+    hooks:
+    -   id: reorder-python-imports
+        args: [--py3-plus]

@@ -1,6 +1,4 @@
-"""
-
-.. module:: blast
+""".. module:: blast.
 
 Submodules
 ==========
@@ -10,5 +8,8 @@ Submodules
 
     bioblastfactory
 """
-from pyblast.blast.blast import BioBlast, JSONBlast, TmpBlast, BlastBase
-from .bioblastfactory import BioBlastFactory
+from pyblast.blast.bioblastfactory import BioBlastFactory
+from pyblast.blast.blast import BioBlast
+from pyblast.blast.blast import BlastBase
+from pyblast.blast.blast import JSONBlast
+from pyblast.blast.blast import TmpBlast

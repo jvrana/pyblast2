@@ -1,15 +1,17 @@
-import pprint
 import ftplib
-import subprocess
 import os
+import pprint
 import re
 import shutil
+import subprocess
 from glob import glob
-from termcolor import cprint, colored
+
+from termcolor import colored
+from termcolor import cprint
 
 
-class BlastWrapper(object):
-    """A really shallow wrapper for running blast commands"""
+class BlastWrapper:
+    """A really shallow wrapper for running blast commands."""
 
     def __init__(self, path=None):
         if path is None:
@@ -40,7 +42,8 @@ class BlastWrapper(object):
 
     @staticmethod
     def _add_path_to_environment(path):
-        """Add the blast installations located in 'bin' to the environment temporarily"""
+        """Add the blast installations located in 'bin' to the environment
+        temporarily."""
         real_path = os.path.abspath(path)
         os.environ["PATH"] += ":" + real_path
 
@@ -49,8 +52,7 @@ class BlastWrapper(object):
         return shutil.which("makeblastdb")
 
     def install(self, email, platform):
-        """
-        Installs blast to bin directory.
+        """Installs blast to bin directory.
 
         :param email: user's email
         :type email: basestring
@@ -67,9 +69,9 @@ class BlastWrapper(object):
 
     @staticmethod
     def _platform_formats():
-        version_pattern = "\d+\.\d+\.\d+\+"
+        version_pattern = r"\d+\.\d+\.\d+\+"
         blast_pattern = "(ncbi-blast-{ver})-{platform}{ext}"
-        tarball_ext = "\.tar\.gz"
+        tarball_ext = r"\.tar\.gz"
         tarball_formats = {
             "mac": blast_pattern.format(
                 ver=version_pattern, platform=".*?macosx.*?", ext=tarball_ext
@@ -174,12 +176,14 @@ class BlastWrapper(object):
 
     def ask_to_install(self):
         msg = colored(
-            "Blast not installed and so script cannot run. If you have BLAST installed, be sure to add it to your $PATH. Otherwise you can install it now. Would you like to install it now?\n",
+            "Blast not installed and so script cannot run. If you have BLAST "
+            "installed, be sure to add it to your $PATH. Otherwise you can install it"
+            " now. Would you like to install it now?\n",
             "red",
         )
         msg += colored(
-            "Note that this will require an internet connection and your email to download blast "
-            + "from NCBI (y|n): ",
+            "Note that this will require an internet connection and your email to "
+            "download blast " + "from NCBI (y|n): ",
             "green",
         )
 
@@ -190,7 +194,8 @@ class BlastWrapper(object):
             self.install(email, platform)
         else:
             cprint(
-                "User canceled. Blast not installed.\nPlease run 'pyblast install [EMAIL] [PLATFORM]' from the commandline."
+                "User canceled. Blast not installed.\nPlease run 'pyblast install "
+                "[EMAIL] [PLATFORM]' from the commandline."
                 + "\nFor help, type 'pyblast install -- --help' in the commandline.",
                 "red",
             )

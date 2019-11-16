@@ -1,19 +1,21 @@
+from uuid import uuid4
+
+from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature
 from Bio.SeqRecord import SeqRecord
-from uuid import uuid4
-from Bio.Seq import Seq
-from pyblast.utils import new_feature_location
+
 from pyblast.exceptions import PyBlastException
+from pyblast.utils import new_feature_location
 
 
-class JSONParser(object):
+class JSONParser:
     @staticmethod
     def clean_data(data):
         return {k: v for k, v in data.items() if v is not None}
 
     @classmethod
     def JSON_to_SeqFeature(cls, data, length=None):
-        """Convert JSON to a Bio.SeqFeature object"""
+        """Convert JSON to a Bio.SeqFeature object."""
         start = data["start"]
         end = data["end"]
         strand = data["strand"]
@@ -44,7 +46,7 @@ class JSONParser(object):
 
     @classmethod
     def JSON_to_SeqRecords(cls, datalist):
-        """Convert JSON to SeqRecords"""
+        """Convert JSON to SeqRecords."""
         records = []
         if isinstance(datalist, list):
             for data in datalist:

@@ -1,17 +1,19 @@
-"""bioblastfactory"""
+"""bioblastfactory."""
+from typing import List
+from typing import Tuple
 
+from Bio.SeqRecord import SeqRecord
 
 from pyblast.blast import BioBlast
 from pyblast.blast.seqdb import SeqRecordDB
-from pyblast.utils import clean_records
-from typing import List, Tuple
-from Bio.SeqRecord import SeqRecord
 from pyblast.log import logger
+from pyblast.utils import clean_records
 
 
-class BioBlastFactory(object):
-    """
-    Instance factory for :class:`BioBlast` instance that share the same :class:`SeqRecordDB`.
+class BioBlastFactory:
+    """Instance factory for :class:`BioBlast` instance that share the same.
+
+    :class:`SeqRecordDB`.
 
     Usage:
 
@@ -27,10 +29,10 @@ class BioBlastFactory(object):
     """
 
     def __init__(self, seq_db=None, span_origin=True, config=None):
-        """
-        Initialize a new BioBlastFactory.
+        """Initialize a new BioBlastFactory.
 
-        :param seq_db: the optional SeqRecordDB. If not provided, a new one will be created.
+        :param seq_db: the optional SeqRecordDB. If not provided, a new one will be
+            created.
         :type seq_db: SeqRecordDB
         """
         if seq_db is None:
@@ -43,9 +45,7 @@ class BioBlastFactory(object):
         self.config = config
 
     def __setitem__(self, record_group_name: str, records: List[SeqRecord]):
-        """
-        See add_records.
-        """
+        """See add_records."""
         self.add_records(records, record_group_name)
 
     def __getitem__(self, record_group_name):
@@ -54,8 +54,7 @@ class BioBlastFactory(object):
     def add_records(
         self, records: List[SeqRecord], record_group_name: str
     ) -> Tuple[List[str], List[SeqRecord]]:
-        """
-        Add records to the SeqRecordDB by keyword.
+        """Add records to the SeqRecordDB by keyword.
 
         :param records:
         :type records:
@@ -77,9 +76,8 @@ class BioBlastFactory(object):
         return keys, records
 
     def __call__(self, subject_key, query_key, config=None):
-        """
-        Create a new BioBlast instance with the factory's SeqRecordDB.
-        
+        """Create a new BioBlast instance with the factory's SeqRecordDB.
+
         :param subject_key: the subject key
         :type subject_key: str
         :param query_key: the query key

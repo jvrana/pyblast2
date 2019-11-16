@@ -5,8 +5,12 @@ import pytest
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from pyblast import BioBlast, BioBlastFactory
-from pyblast.utils import make_linear, make_circular, force_unique_record_ids, Span
+from pyblast import BioBlast
+from pyblast import BioBlastFactory
+from pyblast.utils import force_unique_record_ids
+from pyblast.utils import make_circular
+from pyblast.utils import make_linear
+from pyblast.utils import Span
 
 
 def random_sequence(length):
@@ -282,9 +286,11 @@ class TestCircular:
         assert result["subject"]["end"] == 1100
 
     def test_circular_complete_query_2(self):
-        """In this situation, the subject is wraps around the query for 10 extra bases on the
-        left site.
-        Note that pyblast results start at index 1."""
+        """In this situation, the subject is wraps around the query for 10
+        extra bases on the left site.
+
+        Note that pyblast results start at index 1.
+        """
         record = rand_record(1000)
         queries = [record]
         subjects = [ns(100) + record[-10 + 500 :] + record[:500] + ns(100)]
@@ -302,9 +308,11 @@ class TestCircular:
         assert result["subject"]["end"] == 1110
 
     def test_circular_complete_query_3(self):
-        """In this situation, the subject is wraps around the query for 10 extra bases on the
-        right site.
-        Note that pyblast results start at index 1."""
+        """In this situation, the subject is wraps around the query for 10
+        extra bases on the right site.
+
+        Note that pyblast results start at index 1.
+        """
         record = rand_record(1000)
         queries = [record]
         subjects = [ns(100) + record[500:] + record[: 500 + 10] + ns(100)]
@@ -322,9 +330,11 @@ class TestCircular:
         assert result["subject"]["end"] == 1110
 
     def test_circular_complete_query_4(self):
-        """In this situation, the subject is wraps around the query for 10 extra bases on the
-        left and right site.
-        Note that pyblast results start at index 1."""
+        """In this situation, the subject is wraps around the query for 10
+        extra bases on the left and right site.
+
+        Note that pyblast results start at index 1.
+        """
         record = rand_record(1000)
         queries = [record]
         subjects = [ns(100) + record[-10 + 500 :] + record[: 500 + 10] + ns(100)]

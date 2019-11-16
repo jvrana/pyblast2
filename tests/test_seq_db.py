@@ -1,8 +1,10 @@
-from pyblast.blast.seqdb import SeqRecordDB
-from Bio.SeqRecord import SeqRecord
-from Bio.Seq import Seq
-from pyblast.utils import make_circular
 from copy import deepcopy
+
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+from pyblast.blast.seqdb import SeqRecordDB
+from pyblast.utils import make_circular
 
 
 def random_record():
@@ -40,8 +42,8 @@ def test_get_records():
 
 
 def test_add_with_transform():
-    """We expect that when we add a record with a transformation, that the
-    we can obtain the origin record and transformed record."""
+    """We expect that when we add a record with a transformation, that the we
+    can obtain the origin record and transformed record."""
 
     db = SeqRecordDB()
     from uuid import uuid4
@@ -74,8 +76,8 @@ def test_add_with_transform():
 
 
 def test_add_same_transformation():
-    """We expect that when we add a record with a transformation, that the
-    we can obtain the origin record and transformed record."""
+    """We expect that when we add a record with a transformation, that the we
+    can obtain the origin record and transformed record."""
 
     db = SeqRecordDB()
     from uuid import uuid4
@@ -100,8 +102,8 @@ def test_add_same_transformation():
 
 
 def test_add_multiple_transformations():
-    """We expect that when we add a record with a transformation, that the
-    we can obtain the origin record and transformed record."""
+    """We expect that when we add a record with a transformation, that the we
+    can obtain the origin record and transformed record."""
 
     db = SeqRecordDB()
     from uuid import uuid4

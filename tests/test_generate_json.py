@@ -1,8 +1,9 @@
 import json
-import requests
 import os
 from glob import glob
+
 import pytest
+import requests
 
 query = """
 query ParseSequences($file: String!, $filename: String!) {

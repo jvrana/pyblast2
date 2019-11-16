@@ -1,14 +1,16 @@
+from os.path import abspath
+from os.path import dirname
+from os.path import join
+
 import pytest
-from os.path import dirname, abspath, join
+
 from pyblast import BioBlast
 from pyblast.blast import BlastBase
-from pyblast.utils import (
-    load_genbank_glob,
-    load_fasta_glob,
-    make_linear,
-    is_circular,
-    make_circular,
-)
+from pyblast.utils import is_circular
+from pyblast.utils import load_fasta_glob
+from pyblast.utils import load_genbank_glob
+from pyblast.utils import make_circular
+from pyblast.utils import make_linear
 
 
 @pytest.fixture(scope="module")

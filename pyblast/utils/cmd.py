@@ -1,11 +1,12 @@
-"""cmd.py"""
-
+"""cmd.py."""
 import shlex
-from subprocess import check_output, STDOUT, CalledProcessError
+from subprocess import CalledProcessError
+from subprocess import check_output
+from subprocess import STDOUT
 
 
 def run_cmd_str(cmd_str):
-    """Runs a command from a string"""
+    """Runs a command from a string."""
     args = shlex.split(cmd_str)
     try:
         output = check_output(args, stderr=STDOUT)
@@ -24,10 +25,10 @@ def run_cmd_str(cmd_str):
 
 
 def run_cmd(cmd, **kwargs):
-    """Run a command using parameters kwargs"""
+    """Run a command using parameters kwargs."""
     run_cmd_str(dict_to_cmd(cmd, **kwargs))
 
 
 def dict_to_cmd(cmd, **kwargs):
-    """Create a command string for cmd and parameters 'kwargs'"""
+    """Create a command string for cmd and parameters 'kwargs'."""
     return cmd + " " + " ".join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
