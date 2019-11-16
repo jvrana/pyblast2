@@ -11,6 +11,44 @@ from pyblast.constants import Constants as C
 from typing import List
 from uuid import uuid4
 from .span import Span, SpanError
+import os
+import shutil
+from typing import Any
+
+
+class RegisteredTempFile(object):
+
+    tmpfileregistry = {}
+
+    @staticmethod
+    def _origin_id(origin):
+        if isinstance(origin, str):
+            origin_id = str(origin)
+        else:
+            origin_id = str(id(origin))
+        return origin_id
+
+    @classmethod
+    def mktemp(cls, origin, *args, **kwargs):
+
+        fd, tmp_path_handle = tempfile.mkstemp(*args, **kwargs)
+        cls.tmpfileregistry.setdefault(cls._origin_id(origin), list())
+        cls.tmpfileregistry[cls._origin_id(origin)].append(tmp_path_handle)
+        return fd, tmp_path_handle
+
+    @classmethod
+    def remove_origin(cls, origin):
+        key = cls._origin_id(origin)
+        files_list = cls.tmpfileregistry.get(key)
+        for filepath in cls.tmpfileregistry.get(key, []):
+            if os.path.isdir(filepath):
+                shutil.rmtree(filepath)
+                files_list.remove(filepath)
+            elif os.path.isfile(filepath):
+                os.remove(filepath)
+                files_list.remove(filepath)
+        if not files_list and key in cls.tmpfileregistry:
+            del cls.tmpfileregistry[key]
 
 
 def reverse_complement(seq_str: str) -> str:
@@ -55,7 +93,7 @@ def new_feature_location(start: int, end: int, length: int, strand: int):
     return location
 
 
-def records_to_tmpfile(records: List[SeqRecord]) -> str:
+def records_to_tmpfile(records: List[SeqRecord], origin: Any) -> str:
     """
     Write SeqRecords to a temporary file.
 
@@ -64,12 +102,12 @@ def records_to_tmpfile(records: List[SeqRecord]) -> str:
     :return: temporary file path
     :rtype: str
     """
-    fd, tmp_path_handle = tempfile.mkstemp(suffix=".fasta")
+    fd, tmp_path_handle = RegisteredTempFile.mktemp(origin, suffix=".fasta")
     SeqIO.write(records, tmp_path_handle, format="fasta")
     return tmp_path_handle
 
 
-def glob_fasta_to_tmpfile(dirpath: str) -> str:
+def glob_fasta_to_tmpfile(dirpath: str, origin: Any) -> str:
     """
     Concatenate all fasta files into a temporary fasta file.
 

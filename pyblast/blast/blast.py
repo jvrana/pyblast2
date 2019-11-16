@@ -18,18 +18,30 @@ from more_itertools import unique_everseen
 
 from pyblast.blast_bin import BlastWrapper
 from pyblast.constants import Constants as C
-from pyblast.exceptions import PyBlastException, PyBlastWarning
+from pyblast.exceptions import PyBlastException
 from pyblast.utils import Span
 from pyblast.utils import (
     glob_fasta_to_tmpfile,
     records_to_tmpfile,
     clean_records,
     force_unique_record_ids,
+    RegisteredTempFile,
 )
 from pyblast.utils import run_cmd
 from .blast_parser import BlastResultParser
 from .json_parser import JSONParser
 from .seqdb import SeqRecordDB
+
+
+class BlastRunningContext(object):
+    def __init__(self, blastinst):
+        self.blast = blastinst
+
+    def __enter__(self):
+        self.blast.makedb()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.blast.closedb()
 
 
 class BlastBase(object):
@@ -162,9 +174,12 @@ class BlastBase(object):
 
         outdir = os.path.dirname(self.results_out_path)
         errors = []
-        for file_ in [self.query_path, self.subject_path]:
+        for file_ in [self.query_path]:
             if not _is_file(file_):
-                errors.append("File not found: {}".format(file_))
+                errors.append("Query File not found: {}".format(file_))
+        for file_ in [self.subject_path]:
+            if not _is_file(file_):
+                errors.append("Subject File not found: {}".format(file_))
         for dir_ in [outdir, self.db_output_directory]:
             if not _is_dir(dir_):
                 errors.append("Directory not found {}".format(dir_))
@@ -187,15 +202,17 @@ class BlastBase(object):
         config_dict.update(self.config)
         return config_dict
 
+    def running_context(self):
+        return BlastRunningContext(self)
+
     def blastn(self):
         """Alias of 'quick_blastn'"""
         self.quick_blastn()
 
     def quick_blastn(self):
         """Produce database, run blastn protocol, & parse results """
-        self.makedb()
-        self._run_blastn()
-        self.closedb()
+        with BlastRunningContext(self):
+            self._run_blastn()
         return self.parse_results()
 
     def blastn_short(self):
@@ -204,9 +221,8 @@ class BlastBase(object):
 
     def quick_blastn_short(self):
         """Produce database, run blastn short protocol, & parse results """
-        self.makedb()
-        self._run_blastn_short()
-        self.closedb()
+        with BlastRunningContext(self):
+            self._run_blastn_short()
         return self.parse_results()
 
     def _run_blastn(self):
@@ -339,16 +355,28 @@ class TmpBlast(BlastBase):
             "query_circular",
         )
 
+    def _set_subject_path(self):
+        if os.path.isdir(self.subject_records_path):
+            self.subject_path = glob_fasta_to_tmpfile(self.subject_records_path, self)
+        else:
+            self.subject_path = self.subject_records_path
+
     def makedb(self, **kwargs):
         db_output_directory = tempfile.mkdtemp()
         _, out = tempfile.mkstemp(dir=db_output_directory)
-
-        if os.path.isdir(self.subject_records_path):
-            self.subject_path = glob_fasta_to_tmpfile(self.subject_records_path)
-        else:
-            self.subject_path = self.subject_records_path
+        self._set_subject_path()
         self.set_paths(self.db_name, db_output_directory, out)
+        assert os.path.isfile(self.subject_path)
         super(TmpBlast, self).makedb(**kwargs)
+
+    def remove_temporary_files(self):
+        t = RegisteredTempFile.tmpfileregistry
+        RegisteredTempFile.remove_origin(self)
+
+    def closedb(self):
+        super().closedb()
+        self.subject_path = None
+        self.remove_temporary_files()
 
     @classmethod
     def use_test_data(cls):
@@ -408,16 +436,33 @@ class BioBlast(TmpBlast):
         else:
             self.seq_db = seq_db
         db_name = str(uuid4())
-        subject_path = records_to_tmpfile(subjects)
-        query_path = records_to_tmpfile(queries)
+        self.subjects = subjects
+        self.queries = queries
+        self.subject_path, self.query_path = None, None
+        self._set_subject_path()
+        self._set_query_path()
         super().__init__(
             db_name=db_name,
-            subject_path=subject_path,
-            query_path=query_path,
+            subject_path=self.subject_path,
+            query_path=self.query_path,
             config=config,
         )
 
         self.parse_options = {self.REINDEX_KEY: self.DEFAULT_REINDEX}
+
+    def _set_subject_path(self):
+        self.subject_path = records_to_tmpfile(self.subjects, self)
+
+    def _set_query_path(self):
+        self.query_path = records_to_tmpfile(self.queries, self)
+
+    def makedb(self, **kwargs):
+        self._set_query_path()
+        return super().makedb(**kwargs)
+
+    def closedb(self):
+        super().closedb()
+        self.query_path = None
 
     def _check_records(self, subjects, queries):
         self._check_empty_records(queries, subjects)
