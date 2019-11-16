@@ -1,4 +1,3 @@
-from __future__ import annotations
 from collections.abc import Container, Iterable, Sized
 from itertools import chain
 from typing import List, Tuple, Union
@@ -498,7 +497,7 @@ class Span(Container, Iterable, Sized):
         index=None,
         strict=None,
         abs_wrap=None,
-    ) -> Span:
+    ) -> "Span":
         """Create a new span using the same context."""
         if a is None:
             a = self._a
@@ -531,7 +530,7 @@ class Span(Container, Iterable, Sized):
             abs_wrap=abs_wrap,
         )
 
-    def sub(self, a: int, b: int) -> Span:
+    def sub(self, a: int, b: int) -> "Span":
         """
         Create a sub region starting from a to b.
 
@@ -579,25 +578,25 @@ class Span(Container, Iterable, Sized):
             raise IndexError("Cannot make subspan.")
         return subregion
 
-    def same_context(self, other: Span) -> bool:
+    def same_context(self, other: "Span") -> bool:
         """Return if another Span as an equivalent context."""
         return (
             other.context_length == self._context_length
             and self._cyclic == other.cyclic
         )
 
-    def force_context(self, other: Span) -> None:
+    def force_context(self, other: "Span") -> None:
         """
         Raise error if another Span has different context.
 
         :param other: The other span
         :return: None
-        :raises: SpanError
+        :raises: "Span"Error
         """
         if not self.same_context(other):
             raise SpanError("Cannot compare with different contexts")
 
-    def overlaps_with(self, other: Span) -> bool:
+    def overlaps_with(self, other: "Span") -> bool:
         """
         Returns True if other span has an overlap with this span.
 
@@ -618,7 +617,7 @@ class Span(Container, Iterable, Sized):
             return True
         return False
 
-    def differences(self, other: Span) -> Union[Tuple[Span], Tuple[Span, Span]]:
+    def differences(self, other: "Span") -> Union[Tuple["Span"], Tuple["Span", "Span"]]:
         """Return a tuple of differences between this span and the other span."""
         self.force_context(other)
         if other.a in self and other.b not in self:
@@ -632,7 +631,7 @@ class Span(Container, Iterable, Sized):
         else:
             return ((self[:]),)
 
-    def intersection(self, other: Span) -> Span:
+    def intersection(self, other: "Span") -> "Span":
         """Return the span inersection between this span and the other span."""
         self.force_context(other)
         if other.a in self and other.b not in self:
@@ -644,7 +643,7 @@ class Span(Container, Iterable, Sized):
         elif self in other:
             return self[:]
 
-    def consecutive(self, other: Span) -> bool:
+    def consecutive(self, other: "Span") -> bool:
         """Returns True if other span is immediately consecutive with this span."""
         self.force_context(other)
         try:
@@ -652,7 +651,7 @@ class Span(Container, Iterable, Sized):
         except IndexError:
             return False
 
-    def connecting_span(self, other: Span) -> Union[Span, None]:
+    def connecting_span(self, other: "Span") -> Union["Span", None]:
         """
         Return the span that connects the two spans. Returns None
 
@@ -706,7 +705,7 @@ class Span(Container, Iterable, Sized):
     #         else:
     # return
 
-    def invert(self) -> Union[Tuple[Span, Span], Tuple[Span, None]]:
+    def invert(self) -> Union[Tuple["Span", "Span"], Tuple["Span", None]]:
         """
         Invert the region, returning a tuple of the remaining spans from the context.
         If cyclic, a tuple (span, None) tuple is returned. If linear, a (span, span) is returned.
@@ -721,7 +720,7 @@ class Span(Container, Iterable, Sized):
         else:
             return self[:, self._a], self[self._b, :]
 
-    def __eq__(self, other: Span) -> bool:
+    def __eq__(self, other: "Span") -> bool:
         return (
             self.same_context(other)
             and self._a == other._a
@@ -729,7 +728,7 @@ class Span(Container, Iterable, Sized):
             and self._c == other._c
         )
 
-    def __ne__(self, other: Span) -> bool:
+    def __ne__(self, other: "Span") -> bool:
         return not (self.__eq__(other))
 
     @classmethod
@@ -742,7 +741,7 @@ class Span(Container, Iterable, Sized):
     def contains_pos(self, pos: int) -> bool:
         return self._pos_in_ranges(pos, self.ranges())
 
-    def contains_span(self, other: Span) -> bool:
+    def contains_span(self, other: "Span") -> bool:
         if not self.same_context(other):
             return False
         if other.a == other.b == self._a:
@@ -762,7 +761,7 @@ class Span(Container, Iterable, Sized):
             return True
         return self._b < self._a and self._cyclic
 
-    def __contains__(self, other: Union[Span, int]):
+    def __contains__(self, other: Union["Span", int]):
         if isinstance(other, int):
             return self.contains_pos(other)
         elif issubclass(type(other), Span):

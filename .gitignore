@@ -692,3 +692,4 @@ tests/.cache/
 *.nin
 .cache/v/cache/lastfailed
 /pyblast/blast_bin/bin/
+*.pyc
