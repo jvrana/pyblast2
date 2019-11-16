@@ -1,7 +1,12 @@
 {
+  "0.5.2": {
+    "description": "",
+    "date": "2019-11-16T11:46:32.547761",
+    "changes": []
+  },
   "0.5.1": {
     "description": "refactoring, reformatting, bug fixes",
-    "date": "2019-11-16T11:39:35.297757",
+    "date": "2019-11-16T11:40:19.065619",
     "changes": [
       "TempFile model ensures temporary files are properly closed and removed",
       "Import bug fixes"
