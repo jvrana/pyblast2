@@ -4,8 +4,8 @@ from typing import Tuple
 
 from Bio.SeqRecord import SeqRecord
 
-from pyblast.blast import BioBlast
-from pyblast.blast.seqdb import SeqRecordDB
+from .blast import BioBlast
+from .seqdb import SeqRecordDB
 from pyblast.log import logger
 from pyblast.utils import clean_records
 
