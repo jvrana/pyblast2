@@ -40,14 +40,14 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        poetry run pytest --cov-report= --cov=pyblast tests/
+        poetry run pytest --cov-report html:cov_html --cov-report xml:cov.xml --cov=pyblast tests/
     
     - name: Coveralls Parallel
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         parallel: true
-        path-to-lcov: ./coverage/lcov.info # optional (default value)
+        path-to-lcov: ./cov.xml
 
     - name: Coveralls Finished
       uses: coverallsapp/github-action@master
