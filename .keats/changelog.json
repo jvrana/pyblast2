@@ -1,8 +1,11 @@
 {
   "0.5.1": {
-    "description": "removed keats dep",
-    "date": "2019-11-11T08:54:15.562364",
-    "changes": []
+    "description": "refactoring, reformatting, bug fixes",
+    "date": "2019-11-16T11:35:39.742728",
+    "changes": [
+      "TempFile model ensures temporary files are properly closed and removed",
+      "Import bug fixes"
+    ]
   },
   "0.5": {
     "description": "bug fixed for API breaking changes to networkx 2.4",
