@@ -23,7 +23,6 @@ from pyblast.exceptions import PyBlastException
 from pyblast.utils import clean_records
 from pyblast.utils import force_unique_record_ids
 from pyblast.utils import glob_fasta_to_tmpfile
-from pyblast.utils import make_linear
 from pyblast.utils import records_to_tmpfile
 from pyblast.utils import RegisteredTempFile
 from pyblast.utils import run_cmd
@@ -583,7 +582,6 @@ class BioBlast(TmpBlast):
             r2 = r + r
             r2.name = C.PSEUDOCIRCULAR + "__" + r.name
             r2.id = str(uuid4())
-            make_linear([r2])
             return r2
 
         circular = [r for r in records if seq_db.is_circular(r)]
