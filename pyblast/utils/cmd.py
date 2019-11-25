@@ -26,9 +26,17 @@ def run_cmd_str(cmd_str):
 
 def run_cmd(cmd, **kwargs):
     """Run a command using parameters kwargs."""
-    run_cmd_str(dict_to_cmd(cmd, **kwargs))
+
+    flags = [k for k, v in kwargs.items() if v is None]
+    kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    run_cmd_str(dict_to_cmd(cmd, flags, **kwargs))
 
 
-def dict_to_cmd(cmd, **kwargs):
+def dict_to_cmd(cmd, flags, **kwargs):
     """Create a command string for cmd and parameters 'kwargs'."""
-    return cmd + " " + " ".join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
+    cmd_str = cmd + " " + " ".join(["-{} {}".format(k, kwargs[k]) for k in kwargs])
+    if flags:
+        flag_str = " ".join(["-" + f for f in flags])
+    else:
+        flag_str = ""
+    return cmd_str + " " + flag_str
