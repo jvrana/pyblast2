@@ -1,4 +1,9 @@
 {
+  "0.5.2": {
+    "description": "added flags to blast config",
+    "date": "2019-11-25T11:25:56.498000",
+    "changes": []
+  },
   "0.5.1": {
     "description": "removed keats dep",
     "date": "2019-11-11T08:54:15.562364",
