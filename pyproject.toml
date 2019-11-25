@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyblastbio"
-version = "0.5.2"
+version = "0.5.3"
 description = ""
 authors = ["Justin Vrana <justin.vrana@gmail.com>"]
 homepage = "https://www.github.com/jvrana/pyblast"
@@ -44,6 +44,20 @@ pyblast = 'pyblast:cli.main'
 line-length = 88
 target-version = ['py37']
 include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
 
 [build-system]
 requires = ["poetry>=0.12"]

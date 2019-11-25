@@ -5,7 +5,7 @@ from typing import Tuple
 from Bio.SeqRecord import SeqRecord
 
 from .blast import BioBlast
-from .seqdb import SeqRecordDB
+from pyblast.blast.seqdb import SeqRecordDB
 from pyblast.log import logger
 from pyblast.utils import clean_records
 
