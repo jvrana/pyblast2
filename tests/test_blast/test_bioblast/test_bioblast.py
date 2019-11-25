@@ -161,3 +161,28 @@ def test_self_blast(here):
     bioblast = BioBlast(queries, queries)
     results = bioblast.quick_blastn()
     assert not results
+
+
+def test_with_flags(new_circular_bio_blast):
+    blast = new_circular_bio_blast()
+    blast.update_config({"ungapped": None})
+    blast.quick_blastn()
+    assert blast.results
+
+
+def test_ungapped():
+    frag = "GtctaaaggtgaagaattattcactggtgttgtcccaattttggttgaattagatggtgatgttaatggtcacaaattttctgtctccggtgaaggtgaaggtgatgctacttacggtaaattgaccttaaaatttatttgtactactggtaaattgccagttccatggccaaccttagtcactactttcggttatggtgttcaatgttttgcgagatacccagatcatatgaaacaacatgactttttcaagtctgccatgccagaaggttatgttcaagaaagaactatttttttcaaagatgacggtaactacaagaccagagctgaagtcaagtttgaaggtgataccttagttaatagaatcgaattaaaaggtattgattttaaagaagatggtaacattttaggtcacaaattggaatacaactataactctcacaatgtttacatcatggctgacaaacaaaagaatggtatcaaagttaacttcaaaattagacacaacattgaagatggttctgttcaattagctgaccattatcaacaaaatactccaattggtgatggtccagtcttgttaccagacaaccattacttatccactcaatctgccttatccaaagatccaaacgaaaagagagaccacatggtcttgttagaatttgttactgctgctggtattacccatggtatggatgaattgtacaaaTAGTGATACCGTCGACCTCGAGTCAattagttatgtcacgcttacattcacgccctccccccacatccgctctaaccgaaaaggaaggagttagacaacctgaagtctaggtccctatttatttttttatagttatgttagtattaagaacgttatttatatttcaaatttttcttt"
+
+    query = SeqRecord(seq=Seq(frag), annotations={"circular": False})
+    subject = SeqRecord(
+        seq=Seq(frag[:400] + "atgctatgctgatgctgctgtgctgat" + frag[400:]),
+        annotations={"circular": False},
+    )
+
+    # print(type(query))
+    # print(type(subject))
+    blaster = BioBlast([subject], [query])
+    blaster.update_config({"ungapped": None})
+    blaster.quick_blastn()
+    alignments = blaster.results
+    print(alignments)
