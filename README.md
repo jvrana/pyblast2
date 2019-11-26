@@ -1,6 +1,8 @@
-# pyblast
+![](https://github.com/jvrana/pyblast/workflows/Python%package/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master)
 [![PyPI version](https://badge.fury.io/py/pyblastbio.svg)](https://badge.fury.io/py/pyblastbio)
+
+# pyblast
 
 This is a wrapper for other applications to run blast searches on SeqRecord objects and JSON objects. Intended to
 be used in small python applications.

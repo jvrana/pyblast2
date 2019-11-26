@@ -1,8 +1,26 @@
 {
-  "0.5.1": {
-    "description": "removed keats dep",
-    "date": "2019-11-11T08:54:15.562364",
+  "0.5.4": {
+    "description": "bug fixes",
+    "date": "2019-11-25T16:50:32.830801",
     "changes": []
+  },
+  "0.5.3": {
+    "description": "added flags to blast config",
+    "date": "2019-11-25T11:27:48.725864",
+    "changes": []
+  },
+  "0.5.2": {
+    "description": "hot fixes",
+    "date": "2019-11-25T11:25:56.498000",
+    "changes": []
+  },
+  "0.5.1": {
+    "description": "refactoring, reformatting, bug fixes",
+    "date": "2019-11-16T11:40:19.065619",
+    "changes": [
+      "TempFile model ensures temporary files are properly closed and removed",
+      "Import bug fixes"
+    ]
   },
   "0.5": {
     "description": "bug fixed for API breaking changes to networkx 2.4",
