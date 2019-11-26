@@ -1,4 +1,9 @@
 {
+  "0.5.4": {
+    "description": "bug fixes",
+    "date": "2019-11-25T16:50:32.830801",
+    "changes": []
+  },
   "0.5.3": {
     "description": "added flags to blast config",
     "date": "2019-11-25T11:27:48.725864",
@@ -7,11 +12,6 @@
   "0.5.2": {
     "description": "hot fixes",
     "date": "2019-11-25T11:25:56.498000",
-    "changes": []
-  },
-  "0.5.1": {
-    "description": "removed keats dep",
-    "date": "2019-11-11T08:54:15.562364",
     "changes": []
   },
   "0.5.1": {
