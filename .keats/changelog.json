@@ -1,4 +1,13 @@
 {
+  "0.6": {
+    "description": "API changes and bug fixes",
+    "date": "2019-12-03T12:20:27.384199",
+    "changes": [
+      "Fixes the `OSError: Too many open files`",
+      "API changes. `quick_blastn` is now `blastn` and `quick_blastn_short` is now `blastn_short`",
+      "`blastn` and `blastn_short` now have the parse   kwarg (default: True) which parses and returns the result"
+    ]
+  },
   "0.5.4": {
     "description": "bug fixes",
     "date": "2019-11-25T16:50:32.830801",
