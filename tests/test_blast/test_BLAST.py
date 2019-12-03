@@ -39,12 +39,12 @@ def test_makedb(b):
 
 def test_blasn(b):
     b.makedb()
-    b._run_blastn()
+    b.blastn()
 
 
 def test_parse_results(b):
     b.makedb()
-    b._run_blastn()
+    b.blastn()
     b.parse_results()
 
     results = b.results
@@ -77,7 +77,7 @@ def test_parse_results(b):
 
 
 def test_quick_blastn(b):
-    b.quick_blastn()
+    b.blastn()
     assert b.raw_results
 
 
@@ -89,7 +89,7 @@ class TestAligner:
         db_name = "db"
 
         a = TmpBlast(db_name, template_dictionary, query_path)
-        a.quick_blastn()
+        a.blastn()
         return a
 
     def test_query(self, aligner):
@@ -103,11 +103,11 @@ class TestAligner:
 
     def test_example(self):
         a = TmpBlast.use_test_data()
-        a.quick_blastn()
+        a.blastn()
         print(json.dumps(a.results[0], indent=2))
 
     # def test_get_metadata():
     #     a = TmpBlast.use_test_data()
-    #     a.quick_blastn()
+    #     a.blastn()
     #     a.get_filename(a.input_sequences[0].id)
     #     a.get_is_circular(a.input_sequences[0].id)

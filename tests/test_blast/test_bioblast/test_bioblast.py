@@ -22,7 +22,7 @@ def test_basic_run():
     # print(type(query))
     # print(type(subject))
     blaster = BioBlast([subject], [query])
-    blaster.quick_blastn()
+    blaster.blastn()
     alignments = blaster.results
     print(alignments)
 
@@ -36,8 +36,8 @@ def test_run_bioblast_twice():
     subject = SeqRecord(seq=Seq(junk1 + frag + junk2), annotations={"circular": False})
 
     blaster = BioBlast([subject], [query])
-    blaster.quick_blastn()
-    blaster.quick_blastn()
+    blaster.blastn()
+    blaster.blastn()
     alignments = blaster.results
     print(alignments)
 
@@ -48,7 +48,7 @@ def test_perfect_match():
     r2 = SeqRecord(seq=Seq(s), annotations={"topology": "linear"})
 
     blaster = BioBlast([r1], [r2])
-    blaster.quick_blastn()
+    blaster.blastn()
     result = blaster.results[0]
     assert result["query"]["start"] == 1
     assert result["query"]["end"] == len(s)
@@ -58,20 +58,20 @@ def test_perfect_match():
 
 # def test_valid_results(new_bio_blast):
 #     blast = new_bio_blast()
-#     blast.quick_blastn()
+#     blast.blastn()
 #     Validator.validate_blaster_results(blast)
 
 
 def test_short_blastn(new_primer_blast):
     blast = new_primer_blast()
-    blast.quick_blastn()
+    blast.blastn()
 
     assert blast.results
 
 
 def test_blast_with_circular(new_circular_bio_blast):
     blast = new_circular_bio_blast()
-    blast.quick_blastn()
+    blast.blastn()
     assert blast.results
 
 
@@ -104,7 +104,7 @@ def test_multiquery_blast(here):
     print("n_subjects: {}".format(len(subjects)))
     bioblast = BioBlast(subjects, queries)
 
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     recids = set()
     for res in results:
         recid = res["query"]["origin_record_id"]
@@ -139,7 +139,7 @@ def test_unnamed_queries(here):
     force_unique_record_ids(make_linear(queries))
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     recids = set()
     for res in results:
         recid = res["query"]["origin_record_id"]
@@ -159,14 +159,14 @@ def test_self_blast(here):
     force_unique_record_ids(make_linear(queries))
 
     bioblast = BioBlast(queries, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert not results
 
 
 def test_with_flags(new_circular_bio_blast):
     blast = new_circular_bio_blast()
     blast.update_config({"ungapped": None})
-    blast.quick_blastn()
+    blast.blastn()
     assert blast.results
 
 
@@ -183,6 +183,6 @@ def test_ungapped():
     # print(type(subject))
     blaster = BioBlast([subject], [query])
     blaster.update_config({"ungapped": None})
-    blaster.quick_blastn()
+    blaster.blastn()
     alignments = blaster.results
     print(alignments)
