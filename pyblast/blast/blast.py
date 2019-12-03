@@ -34,10 +34,14 @@ class BlastRunningContext:
         self.blast = blastinst
 
     def __enter__(self):
+        print("ENTERING")
         self.blast.makedb()
+        self.blast._is_runnable = True
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print("EXITING")
         self.blast.closedb()
+        self.blast._is_runnable = False
 
 
 class BlastBase:
@@ -97,6 +101,7 @@ class BlastBase:
         """
 
         # name of the database
+        self._is_runnable = False
         self.db_name = None
         self.db_output_directory = None
         self.results_out_path = None
@@ -196,46 +201,34 @@ class BlastBase:
     def running_context(self):
         return BlastRunningContext(self)
 
-    def blastn(self):
+    def blastn(self, parse=True):
         """Alias of 'quick_blastn'."""
-        self.quick_blastn()
+        with self.running_context():
+            self._run("blastn")
+        if parse:
+            return self.parse_results()
 
-    def quick_blastn(self):
-        """Produce database, run blastn protocol, & parse results."""
-        with BlastRunningContext(self):
-            self._run_blastn()
-        return self.parse_results()
-
-    def blastn_short(self):
+    def blastn_short(self, parse=True):
         """Alias of 'quick_blastn_short'."""
-        self.quick_blastn_short()
-
-    def quick_blastn_short(self):
-        """Produce database, run blastn short protocol, & parse results."""
-        with BlastRunningContext(self):
-            self._run_blastn_short()
-        return self.parse_results()
-
-    def _run_blastn(self):
-        return self._run("blastn")
-
-    def _run_blastn_short(self):
-        return self._run("blastn", task="blastn-short")
+        with self.running_context():
+            self._run("blastn", task="blastn-short")
+        if parse:
+            return self.parse_results()
 
     def _run(self, cmd, **config_opts):
         """Run the blastn using the current configuration."""
+        if not self._is_runnable:
+            raise PyBlastException(
+                "{} must be run in a {} context manager".format(
+                    self.__class__, BlastRunningContext
+                )
+            )
         config = self.create_config()
         config.update(config_opts)
-        self.run_cmd(cmd, **config)
+        run_cmd(cmd, **config)
         with open(self.results_out_path, "rU") as handle:
             self.raw_results = handle.read()
         return self.raw_results
-
-    # Wrapper for the util.run_cmd
-    @staticmethod
-    def run_cmd(cmd, **kwargs):
-        """Wrapper for utils.run_cmd."""
-        run_cmd(cmd, **kwargs)
 
     @staticmethod
     def _fasta_details(path):
@@ -258,7 +251,7 @@ class BlastBase:
             print("Query:")
             print(json.dumps(query_details, indent=2))
 
-        self.run_cmd(
+        run_cmd(
             "makeblastdb",
             dbtype="nucl",
             title=self.db_name,
@@ -358,14 +351,16 @@ class TmpBlast(BlastBase):
             self.subject_path = self.subject_records_path
 
     def makedb(self, **kwargs):
-        db_output_directory = tempfile.mkdtemp()
-        _, out = tempfile.mkstemp(dir=db_output_directory)
+        db_output_directory = RegisteredTempFile.mkdtemp(self)
+        fd, out = RegisteredTempFile.mkstemp(self, dir=db_output_directory)
         self._set_subject_path()
         self.set_paths(self.db_name, db_output_directory, out)
         assert os.path.isfile(self.subject_path)
         super().makedb(**kwargs)
+        os.close(fd)
 
     def remove_temporary_files(self):
+        print("REMOVING TEMPORARY FILES")
         RegisteredTempFile.remove_origin(self)
 
     def closedb(self):
@@ -457,6 +452,7 @@ class BioBlast(TmpBlast):
         return super().makedb(**kwargs)
 
     def closedb(self):
+        print("closing db")
         super().closedb()
         self.query_path = None
 

@@ -20,7 +20,7 @@ def test_example1():
     queries = make_linear(queries)
 
     blast = BioBlast(subjects, queries)
-    results = blast.quick_blastn()
+    results = blast.blastn()
     print(json.dumps(results, indent=2))
 
 
@@ -42,5 +42,5 @@ def test_example2():
     queries = make_circular(queries)
 
     blast = BioBlast(subjects, queries)
-    results = blast.quick_blastn()
+    results = blast.blastn()
     print(json.dumps(results, indent=2))

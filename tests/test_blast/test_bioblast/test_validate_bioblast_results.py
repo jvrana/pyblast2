@@ -68,7 +68,7 @@ def test_perfect_alignment():
     subjects = make_linear(subjects)
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert len(results) == 1
     compare_result(results[0], 1, len(record), 1, len(record))
 
@@ -82,7 +82,7 @@ def test_simple_alignment():
     subjects = make_linear(subjects)
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert len(results) == 1
     compare_result(results[0], 11, len(record) - 10, 1, len(record) - 10 - 10)
 
@@ -97,7 +97,7 @@ def test_align_Ns():
     subjects = make_linear(subjects)
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     print(results)
 
 
@@ -112,7 +112,7 @@ def test_partial_alignment(left_spacer, ij):
     subjects = make_linear(subjects)
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert len(results) == 1
 
     compare_result(
@@ -132,7 +132,7 @@ def test_partial_alignment_reverse_complement(left_spacer, ij):
     subjects = make_linear(subjects)
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert len(results) == 1
 
     compare_result(results[0], ij[0] + 1, ij[1], len(subjects[0].seq), left_spacer + 1)
@@ -147,7 +147,7 @@ def test_reverse_alignment_simple():
     queries = make_linear([query])
 
     bioblast = BioBlast(subjects, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     for k, v in bioblast.seq_db.records.items():
         print(k)
         print(v)
@@ -172,7 +172,7 @@ def test_reverse_alignment_simple2():
 
     bioblast = factory("subjects", "queries")
 
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     for k, v in bioblast.seq_db.records.items():
         print(k)
         print(v)
@@ -194,7 +194,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         result = results[0]
 
@@ -219,7 +219,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         result = results[0]
 
@@ -243,7 +243,7 @@ class TestCircular:
         subjects = make_circular(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         compare_result(results[0], 101, 300, 601, 100)
 
@@ -256,7 +256,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         result = results[0]
         print(result)
@@ -277,7 +277,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
         result = results[0]
 
         assert result["query"]["start"] == 501
@@ -299,7 +299,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
         result = results[0]
 
         assert result["query"]["start"] == 491
@@ -321,7 +321,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
         result = results[0]
 
         assert result["query"]["start"] == 501
@@ -343,7 +343,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
         result = results[0]
 
         assert result["query"]["start"] == 491
@@ -367,7 +367,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         result = results[0]
         print(json.dumps(result, indent=2))
@@ -406,7 +406,7 @@ class TestCircular:
         subjects = make_linear(subjects)
 
         bioblast = BioBlast(subjects, queries)
-        results = bioblast.quick_blastn()
+        results = bioblast.blastn()
 
         result = results[0]
         print(json.dumps(result, indent=2))
@@ -439,7 +439,7 @@ class TestCircular:
 #     subjects = make_circular(subjects)
 #
 #     bioblast = BioBlast(subjects, queries)
-#     results = bioblast.quick_blastn()
+#     results = bioblast.blastn()
 #
 #     result = results[0]
 #
@@ -460,7 +460,7 @@ def test_interaction_network():
     queries = make_linear(records)
 
     bioblast = BioBlast(queries, queries)
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert results
     for r in results:
         k1 = r["query"]["origin_key"]
@@ -486,7 +486,7 @@ def test_interaction_network_from_factory():
     factory.add_records(queries, "queries")
     bioblast = factory("queries", "queries")
 
-    results = bioblast.quick_blastn()
+    results = bioblast.blastn()
     assert results
     for r in results:
         k1 = r["query"]["origin_key"]
@@ -512,7 +512,7 @@ def test_interaction_network_from_factory():
 #
 #     blaster = factory("templates", "templates")
 #
-#     results = blaster.quick_blastn()
+#     results = blaster.blastn()
 #     assert results
 #     for r in results:
 #         k1 = r["query"]["origin_key"]
