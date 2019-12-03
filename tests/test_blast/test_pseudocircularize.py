@@ -50,7 +50,7 @@ class TestPseudocircularize:
     def alignments_span_origin_false(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
@@ -58,7 +58,7 @@ class TestPseudocircularize:
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
@@ -66,14 +66,14 @@ class TestPseudocircularize:
         """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         assert j.results
 
     def test_pseudocircularized_alignments(self, seqs):
         """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
-        j.quick_blastn()
+        j.blastn()
         assert j.results
 
     @pytest.fixture
@@ -81,14 +81,14 @@ class TestPseudocircularize:
         subjects, query = seqs
         query["circular"] = False
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
 
         assert len(j.subject_json[0]["bases"]) == len(subjects[0]["bases"])
         assert len(j.query_json["bases"]) == len(query["bases"])
@@ -210,21 +210,21 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         assert j.results
 
     def test_pseudocircularized_alignments(self, seqs):
         """Expect alignments to be returned."""
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
-        j.quick_blastn()
+        j.blastn()
         assert j.results
 
     @pytest.fixture
     def alignments_span_origin_false(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
@@ -232,7 +232,7 @@ class TestPseudocircularize_SwitchQueryAndSubject:
     def alignments_span_origin_true(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=True)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
@@ -241,14 +241,14 @@ class TestPseudocircularize_SwitchQueryAndSubject:
         subjects, query = seqs
         query["circular"] = False
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
     def test_sequence_size_doesnt_change(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
 
         assert len(j.subject_json[0]["bases"]) == len(subjects[0]["bases"])
         assert len(j.query_json["bases"]) == len(query["bases"])
@@ -358,7 +358,7 @@ class TestPseudocirculariseWithLongSeqs:
             span_origin=True,
             config=dict(gapopen=3, gapextend=3, penalty=-5, reward=1),
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 

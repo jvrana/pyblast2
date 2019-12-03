@@ -2,6 +2,8 @@
 import shlex
 from subprocess import CalledProcessError
 from subprocess import check_output
+from subprocess import PIPE
+from subprocess import Popen
 from subprocess import STDOUT
 
 
@@ -9,7 +11,7 @@ def run_cmd_str(cmd_str):
     """Runs a command from a string."""
     args = shlex.split(cmd_str)
     try:
-        output = check_output(args, stderr=STDOUT)
+        process = Popen(args, shell=False, stdout=PIPE, stderr=STDOUT)
     except CalledProcessError as error:
         error_message = ">>> Error while executing:\n{}\n>>> Returned with error:\n{}".format(
             cmd_str, str(error.output)
@@ -19,9 +21,10 @@ def run_cmd_str(cmd_str):
         )
         raise Exception(error_message)
 
-    # output = subprocess.Popen(args, shell=False)
-    # output.wait()
-    return output.decode()
+    (stdoutdata, stderrdata) = process.communicate(timeout=120)
+    if stderrdata:
+        raise CalledProcessError(stderrdata)
+    return stdoutdata.decode()
 
 
 def run_cmd(cmd, **kwargs):

@@ -26,7 +26,7 @@ def test_basic_run():
     # print(type(query))
     # print(type(subject))
     blaster = JSONBlast([subject], query)
-    blaster.quick_blastn()
+    blaster.blastn()
     assert len(blaster.results)
 
 
@@ -38,12 +38,12 @@ class TestJSONBlast:
         with open(os.path.join(here, "data/test_data/query.json"), "r") as f:
             query = json.load(f)
         j = JSONBlast(query, subjects)
-        j.quick_blastn()
+        j.blastn()
         return j
 
     def test_example(self):
         j = JSONBlast.use_test_data()
-        j.quick_blastn()
+        j.blastn()
         pass
 
     def test_perfect_matches(self, here):
@@ -53,7 +53,7 @@ class TestJSONBlast:
             query = json.load(f)
 
         j = JSONBlast(subjects, query)
-        j.quick_blastn_short()
+        j.blastn_short()
         alignments = j.get_perfect()
         print(len(alignments))
 
@@ -72,7 +72,7 @@ class TestJSONBlast:
                 "circular": False,
             },
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.results
         print(results)
 
@@ -100,7 +100,7 @@ class TestJSONBlast:
                 "circular": False,
             },
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.results
 
         expected_query = {
@@ -161,7 +161,7 @@ class TestJSONBlast:
                 }
             ),
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.results
 
         expected_query = {
@@ -223,7 +223,7 @@ class TestJSONBlast:
                 }
             ),
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.results
         print(results)
 
@@ -251,7 +251,7 @@ class TestJSONBlast:
                 }
             ),
         )
-        j.quick_blastn()
+        j.blastn()
         results = j.results
         assert results == []
 
@@ -275,7 +275,7 @@ class TestJSONBlast:
 
         with pytest.raises(PyBlastException):
             j = JSONBlast([subject], [query])
-            j.quick_blastn()
+            j.blastn()
             assert len(j.results) == 1
 
 
@@ -311,7 +311,7 @@ class TestJSONBlastForExpectedSequences:
     def alignments(self, seqs):
         subjects, query = seqs
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 
@@ -320,7 +320,7 @@ class TestJSONBlastForExpectedSequences:
         subjects, query = seqs
         subjects[0]["bases"] = reverse_complement(subjects[0]["bases"])
         j = JSONBlast(subjects, query, span_origin=False)
-        j.quick_blastn()
+        j.blastn()
         results = j.get_perfect()
         return results
 

@@ -33,12 +33,20 @@ class RegisteredTempFile:
         return origin_id
 
     @classmethod
-    def mktemp(cls, origin, *args, **kwargs):
-
+    def mkstemp(cls, origin, *args, **kwargs):
         fd, tmp_path_handle = tempfile.mkstemp(*args, **kwargs)
-        cls.tmpfileregistry.setdefault(cls._origin_id(origin), list())
-        cls.tmpfileregistry[cls._origin_id(origin)].append(tmp_path_handle)
+        key = cls._origin_id(origin)
+        cls.tmpfileregistry.setdefault(key, list())
+        cls.tmpfileregistry[key].append(tmp_path_handle)
         return fd, tmp_path_handle
+
+    @classmethod
+    def mkdtemp(cls, origin, *args, **kwargs):
+        directory = tempfile.mkdtemp(*args, **kwargs)
+        key = cls._origin_id(origin)
+        cls.tmpfileregistry.setdefault(key, list())
+        cls.tmpfileregistry[key].append(directory)
+        return directory
 
     @classmethod
     def remove_origin(cls, origin):
@@ -47,10 +55,9 @@ class RegisteredTempFile:
         for filepath in cls.tmpfileregistry.get(key, []):
             if os.path.isdir(filepath):
                 shutil.rmtree(filepath)
-                files_list.remove(filepath)
             elif os.path.isfile(filepath):
                 os.remove(filepath)
-                files_list.remove(filepath)
+            files_list.remove(filepath)
         if not files_list and key in cls.tmpfileregistry:
             del cls.tmpfileregistry[key]
 
@@ -106,8 +113,13 @@ def records_to_tmpfile(records: List[SeqRecord], origin: Any) -> str:
     :return: temporary file path
     :rtype: str
     """
-    fd, tmp_path_handle = RegisteredTempFile.mktemp(origin, suffix=".fasta")
-    SeqIO.write(records, tmp_path_handle, format="fasta")
+    fd, tmp_path_handle = RegisteredTempFile.mkstemp(origin, suffix=".fasta")
+    try:
+        SeqIO.write(records, tmp_path_handle, format="fasta")
+    except OSError as e:
+        print(RegisteredTempFile.tmpfileregistry)
+        raise e
+    os.close(fd)
     return tmp_path_handle
 
 
@@ -124,7 +136,7 @@ def glob_fasta_to_tmpfile(dirpath: str, origin: Any) -> str:
     records = []
     for fsa in fasta_files:
         records += list(SeqIO.parse(fsa, "fasta"))
-    return records_to_tmpfile(records)
+    return records_to_tmpfile(records, origin)
 
 
 def _grouped_by_id(records):

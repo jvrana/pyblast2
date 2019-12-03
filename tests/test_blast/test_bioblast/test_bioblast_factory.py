@@ -23,9 +23,9 @@ def test_bioblast_factory_init(here):
     primer_blaster = factory("primers", "queries")
     template_blaster = factory("subjects", "queries")
 
-    primer_results = primer_blaster.quick_blastn_short()
+    primer_results = primer_blaster.blastn_short()
 
-    template_results = template_blaster.quick_blastn()
+    template_results = template_blaster.blastn()
 
     print(len(primer_results))
     print(len(template_results))
@@ -45,7 +45,7 @@ def test_validate_rc(here):
 
     blaster = factory("templates", "queries")
 
-    results = blaster.quick_blastn()
+    results = blaster.blastn()
 
     assert results[0]["subject"]["strand"] == -1
     assert results[0]["query"]["strand"] == 1

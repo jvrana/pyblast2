@@ -4,7 +4,7 @@ from multiprocessing import Pool
 def run(params):
     blast = params
     blast.makedb()
-    blast.quick_blastn()
+    blast.blastn()
 
 
 def test_threading(new_circular_bio_blast, new_primer_blast):
@@ -13,7 +13,7 @@ def test_threading(new_circular_bio_blast, new_primer_blast):
     for b in blasts:
         b.makedb()
     # for b in blasts:
-    #     b.quick_blastn()
+    #     b.blastn()
 
     with Pool(processes=10) as pool:
         pool.map(run, blasts)
