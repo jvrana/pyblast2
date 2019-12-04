@@ -449,7 +449,6 @@ class BioBlast(TmpBlast):
         return super().makedb(**kwargs)
 
     def closedb(self):
-        print("closing db")
         super().closedb()
         self.query_path = None
 

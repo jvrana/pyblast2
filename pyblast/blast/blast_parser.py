@@ -89,8 +89,6 @@ class BlastResultParser:
         :return: flattened dictionary
         :rtype: dict
         """
-
-        # print(results)
         if raw_text.strip() == "":
             return []
         meta = cls._extract_metadata(raw_text, delim)
