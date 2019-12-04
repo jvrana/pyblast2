@@ -34,12 +34,10 @@ class BlastRunningContext:
         self.blast = blastinst
 
     def __enter__(self):
-        print("ENTERING")
         self.blast.makedb()
         self.blast._is_runnable = True
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print("EXITING")
         self.blast.closedb()
         self.blast._is_runnable = False
 
@@ -360,7 +358,6 @@ class TmpBlast(BlastBase):
         os.close(fd)
 
     def remove_temporary_files(self):
-        print("REMOVING TEMPORARY FILES")
         RegisteredTempFile.remove_origin(self)
 
     def closedb(self):
