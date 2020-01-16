@@ -1,4 +1,11 @@
 {
+  "0.6.2": {
+    "description": "Bug fix",
+    "date": "2020-01-16T08:30:16.542563",
+    "changes": [
+      "Fixes parsing error with new blast 2.10+"
+    ]
+  },
   "0.6.1": {
     "description": "hotfix: remove debugging messages",
     "date": "2019-12-04T08:40:18.976127",
