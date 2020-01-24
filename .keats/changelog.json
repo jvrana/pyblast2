@@ -1,4 +1,11 @@
 {
+  "0.6.3": {
+    "description": "bug fixes",
+    "date": "2020-01-24T15:12:25.207653",
+    "changes": [
+      "fixes bug that would throw error during parsing of raw result when there were no blast hits"
+    ]
+  },
   "0.6.2": {
     "description": "Bug fix",
     "date": "2020-01-16T08:30:16.542563",
