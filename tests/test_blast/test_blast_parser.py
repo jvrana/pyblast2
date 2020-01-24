@@ -10,4 +10,4 @@ def test_parser():
 
     with open(filepath, "r") as f:
         raw_txt = f.read()
-        assert BlastResultParser.raw_results_to_json(raw_txt)
+        r = BlastResultParser.raw_results_to_json(raw_txt)

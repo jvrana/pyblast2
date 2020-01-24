@@ -1,3 +1,4 @@
+import json
 from os.path import join
 
 import pytest
@@ -25,6 +26,27 @@ def test_basic_run():
     blaster.blastn()
     alignments = blaster.results
     print(alignments)
+
+
+def test_basic_run_reverse_complement():
+    junk1 = "atgctatgctgatgctgctgtgctgatgctgatgtgtattgctgtatcgcgcgagttagc"
+    junk2 = "g" * 30
+    frag = "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta"
+
+    query = SeqRecord(
+        seq=Seq(frag), annotations={"circular": False}
+    ).reverse_complement()
+    subject = SeqRecord(seq=Seq(junk1 + frag + junk2), annotations={"circular": False})
+
+    make_linear([query])
+    # print(type(query))
+    # print(type(subject))
+    blaster = BioBlast([subject], [query])
+    blaster.blastn()
+    alignments = blaster.results
+    for a in alignments:
+        print(json.dumps(a, indent=2))
+        assert a["subject"]["strand"] == -1
 
 
 def test_run_bioblast_twice():

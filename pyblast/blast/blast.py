@@ -590,9 +590,8 @@ class BioBlast(TmpBlast):
         transformed_records = seq_db.get_many(keys)
         return keys, transformed_records
 
-    def parse_result_to_span(
-        self, data, inclusive=True, input_index=1, output_index=None
-    ):
+    @staticmethod
+    def parse_result_to_span(data, inclusive=True, input_index=1, output_index=None):
 
         if output_index is None:
             output_index = input_index

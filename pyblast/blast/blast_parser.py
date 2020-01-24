@@ -23,7 +23,7 @@ class BlastResultParser:
             "#\\s*(?P<blast_ver>.+)\n"
             + "# Query:\\s*(?P<query>.*)\n"
             + "# Database:\\s*(?P<database>.+)\n"
-            + r"(?:# Fields:\s*(?P<fields>.+))",
+            + r"(?:# Fields:\s*(?P<fields>.+))?",
             r,
         )
         metadata = g.groupdict()
