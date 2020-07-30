@@ -30,6 +30,37 @@ def test_basic_run():
     assert len(blaster.results)
 
 
+def test_basic_run_case_insensitive():
+    junk1 = "atgctatgctgatgctgctgtgctgatgctgatgtgtattgctgtatcgcgcgagttagc"
+    junk2 = "g" * 30
+    frag = "aaacttcccaccccataccctattaccactgccaattacctagtggtttcatttactctaaacctgtgattcctctgaattattttcatttta"
+
+    query = {"id": "myquery", "bases": frag, "name": "myseq", "circular": False}
+
+    subject = {
+        "id": "mysubject",
+        "bases": junk1 + frag + junk2,
+        "name": "myseq",
+        "circular": False,
+    }
+
+    subject_upper = dict(subject)
+    subject_upper["bases"] = subject["bases"].upper()
+
+    # print(type(query))
+    # print(type(subject))
+    blaster1 = JSONBlast([subject], query)
+    blaster2 = JSONBlast([subject_upper], query)
+    blaster1.blastn()
+    blaster2.blastn()
+    assert len(blaster1.results)
+    print(blaster1.results)
+
+    metas1 = [r["meta"]["evalue"] for r in blaster1.results]
+    metas2 = [r["meta"]["evalue"] for r in blaster2.results]
+    assert metas1 == metas2
+
+
 class TestJSONBlast:
     @pytest.fixture
     def aligner(self, here):

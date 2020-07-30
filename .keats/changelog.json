@@ -1,4 +1,11 @@
 {
+  "0.7": {
+    "description": "update package dependencies",
+    "date": "2020-07-29T19:04:50.450055",
+    "changes": [
+      "update package dependencies"
+    ]
+  },
   "0.6.3": {
     "description": "bug fixes",
     "date": "2020-01-24T15:12:25.207653",
