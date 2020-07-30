@@ -691,5 +691,5 @@ tests/.cache/
 *.out
 *.nin
 .cache/v/cache/lastfailed
-/pyblast/blast_bin/bin/
+/pyblast/bin/
 *.pyc
