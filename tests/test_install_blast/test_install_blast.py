@@ -1,10 +1,6 @@
-from pyblast.blast_bin.blast_wrapper import BlastWrapper
+from pyblast.cli import is_installed
+from pyblast.cli import is_locally_installed
 
 
 def test_check_installation():
-
-    b = BlastWrapper()
-    if not b.is_installed():
-        b.install("justin.vrana@gmail.com", "mac")
-    print(b.is_installed())
-    # b.install("justin.vrana@gmail.com", "mac")
+    assert is_installed() or is_locally_installed()

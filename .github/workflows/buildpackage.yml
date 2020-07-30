@@ -30,7 +30,7 @@ jobs:
         poetry install
     - name: Install Blast for NCBI
       run: |
-        poetry run pyblast install --email justin.vrana@gmail.com --platform "linux(X64 chip)"
+        poetry run pyblast install --email justin.vrana@gmail.com --platform "linux(X64 chip)" --force --interactive=0
     - name: Lint with flake8
       run: |
         pip install flake8

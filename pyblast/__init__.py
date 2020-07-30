@@ -12,6 +12,7 @@ Submodules
     utils.Span
     utils
 """
+from .__bin__ import __bin__
 from .__version__ import __authors__
 from .__version__ import __homepage__
 from .__version__ import __repo__

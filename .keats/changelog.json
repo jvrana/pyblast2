@@ -1,7 +1,14 @@
 {
+  "0.8": {
+    "description": "update installation",
+    "date": "2020-07-29T22:15:16.104027",
+    "changes": [
+      "Cleaned BLAST installation code"
+    ]
+  },
   "0.7": {
     "description": "update package dependencies",
-    "date": "2020-07-29T19:04:50.450055",
+    "date": "2020-07-29T19:38:30.381048",
     "changes": [
       "update package dependencies"
     ]
