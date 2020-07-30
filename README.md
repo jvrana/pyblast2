@@ -1,6 +1,7 @@
 ![](https://github.com/jvrana/pyblast/workflows/Python%package/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/jvrana/pyblast/badge.svg?branch=master)](https://coveralls.io/github/jvrana/pyblast?branch=master)
 [![PyPI version](https://badge.fury.io/py/pyblastbio.svg)](https://badge.fury.io/py/pyblastbio)
+![Build package](https://github.com/jvrana/pyblast/workflows/Build%20package/badge.svg)
 
 # pyblast
 
