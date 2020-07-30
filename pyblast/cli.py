@@ -134,7 +134,8 @@ def install_blast_using_ftp(
 
     cprint("Blast installed to {}".format(input_file), "green")
     if clean:
-        os.remove(input_file)
+        if isfile(input_file):
+            os.remove(input_file)
     return input_file
 
 
