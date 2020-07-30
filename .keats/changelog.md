@@ -1,10 +1,68 @@
 # pyblastbio change log
+## 0.7
+**2020-07-29T19:04:50.450055**
+update package dependencies
+
+ - update package dependencies
+
+
+## 0.6.3
+**2020-01-24T15:12:25.207653**
+bug fixes
+
+ - fixes bug that would throw error during parsing of raw result when there were no blast hits
+
+
+## 0.6.2
+**2020-01-16T08:30:16.542563**
+Bug fix
+
+ - Fixes parsing error with new blast 2.10+
+
+
+## 0.6.1
+**2019-12-04T08:40:18.976127**
+hotfix: remove debugging messages
+
+
+
+
+## 0.6
+**2019-12-03T12:47:12.342741**
+API changes and bug fixes
+
+ - Fixes the `OSError: Too many open files`
+ - API changes. `quick_blastn` is now `blastn` and `quick_blastn_short` is now `blastn_short`
+ - `blastn` and `blastn_short` now have the parse   kwarg (default: True) which parses and returns the result
+
+
+## 0.5.4
+**2019-11-25T16:50:32.830801**
+bug fixes
+
+
+
+
+## 0.5.3
+**2019-11-25T11:27:48.725864**
+added flags to blast config
+
+
+
+
+## 0.5.2
+**2019-11-25T11:25:56.498000**
+hot fixes
+
+
+
+
 ## 0.5.1
-**2019-11-16T11:35:39.742728**
+**2019-11-16T11:40:19.065619**
 refactoring, reformatting, bug fixes
 
  - TempFile model ensures temporary files are properly closed and removed
- - Import buf fixes
+ - Import bug fixes
 
 
 ## 0.5
