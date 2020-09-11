@@ -3,9 +3,15 @@ name: Build package
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches:  [ master, development ]
+    paths:
+      - '!.github/**/*'
+      - '.github/workflows/buildpackage.yml'
   pull_request:
-    branches: [ master ]
+    branches:  [ master, development ]
+    paths:
+      - '!.github/**/*'
+      - '.github/workflows/buildpackage.yml'
 
 jobs:
   build:
