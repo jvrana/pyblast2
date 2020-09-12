@@ -1,7 +1,14 @@
 # pyblastbio change log
+## 0.9
+**2020-09-11T18:04:44.028111**
+
+
+
+
+
 ## 0.8
-**2020-07-29T22:15:16.104027**
-update installation
+**2020-09-11T18:04:28.402149**
+[A
 
  - Cleaned BLAST installation code
 

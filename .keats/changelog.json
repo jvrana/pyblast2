@@ -1,7 +1,14 @@
 {
+  "0.9": {
+    "description": "Update dependencies",
+    "date": "2020-09-11T18:05:20.500345",
+    "changes": [
+      "BioPython update"
+    ]
+  },
   "0.8": {
-    "description": "update installation",
-    "date": "2020-07-29T22:41:43.099417",
+    "description": "\u001b[A",
+    "date": "2020-09-11T18:04:28.402149",
     "changes": [
       "Cleaned BLAST installation code"
     ]
