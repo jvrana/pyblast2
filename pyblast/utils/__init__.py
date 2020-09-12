@@ -8,7 +8,6 @@ from typing import List
 from uuid import uuid4
 
 from Bio import SeqIO
-from Bio.Alphabet import generic_dna
 from Bio.Seq import Seq
 from Bio.SeqFeature import CompoundLocation
 from Bio.SeqFeature import FeatureLocation
@@ -70,7 +69,7 @@ def reverse_complement(seq_str: str) -> str:
     :return:
     :rtype:
     """
-    return str(Seq(seq_str, generic_dna).reverse_complement())
+    return str(Seq(seq_str).reverse_complement())
 
 
 def complement(seq_str: str) -> str:
@@ -81,7 +80,7 @@ def complement(seq_str: str) -> str:
     :return:
     :rtype:
     """
-    return str(Seq(seq_str, generic_dna).complement())
+    return str(Seq(seq_str).complement())
 
 
 def new_feature_location(start: int, end: int, length: int, strand: int):
