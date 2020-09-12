@@ -139,9 +139,13 @@ def test_unnamed_queries_raises_duplicate_error(here):
     subjects = load_genbank_glob(
         join(here, "data/test_data/genbank/templates/*.gb"), force_unique_ids=True
     )
+
+    seqstr1 = str(subjects[0].seq)[:1000]
+    seqstr2 = str(subjects[1].seq)[:1000]
+
     queries = [
-        SeqRecord(Seq(str(subjects[0][:1000].seq))),
-        SeqRecord(Seq(str(subjects[1][:1000].seq))),
+        SeqRecord(Seq(seqstr1)),
+        SeqRecord(Seq(seqstr2))
         # SeqRecord(Seq(str(subjects[1][:1000]))),
     ]
     make_linear(queries)
