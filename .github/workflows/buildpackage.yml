@@ -16,6 +16,9 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         python-version: [ 3.7 ]
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2.1.1
