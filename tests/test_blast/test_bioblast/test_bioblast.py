@@ -162,8 +162,8 @@ def test_unnamed_queries(here):
     seqstr2 = str(subjects[1].seq)[:1000]
 
     queries = [
-        seqstr1,
-        seqstr2,
+        SeqRecord(Seq(seqstr1)),
+        SeqRecord(Seq(seqstr2))
         # SeqRecord(Seq(str(subjects[1][:1000]))),
     ]
     force_unique_record_ids(make_linear(queries))
