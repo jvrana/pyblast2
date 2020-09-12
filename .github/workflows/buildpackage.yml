@@ -4,14 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:  [ master, development ]
-    paths:
-      - '!.github/**/*'
-      - '.github/workflows/buildpackage.yml'
   pull_request:
     branches:  [ master, development ]
-    paths:
-      - '!.github/**/*'
-      - '.github/workflows/buildpackage.yml'
 
 jobs:
   build:
@@ -23,15 +17,15 @@ jobs:
         os: [ubuntu-latest]
         python-version: [3.6, 3.7, 3.8]
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/cache@v1
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2.1.1
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
