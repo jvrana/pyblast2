@@ -20,16 +20,15 @@ def pytest_namespace(here):
 
 
 @pytest.fixture(scope="function")
-def b(here):
-    d = os.path.join(here, "data/blast_results")
-    if not os.path.isdir(d):
-        os.mkdir(d)
+def b(here, tmpdir):
+    out_dir = tmpdir.join("results").mkdir()
+    results_out = out_dir.join("results.out")
     return BlastBase(
         "db",
         os.path.join(here, "data/test_data/db.fsa"),
         os.path.join(here, "data/test_data/query.fsa"),
-        os.path.join(here, "data/blast_results"),
-        os.path.join(here, "data/blast_results/results.out"),
+        out_dir,
+        results_out,
     )
 
 
